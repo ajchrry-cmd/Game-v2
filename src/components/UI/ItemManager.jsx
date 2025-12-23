@@ -27,9 +27,15 @@ function ItemManager({ onClose }) {
     setShowNewForm(false);
   };
 
-  const handleUpdateItem = async (item) => {
-    await saveItem(item);
+  const handleUpdateItem = async () => {
+    if (!editingItem.name.trim()) return;
+    await saveItem(editingItem);
     setEditingItem(null);
+  };
+
+  const handleStartEdit = (item) => {
+    setEditingItem({ ...item });
+    setShowNewForm(false);
   };
 
   const handleImageUpload = async (file) => {
@@ -39,10 +45,10 @@ function ItemManager({ onClose }) {
     }
   };
 
-  const handleEditImageUpload = async (file, item) => {
+  const handleEditImageUpload = async (file) => {
     const url = await uploadImage(file, 'items');
     if (url) {
-      setEditingItem({ ...item, imageUrl: url });
+      setEditingItem({ ...editingItem, imageUrl: url });
     }
   };
 
@@ -118,6 +124,61 @@ function ItemManager({ onClose }) {
             </div>
           )}
 
+          {editingItem && (
+            <div className="player-form">
+              <h3>Edit Item</h3>
+              <div className="form-group">
+                <label>Name</label>
+                <input
+                  type="text"
+                  value={editingItem.name}
+                  onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={editingItem.description}
+                  onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
+                  rows="3"
+                />
+              </div>
+              <div className="form-group">
+                <label>Price</label>
+                <input
+                  type="number"
+                  value={editingItem.price}
+                  onChange={(e) => setEditingItem({ ...editingItem, price: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleEditImageUpload(e.target.files[0])}
+                />
+                {editingItem.imageUrl && (
+                  <img src={editingItem.imageUrl} alt="Preview" style={{ width: 100, marginTop: 10 }} />
+                )}
+              </div>
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={editingItem.inShop}
+                    onChange={(e) => setEditingItem({ ...editingItem, inShop: e.target.checked })}
+                  />
+                  {' '}In Shop
+                </label>
+              </div>
+              <div className="form-actions">
+                <button className="primary" onClick={handleUpdateItem}>Update Item</button>
+                <button onClick={() => setEditingItem(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
           <div className="grid-list">
             {items.length === 0 ? (
               <p className="empty-state">No items created yet</p>
@@ -129,6 +190,9 @@ function ItemManager({ onClose }) {
                   <p>Price: {item.price}</p>
                   <p>{item.description}</p>
                   <div className="grid-item-actions">
+                    <button onClick={() => handleStartEdit(item)}>
+                      Edit
+                    </button>
                     <button onClick={() => handleToggleShop(item)}>
                       {item.inShop ? 'Remove from Shop' : 'Add to Shop'}
                     </button>

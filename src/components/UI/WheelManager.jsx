@@ -35,36 +35,75 @@ function WheelManager({ onClose }) {
     setShowNewForm(false);
   };
 
-  const handleUpdateSegment = (index, field, value) => {
-    const newSegments = [...newWheel.segments];
-    newSegments[index] = { ...newSegments[index], [field]: value };
-    setNewWheel({ ...newWheel, segments: newSegments });
-  };
-
-  const handleAddSegment = () => {
-    setNewWheel({
-      ...newWheel,
-      segments: [
-        ...newWheel.segments,
-        { text: `Option ${newWheel.segments.length + 1}`, color: '#' + Math.floor(Math.random()*16777215).toString(16), weight: 1 }
-      ]
-    });
-  };
-
-  const calculatePercentage = (weight) => {
-    const totalWeight = newWheel.segments.reduce((sum, seg) => sum + (seg.weight || 1), 0);
-    return ((weight / totalWeight) * 100).toFixed(1);
-  };
-
-  const handleRemoveSegment = (index) => {
-    if (newWheel.segments.length <= 2) {
+  const handleUpdateWheel = async () => {
+    if (!editingWheel.name.trim()) return;
+    if (editingWheel.segments.length < 2) {
       alert('Wheel must have at least 2 segments');
       return;
     }
-    setNewWheel({
-      ...newWheel,
-      segments: newWheel.segments.filter((_, i) => i !== index)
-    });
+    await saveWheel(editingWheel);
+    setEditingWheel(null);
+  };
+
+  const handleStartEdit = (wheel) => {
+    setEditingWheel({ ...wheel });
+    setShowNewForm(false);
+  };
+
+  const handleUpdateSegment = (index, field, value, isEditing = false) => {
+    if (isEditing) {
+      const newSegments = [...editingWheel.segments];
+      newSegments[index] = { ...newSegments[index], [field]: value };
+      setEditingWheel({ ...editingWheel, segments: newSegments });
+    } else {
+      const newSegments = [...newWheel.segments];
+      newSegments[index] = { ...newSegments[index], [field]: value };
+      setNewWheel({ ...newWheel, segments: newSegments });
+    }
+  };
+
+  const handleAddSegment = (isEditing = false) => {
+    if (isEditing) {
+      setEditingWheel({
+        ...editingWheel,
+        segments: [
+          ...editingWheel.segments,
+          { text: `Option ${editingWheel.segments.length + 1}`, color: '#' + Math.floor(Math.random()*16777215).toString(16), weight: 1 }
+        ]
+      });
+    } else {
+      setNewWheel({
+        ...newWheel,
+        segments: [
+          ...newWheel.segments,
+          { text: `Option ${newWheel.segments.length + 1}`, color: '#' + Math.floor(Math.random()*16777215).toString(16), weight: 1 }
+        ]
+      });
+    }
+  };
+
+  const calculatePercentage = (segments, weight) => {
+    const totalWeight = segments.reduce((sum, seg) => sum + (seg.weight || 1), 0);
+    return ((weight / totalWeight) * 100).toFixed(1);
+  };
+
+  const handleRemoveSegment = (index, isEditing = false) => {
+    const segments = isEditing ? editingWheel.segments : newWheel.segments;
+    if (segments.length <= 2) {
+      alert('Wheel must have at least 2 segments');
+      return;
+    }
+    if (isEditing) {
+      setEditingWheel({
+        ...editingWheel,
+        segments: editingWheel.segments.filter((_, i) => i !== index)
+      });
+    } else {
+      setNewWheel({
+        ...newWheel,
+        segments: newWheel.segments.filter((_, i) => i !== index)
+      });
+    }
   };
 
   return (
@@ -117,7 +156,7 @@ function WheelManager({ onClose }) {
                       onChange={(e) => handleUpdateSegment(index, 'weight', parseInt(e.target.value) || 1)}
                       style={{ width: '70px' }}
                     />
-                    <span className="percentage-display">{calculatePercentage(segment.weight || 1)}%</span>
+                    <span className="percentage-display">{calculatePercentage(newWheel.segments, segment.weight || 1)}%</span>
                     <button
                       className="danger"
                       onClick={() => handleRemoveSegment(index)}
@@ -137,6 +176,63 @@ function WheelManager({ onClose }) {
             </div>
           )}
 
+          {editingWheel && (
+            <div className="player-form">
+              <h3>Edit Wheel</h3>
+              <div className="form-group">
+                <label>Wheel Name</label>
+                <input
+                  type="text"
+                  value={editingWheel.name}
+                  onChange={(e) => setEditingWheel({ ...editingWheel, name: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Segments (with weight/percentage)</label>
+                {editingWheel.segments.map((segment, index) => (
+                  <div key={index} className="segment-row-extended">
+                    <input
+                      type="text"
+                      placeholder="Text"
+                      value={segment.text}
+                      onChange={(e) => handleUpdateSegment(index, 'text', e.target.value, true)}
+                      style={{ flex: 2 }}
+                    />
+                    <input
+                      type="color"
+                      value={segment.color}
+                      onChange={(e) => handleUpdateSegment(index, 'color', e.target.value, true)}
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      placeholder="Weight"
+                      value={segment.weight || 1}
+                      onChange={(e) => handleUpdateSegment(index, 'weight', parseInt(e.target.value) || 1, true)}
+                      style={{ width: '70px' }}
+                    />
+                    <span className="percentage-display">{calculatePercentage(editingWheel.segments, segment.weight || 1)}%</span>
+                    <button
+                      className="danger"
+                      onClick={() => handleRemoveSegment(index, true)}
+                      disabled={editingWheel.segments.length <= 2}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <button onClick={() => handleAddSegment(true)}>+ Add Segment</button>
+              </div>
+
+              <div className="form-actions">
+                <button className="primary" onClick={handleUpdateWheel}>Update Wheel</button>
+                <button onClick={() => setEditingWheel(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
           <div className="item-list">
             {wheels.length === 0 ? (
               <p className="empty-state">No wheels created yet</p>
@@ -148,6 +244,9 @@ function WheelManager({ onClose }) {
                     <p className="item-meta">{wheel.segments.length} segments</p>
                   </div>
                   <div className="item-actions">
+                    <button onClick={() => handleStartEdit(wheel)}>
+                      Edit
+                    </button>
                     <button className="danger" onClick={() => deleteWheel(wheel.id)}>
                       Delete
                     </button>
