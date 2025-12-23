@@ -11,13 +11,27 @@ function MapScreen() {
     items,
     playerPositions,
     updatePlayerPosition,
-    mapBackground
+    mapBackground,
+    bonuses,
+    placedBonuses,
+    placeBonus,
+    updateBonusPosition,
+    removeBonus
   } = useGame();
 
   const currentMap = maps.find(m => m.id === currentMapId);
 
   const handleDrag = (playerId, e, data) => {
     updatePlayerPosition(playerId, { x: data.x, y: data.y });
+  };
+
+  const handleBonusDrag = (placedBonusId, e, data) => {
+    updateBonusPosition(placedBonusId, { x: data.x, y: data.y });
+  };
+
+  const handlePlaceBonus = (bonusId) => {
+    // Place bonus at center of map
+    placeBonus(bonusId, { x: 400, y: 300 });
   };
 
   if (!currentMap) {
@@ -98,6 +112,31 @@ function MapScreen() {
               </Draggable>
             );
           })}
+
+          {/* Render placed bonuses */}
+          {placedBonuses.map(placedBonus => {
+            const bonus = bonuses.find(b => b.id === placedBonus.bonusId);
+            if (!bonus) return null;
+
+            return (
+              <Draggable
+                key={placedBonus.id}
+                position={placedBonus.position}
+                onDrag={(e, data) => handleBonusDrag(placedBonus.id, e, data)}
+              >
+                <div className="bonus-item">
+                  <button
+                    className="remove-bonus"
+                    onClick={() => removeBonus(placedBonus.id)}
+                  >
+                    ×
+                  </button>
+                  {bonus.imageUrl && <img src={bonus.imageUrl} alt={bonus.name} />}
+                  <span className="bonus-name">{bonus.name}</span>
+                </div>
+              </Draggable>
+            );
+          })}
         </div>
       </div>
 
@@ -143,6 +182,27 @@ function MapScreen() {
             </div>
           ))
         )}
+
+        <div className="bonus-section">
+          <h2>Bonus Items</h2>
+          {bonuses.length === 0 ? (
+            <p className="empty-state">No bonus items created</p>
+          ) : (
+            <div className="bonus-grid">
+              {bonuses.map(bonus => (
+                <div
+                  key={bonus.id}
+                  className="bonus-card"
+                  onClick={() => handlePlaceBonus(bonus.id)}
+                  title={`Click to place ${bonus.name}`}
+                >
+                  {bonus.imageUrl && <img src={bonus.imageUrl} alt={bonus.name} />}
+                  <span className="bonus-label">{bonus.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

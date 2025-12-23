@@ -6,6 +6,7 @@ import ItemManager from './ItemManager';
 import MapManager from './MapManager';
 import WheelManager from './WheelManager';
 import SceneManager from './SceneManager';
+import BonusManager from './BonusManager';
 import './MasterMenu.css';
 
 function MasterMenu() {
@@ -111,6 +112,7 @@ function MasterMenu() {
               <button onClick={() => openManager('session')}>Sessions</button>
               <button onClick={() => openManager('players')}>Players</button>
               <button onClick={() => openManager('items')}>Items</button>
+              <button onClick={() => openManager('bonuses')}>Bonus Items</button>
               <button onClick={() => openManager('maps')}>Maps</button>
               <button onClick={() => openManager('wheels')}>Wheels</button>
               <button onClick={() => openManager('scenes')}>Scene Images</button>
@@ -122,6 +124,7 @@ function MasterMenu() {
       {activeManager === 'session' && <SessionManager onClose={closeManager} />}
       {activeManager === 'players' && <PlayerManager onClose={closeManager} />}
       {activeManager === 'items' && <ItemManager onClose={closeManager} />}
+      {activeManager === 'bonuses' && <BonusManager onClose={closeManager} />}
       {activeManager === 'maps' && <MapManager onClose={closeManager} />}
       {activeManager === 'wheels' && <WheelManager onClose={closeManager} />}
       {activeManager === 'scenes' && <SceneManager onClose={closeManager} />}

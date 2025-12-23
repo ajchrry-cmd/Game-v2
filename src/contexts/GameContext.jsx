@@ -40,6 +40,10 @@ export const GameProvider = ({ children }) => {
   const [wheels, setWheels] = useState([]);
   const [scenes, setScenes] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [bonuses, setBonuses] = useState([]);
+
+  // Map-specific state
+  const [placedBonuses, setPlacedBonuses] = useState([]);
 
   // UI state
   const [menuOpen, setMenuOpen] = useState(false);
@@ -51,6 +55,7 @@ export const GameProvider = ({ children }) => {
     loadWheels();
     loadScenes();
     loadSessions();
+    loadBonuses();
   }, []);
 
   // ===== SESSIONS =====
@@ -77,7 +82,8 @@ export const GameProvider = ({ children }) => {
         currentMap: null,
         currentMapState: {
           playerPositions: {},
-          background: null
+          background: null,
+          placedBonuses: []
         },
         currentScene: 'map',
         currentSceneId: null,
@@ -106,6 +112,7 @@ export const GameProvider = ({ children }) => {
         setCurrentMapId(session.currentMap);
         setPlayerPositions(session.currentMapState?.playerPositions || {});
         setMapBackground(session.currentMapState?.background);
+        setPlacedBonuses(session.currentMapState?.placedBonuses || []);
       }
     } catch (error) {
       console.error('Error loading session:', error);
@@ -122,7 +129,8 @@ export const GameProvider = ({ children }) => {
         currentMap: currentMapId,
         currentMapState: {
           playerPositions,
-          background: mapBackground
+          background: mapBackground,
+          placedBonuses
         },
         currentScene,
         currentSceneId,
@@ -158,7 +166,7 @@ export const GameProvider = ({ children }) => {
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground]);
+  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses]);
 
   // ===== MAPS =====
   const loadMaps = async () => {
@@ -314,6 +322,63 @@ export const GameProvider = ({ children }) => {
     }
   };
 
+  // ===== BONUSES =====
+  const loadBonuses = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'bonuses'));
+      const loadedBonuses = [];
+      querySnapshot.forEach((doc) => {
+        loadedBonuses.push({ id: doc.id, ...doc.data() });
+      });
+      setBonuses(loadedBonuses);
+    } catch (error) {
+      console.error('Error loading bonuses:', error);
+    }
+  };
+
+  const saveBonus = async (bonus) => {
+    try {
+      if (bonus.id) {
+        await setDoc(doc(db, 'bonuses', bonus.id), bonus);
+        setBonuses(bonuses.map(b => b.id === bonus.id ? bonus : b));
+      } else {
+        const newBonus = { ...bonus, id: uuidv4() };
+        await setDoc(doc(db, 'bonuses', newBonus.id), newBonus);
+        setBonuses([...bonuses, newBonus]);
+      }
+    } catch (error) {
+      console.error('Error saving bonus:', error);
+    }
+  };
+
+  const deleteBonus = async (bonusId) => {
+    try {
+      await deleteDoc(doc(db, 'bonuses', bonusId));
+      setBonuses(bonuses.filter(b => b.id !== bonusId));
+    } catch (error) {
+      console.error('Error deleting bonus:', error);
+    }
+  };
+
+  const placeBonus = (bonusId, position) => {
+    const newPlacedBonus = {
+      id: uuidv4(),
+      bonusId,
+      position
+    };
+    setPlacedBonuses([...placedBonuses, newPlacedBonus]);
+  };
+
+  const updateBonusPosition = (placedBonusId, position) => {
+    setPlacedBonuses(placedBonuses.map(pb =>
+      pb.id === placedBonusId ? { ...pb, position } : pb
+    ));
+  };
+
+  const removeBonus = (placedBonusId) => {
+    setPlacedBonuses(placedBonuses.filter(pb => pb.id !== placedBonusId));
+  };
+
   // ===== IMAGE UPLOAD =====
   const uploadImage = async (file, folder = 'images') => {
     try {
@@ -404,6 +469,15 @@ export const GameProvider = ({ children }) => {
     scenes,
     saveScene,
     deleteScene,
+
+    // Bonuses
+    bonuses,
+    saveBonus,
+    deleteBonus,
+    placedBonuses,
+    placeBonus,
+    updateBonusPosition,
+    removeBonus,
 
     // Utilities
     uploadImage,
