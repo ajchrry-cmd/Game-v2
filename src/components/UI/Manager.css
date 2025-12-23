@@ -1,0 +1,138 @@
+.manager-modal {
+  min-width: 600px;
+  max-width: 800px;
+}
+
+.manager-content {
+  margin-top: 1rem;
+}
+
+.current-session {
+  background: #1a1a1a;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #d4af37;
+}
+
+.current-session strong {
+  color: #d4af37;
+}
+
+.manager-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-inline {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+.form-inline input {
+  flex: 1;
+}
+
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.item-card {
+  background: #1a1a1a;
+  padding: 1rem;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.item-card:hover {
+  background: #252525;
+}
+
+.item-card.active {
+  border-left: 4px solid #d4af37;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-info h3 {
+  margin-bottom: 0.25rem;
+  color: #fff;
+}
+
+.item-meta {
+  font-size: 0.85rem;
+  color: #999;
+  margin: 0;
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.grid-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.grid-item {
+  background: #1a1a1a;
+  padding: 1rem;
+  border-radius: 4px;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.grid-item:hover {
+  background: #252525;
+  transform: translateY(-2px);
+}
+
+.grid-item img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.grid-item h4 {
+  margin-bottom: 0.5rem;
+  color: #d4af37;
+}
+
+.grid-item p {
+  font-size: 0.85rem;
+  color: #999;
+  margin: 0;
+}
+
+.grid-item-actions {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  justify-content: center;
+}
+
+.grid-item-actions button {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+}
