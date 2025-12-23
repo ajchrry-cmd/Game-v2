@@ -163,7 +163,7 @@ function MapScreen() {
               <Draggable
                 key={placedBonus.id}
                 position={placedBonus.position}
-                onDrag={(e, data) => handleBonusDrag(placedBonus.id, e, data)}
+                onStop={(e, data) => handleBonusDrag(placedBonus.id, e, data)}
                 disabled={resizing !== null}
               >
                 <div className="bonus-item">
