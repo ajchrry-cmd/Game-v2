@@ -10,11 +10,20 @@ function BonusManager({ onClose }) {
     name: '',
     imageUrl: ''
   });
+  const [uploading, setUploading] = useState(false);
+  const [editUploading, setEditUploading] = useState(false);
 
   const handleSaveBonus = async () => {
-    if (!newBonus.name.trim()) return;
+    if (!newBonus.name.trim()) {
+      alert('Please enter a name for the bonus item');
+      return;
+    }
     if (!newBonus.imageUrl) {
       alert('Please upload an image for the bonus item');
+      return;
+    }
+    if (uploading) {
+      alert('Please wait for the image to finish uploading');
       return;
     }
     await saveBonus(newBonus);
@@ -26,9 +35,16 @@ function BonusManager({ onClose }) {
   };
 
   const handleUpdateBonus = async () => {
-    if (!editingBonus.name.trim()) return;
+    if (!editingBonus.name.trim()) {
+      alert('Please enter a name for the bonus item');
+      return;
+    }
     if (!editingBonus.imageUrl) {
       alert('Please upload an image for the bonus item');
+      return;
+    }
+    if (editUploading) {
+      alert('Please wait for the image to finish uploading');
       return;
     }
     await saveBonus(editingBonus);
@@ -41,16 +57,40 @@ function BonusManager({ onClose }) {
   };
 
   const handleImageUpload = async (file) => {
-    const url = await uploadImage(file, 'bonuses');
-    if (url) {
-      setNewBonus({ ...newBonus, imageUrl: url });
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadImage(file, 'bonuses');
+      if (url) {
+        setNewBonus({ ...newBonus, imageUrl: url });
+      } else {
+        alert('Failed to upload image. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleEditImageUpload = async (file) => {
-    const url = await uploadImage(file, 'bonuses');
-    if (url) {
-      setEditingBonus({ ...editingBonus, imageUrl: url });
+    if (!file) return;
+
+    setEditUploading(true);
+    try {
+      const url = await uploadImage(file, 'bonuses');
+      if (url) {
+        setEditingBonus({ ...editingBonus, imageUrl: url });
+      } else {
+        alert('Failed to upload image. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image. Please try again.');
+    } finally {
+      setEditUploading(false);
     }
   };
 
@@ -85,13 +125,24 @@ function BonusManager({ onClose }) {
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleImageUpload(e.target.files[0])}
+                  disabled={uploading}
                 />
-                {newBonus.imageUrl && (
-                  <img src={newBonus.imageUrl} alt="Preview" style={{ width: 100, marginTop: 10 }} />
+                {uploading && <p style={{ color: '#d4af37', marginTop: 10 }}>Uploading image...</p>}
+                {newBonus.imageUrl && !uploading && (
+                  <div style={{ marginTop: 10 }}>
+                    <img src={newBonus.imageUrl} alt="Preview" style={{ width: 100, borderRadius: 8 }} />
+                    <p style={{ color: '#4caf50', fontSize: '0.9rem', marginTop: 5 }}>✓ Image uploaded</p>
+                  </div>
                 )}
               </div>
               <div className="form-actions">
-                <button className="primary" onClick={handleSaveBonus}>Save Bonus Item</button>
+                <button
+                  className="primary"
+                  onClick={handleSaveBonus}
+                  disabled={uploading}
+                >
+                  {uploading ? 'Uploading...' : 'Save Bonus Item'}
+                </button>
                 <button onClick={() => setShowNewForm(false)}>Cancel</button>
               </div>
             </div>
@@ -115,13 +166,24 @@ function BonusManager({ onClose }) {
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleEditImageUpload(e.target.files[0])}
+                  disabled={editUploading}
                 />
-                {editingBonus.imageUrl && (
-                  <img src={editingBonus.imageUrl} alt="Preview" style={{ width: 100, marginTop: 10 }} />
+                {editUploading && <p style={{ color: '#d4af37', marginTop: 10 }}>Uploading image...</p>}
+                {editingBonus.imageUrl && !editUploading && (
+                  <div style={{ marginTop: 10 }}>
+                    <img src={editingBonus.imageUrl} alt="Preview" style={{ width: 100, borderRadius: 8 }} />
+                    <p style={{ color: '#4caf50', fontSize: '0.9rem', marginTop: 5 }}>✓ Image uploaded</p>
+                  </div>
                 )}
               </div>
               <div className="form-actions">
-                <button className="primary" onClick={handleUpdateBonus}>Update Bonus Item</button>
+                <button
+                  className="primary"
+                  onClick={handleUpdateBonus}
+                  disabled={editUploading}
+                >
+                  {editUploading ? 'Uploading...' : 'Update Bonus Item'}
+                </button>
                 <button onClick={() => setEditingBonus(null)}>Cancel</button>
               </div>
             </div>
