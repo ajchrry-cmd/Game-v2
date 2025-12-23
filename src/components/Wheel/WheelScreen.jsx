@@ -31,11 +31,17 @@ function WheelScreen() {
     ctx.rotate((rotation * Math.PI) / 180);
 
     const segments = currentWheel.segments;
-    const anglePerSegment = (2 * Math.PI) / segments.length;
 
+    // Calculate total weight
+    const totalWeight = segments.reduce((sum, seg) => sum + (seg.weight || 1), 0);
+
+    // Draw segments based on their weights
+    let currentAngle = 0;
     segments.forEach((segment, index) => {
-      const startAngle = index * anglePerSegment;
-      const endAngle = startAngle + anglePerSegment;
+      const weight = segment.weight || 1;
+      const segmentAngle = (weight / totalWeight) * 2 * Math.PI;
+      const startAngle = currentAngle;
+      const endAngle = currentAngle + segmentAngle;
 
       // Draw segment
       ctx.beginPath();
@@ -61,7 +67,7 @@ function WheelScreen() {
 
       // Draw text
       ctx.save();
-      ctx.rotate(startAngle + anglePerSegment / 2);
+      ctx.rotate(startAngle + segmentAngle / 2);
       ctx.textAlign = 'center';
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 20px Arial';
@@ -69,6 +75,8 @@ function WheelScreen() {
       ctx.shadowBlur = 4;
       ctx.fillText(segment.text, radius / 1.5, 0);
       ctx.restore();
+
+      currentAngle = endAngle;
     });
 
     ctx.restore();
@@ -121,10 +129,33 @@ function WheelScreen() {
         requestAnimationFrame(animate);
       } else {
         setIsSpinning(false);
-        // Calculate which segment was landed on
-        const normalizedRotation = (360 - (currentRotation % 360)) % 360;
-        const segmentAngle = 360 / currentWheel.segments.length;
-        const resultIndex = Math.floor(normalizedRotation / segmentAngle) % currentWheel.segments.length;
+        // Calculate which segment the pointer is pointing at
+        // Pointer is at top (270 degrees in standard coords, or -90 from right)
+        // We need to account for the wheel's rotation
+        const pointerAngle = 270; // Top of circle
+        const wheelAngle = currentRotation % 360;
+
+        // The actual angle we're pointing at on the wheel
+        const targetAngle = (pointerAngle - wheelAngle + 360) % 360;
+        const targetRadians = (targetAngle * Math.PI) / 180;
+
+        // Calculate total weight and find which segment
+        const totalWeight = currentWheel.segments.reduce((sum, seg) => sum + (seg.weight || 1), 0);
+
+        let cumulativeAngle = 0;
+        let resultIndex = 0;
+
+        for (let i = 0; i < currentWheel.segments.length; i++) {
+          const weight = currentWheel.segments[i].weight || 1;
+          const segmentAngle = (weight / totalWeight) * 2 * Math.PI;
+
+          if (targetRadians >= cumulativeAngle && targetRadians < cumulativeAngle + segmentAngle) {
+            resultIndex = i;
+            break;
+          }
+
+          cumulativeAngle += segmentAngle;
+        }
 
         // Save the result
         saveWheel({ ...currentWheel, lastResult: resultIndex });

@@ -9,10 +9,10 @@ function WheelManager({ onClose }) {
   const [newWheel, setNewWheel] = useState({
     name: '',
     segments: [
-      { text: 'Option 1', color: '#FF6B6B' },
-      { text: 'Option 2', color: '#4ECDC4' },
-      { text: 'Option 3', color: '#45B7D1' },
-      { text: 'Option 4', color: '#FFA07A' }
+      { text: 'Option 1', color: '#FF6B6B', weight: 1 },
+      { text: 'Option 2', color: '#4ECDC4', weight: 1 },
+      { text: 'Option 3', color: '#45B7D1', weight: 1 },
+      { text: 'Option 4', color: '#FFA07A', weight: 1 }
     ]
   });
 
@@ -26,10 +26,10 @@ function WheelManager({ onClose }) {
     setNewWheel({
       name: '',
       segments: [
-        { text: 'Option 1', color: '#FF6B6B' },
-        { text: 'Option 2', color: '#4ECDC4' },
-        { text: 'Option 3', color: '#45B7D1' },
-        { text: 'Option 4', color: '#FFA07A' }
+        { text: 'Option 1', color: '#FF6B6B', weight: 1 },
+        { text: 'Option 2', color: '#4ECDC4', weight: 1 },
+        { text: 'Option 3', color: '#45B7D1', weight: 1 },
+        { text: 'Option 4', color: '#FFA07A', weight: 1 }
       ]
     });
     setShowNewForm(false);
@@ -46,9 +46,14 @@ function WheelManager({ onClose }) {
       ...newWheel,
       segments: [
         ...newWheel.segments,
-        { text: `Option ${newWheel.segments.length + 1}`, color: '#' + Math.floor(Math.random()*16777215).toString(16) }
+        { text: `Option ${newWheel.segments.length + 1}`, color: '#' + Math.floor(Math.random()*16777215).toString(16), weight: 1 }
       ]
     });
+  };
+
+  const calculatePercentage = (weight) => {
+    const totalWeight = newWheel.segments.reduce((sum, seg) => sum + (seg.weight || 1), 0);
+    return ((weight / totalWeight) * 100).toFixed(1);
   };
 
   const handleRemoveSegment = (index) => {
@@ -88,20 +93,31 @@ function WheelManager({ onClose }) {
               </div>
 
               <div className="form-group">
-                <label>Segments</label>
+                <label>Segments (with weight/percentage)</label>
                 {newWheel.segments.map((segment, index) => (
-                  <div key={index} className="segment-row">
+                  <div key={index} className="segment-row-extended">
                     <input
                       type="text"
                       placeholder="Text"
                       value={segment.text}
                       onChange={(e) => handleUpdateSegment(index, 'text', e.target.value)}
+                      style={{ flex: 2 }}
                     />
                     <input
                       type="color"
                       value={segment.color}
                       onChange={(e) => handleUpdateSegment(index, 'color', e.target.value)}
                     />
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      placeholder="Weight"
+                      value={segment.weight || 1}
+                      onChange={(e) => handleUpdateSegment(index, 'weight', parseInt(e.target.value) || 1)}
+                      style={{ width: '70px' }}
+                    />
+                    <span className="percentage-display">{calculatePercentage(segment.weight || 1)}%</span>
                     <button
                       className="danger"
                       onClick={() => handleRemoveSegment(index)}
