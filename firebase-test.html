@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #4CAF50; }
+        .error { background: #c41e3a; }
+        .info { background: #2196F3; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #d4af37;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Firebase Connection Test</h1>
+    <div id="results"></div>
+    <button onclick="testFirestore()">Test Firestore Write</button>
+    <button onclick="testFirestoreRead()">Test Firestore Read</button>
+    <button onclick="clearResults()">Clear</button>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBwoZFzkz2zO58EBe43OEFULVh4R75bv5U",
+            authDomain: "you-just-lost-the-game-5d1d4.firebaseapp.com",
+            projectId: "you-just-lost-the-game-5d1d4",
+            storageBucket: "you-just-lost-the-game-5d1d4.firebasestorage.app",
+            messagingSenderId: "435485092174",
+            appId: "1:435485092174:web:19e23fe1e54dcde156961f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            document.getElementById('results').appendChild(div);
+        }
+
+        window.testFirestore = async function() {
+            log('Testing Firestore write...', 'info');
+            try {
+                const testDoc = {
+                    name: 'Test Map',
+                    timestamp: new Date().toISOString(),
+                    test: true
+                };
+
+                // Try with setDoc (what the app uses)
+                const docId = 'test-' + Date.now();
+                await setDoc(doc(db, 'maps', docId), testDoc);
+
+                log('✓ Firestore write successful! Document ID: ' + docId, 'success');
+                log('<pre>' + JSON.stringify(testDoc, null, 2) + '</pre>', 'info');
+            } catch (error) {
+                log('✗ Firestore write failed!', 'error');
+                log('Error: ' + error.message, 'error');
+                log('Code: ' + error.code, 'error');
+                log('<pre>' + JSON.stringify(error, null, 2) + '</pre>', 'error');
+            }
+        };
+
+        window.testFirestoreRead = async function() {
+            log('Testing Firestore read...', 'info');
+            try {
+                const querySnapshot = await getDocs(collection(db, 'maps'));
+                log('✓ Firestore read successful!', 'success');
+                log('Found ' + querySnapshot.size + ' documents', 'success');
+                querySnapshot.forEach((doc) => {
+                    log('Document: ' + doc.id, 'info');
+                    log('<pre>' + JSON.stringify(doc.data(), null, 2) + '</pre>', 'info');
+                });
+            } catch (error) {
+                log('✗ Firestore read failed!', 'error');
+                log('Error: ' + error.message, 'error');
+                log('Code: ' + error.code, 'error');
+            }
+        };
+
+        window.clearResults = function() {
+            document.getElementById('results').innerHTML = '';
+        };
+
+        // Auto-test on load
+        log('Firebase initialized', 'success');
+        log('Project ID: ' + firebaseConfig.projectId, 'info');
+
+        // Test connection
+        setTimeout(() => {
+            log('Running auto-test...', 'info');
+            testFirestoreRead();
+        }, 1000);
+    </script>
+</body>
+</html>
