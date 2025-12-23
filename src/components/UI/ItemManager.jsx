@@ -97,14 +97,21 @@ function ItemManager({ onClose }) {
                 />
               </div>
               <div className="form-group">
-                <label>Image</label>
+                <label>Image URL</label>
+                <input
+                  type="text"
+                  value={newItem.imageUrl}
+                  onChange={(e) => setNewItem({ ...newItem, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.png"
+                />
+                <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>Or upload a file:</p>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleImageUpload(e.target.files[0])}
                 />
                 {newItem.imageUrl && (
-                  <img src={newItem.imageUrl} alt="Preview" style={{ width: 100, marginTop: 10 }} />
+                  <img src={newItem.imageUrl} alt="Preview" style={{ width: 100, marginTop: 10, borderRadius: 8 }} />
                 )}
               </div>
               <div className="form-group">
@@ -152,14 +159,21 @@ function ItemManager({ onClose }) {
                 />
               </div>
               <div className="form-group">
-                <label>Image</label>
+                <label>Image URL</label>
+                <input
+                  type="text"
+                  value={editingItem.imageUrl}
+                  onChange={(e) => setEditingItem({ ...editingItem, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.png"
+                />
+                <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>Or upload a file:</p>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleEditImageUpload(e.target.files[0])}
                 />
                 {editingItem.imageUrl && (
-                  <img src={editingItem.imageUrl} alt="Preview" style={{ width: 100, marginTop: 10 }} />
+                  <img src={editingItem.imageUrl} alt="Preview" style={{ width: 100, marginTop: 10, borderRadius: 8 }} />
                 )}
               </div>
               <div className="form-group">

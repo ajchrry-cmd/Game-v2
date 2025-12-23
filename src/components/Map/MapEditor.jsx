@@ -127,7 +127,14 @@ function MapEditor({ map, onClose }) {
               />
             </div>
             <div className="form-group">
-              <label>Background Image</label>
+              <label>Background Image URL</label>
+              <input
+                type="text"
+                value={mapData.backgroundImage || ''}
+                onChange={(e) => setMapData({ ...mapData, backgroundImage: e.target.value })}
+                placeholder="https://example.com/background.png"
+              />
+              <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>Or upload a file:</p>
               <input
                 type="file"
                 accept="image/*"

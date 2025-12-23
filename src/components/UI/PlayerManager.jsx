@@ -156,13 +156,20 @@ function PlayerManager({ onClose }) {
                 </div>
               ) : (
                 <div className="form-group">
-                  <label>Icon Image</label>
+                  <label>Icon Image URL</label>
+                  <input
+                    type="text"
+                    value={newPlayer.iconUrl || ''}
+                    onChange={(e) => setNewPlayer({ ...newPlayer, iconUrl: e.target.value })}
+                    placeholder="https://example.com/icon.png"
+                  />
+                  <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>Or upload a file:</p>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(e) => handleNewPlayerIconUpload(e.target.files[0])}
                   />
-                  {newPlayer.iconUrl && <img src={newPlayer.iconUrl} alt="Preview" style={{ width: 50, height: 50, marginTop: 10 }} />}
+                  {newPlayer.iconUrl && <img src={newPlayer.iconUrl} alt="Preview" style={{ width: 50, height: 50, marginTop: 10, borderRadius: 8 }} />}
                 </div>
               )}
               <div className="form-actions">
@@ -221,11 +228,21 @@ function PlayerManager({ onClose }) {
                           onChange={(e) => handleUpdatePlayer(player.id, 'iconColor', e.target.value)}
                         />
                       ) : (
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleIconUpload(player.id, e.target.files[0])}
-                        />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
+                          <input
+                            type="text"
+                            value={player.iconUrl || ''}
+                            onChange={(e) => handleUpdatePlayer(player.id, 'iconUrl', e.target.value)}
+                            placeholder="Image URL"
+                            style={{ width: '100%' }}
+                          />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleIconUpload(player.id, e.target.files[0])}
+                            style={{ fontSize: '0.85rem' }}
+                          />
+                        </div>
                       )}
                     </div>
                   </div>

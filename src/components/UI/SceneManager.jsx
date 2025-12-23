@@ -52,7 +52,14 @@ function SceneManager({ onClose }) {
                 />
               </div>
               <div className="form-group">
-                <label>Scene Image</label>
+                <label>Scene Image URL</label>
+                <input
+                  type="text"
+                  value={newScene.imageUrl}
+                  onChange={(e) => setNewScene({ ...newScene, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.png"
+                />
+                <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>Or upload a file:</p>
                 <input
                   type="file"
                   accept="image/*"

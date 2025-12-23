@@ -120,7 +120,15 @@ function BonusManager({ onClose }) {
                 />
               </div>
               <div className="form-group">
-                <label>Image</label>
+                <label>Image URL</label>
+                <input
+                  type="text"
+                  value={newBonus.imageUrl}
+                  onChange={(e) => setNewBonus({ ...newBonus, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.png"
+                  disabled={uploading}
+                />
+                <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>Or upload a file:</p>
                 <input
                   type="file"
                   accept="image/*"
@@ -131,7 +139,7 @@ function BonusManager({ onClose }) {
                 {newBonus.imageUrl && !uploading && (
                   <div style={{ marginTop: 10 }}>
                     <img src={newBonus.imageUrl} alt="Preview" style={{ width: 100, borderRadius: 8 }} />
-                    <p style={{ color: '#4caf50', fontSize: '0.9rem', marginTop: 5 }}>✓ Image uploaded</p>
+                    <p style={{ color: '#4caf50', fontSize: '0.9rem', marginTop: 5 }}>✓ Image ready</p>
                   </div>
                 )}
               </div>
@@ -161,7 +169,15 @@ function BonusManager({ onClose }) {
                 />
               </div>
               <div className="form-group">
-                <label>Image</label>
+                <label>Image URL</label>
+                <input
+                  type="text"
+                  value={editingBonus.imageUrl}
+                  onChange={(e) => setEditingBonus({ ...editingBonus, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.png"
+                  disabled={editUploading}
+                />
+                <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>Or upload a file:</p>
                 <input
                   type="file"
                   accept="image/*"
@@ -172,7 +188,7 @@ function BonusManager({ onClose }) {
                 {editingBonus.imageUrl && !editUploading && (
                   <div style={{ marginTop: 10 }}>
                     <img src={editingBonus.imageUrl} alt="Preview" style={{ width: 100, borderRadius: 8 }} />
-                    <p style={{ color: '#4caf50', fontSize: '0.9rem', marginTop: 5 }}>✓ Image uploaded</p>
+                    <p style={{ color: '#4caf50', fontSize: '0.9rem', marginTop: 5 }}>✓ Image ready</p>
                   </div>
                 )}
               </div>
