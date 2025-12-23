@@ -21,6 +21,7 @@ function MapScreen() {
   } = useGame();
 
   const [resizing, setResizing] = useState(null);
+  const [selectedBonusId, setSelectedBonusId] = useState(null);
 
   const currentMap = maps.find(m => m.id === currentMapId);
 
@@ -88,6 +89,7 @@ function MapScreen() {
       <div className="map-container">
         <div
           className="map-canvas"
+          onClick={() => setSelectedBonusId(null)}
           style={{
             backgroundColor: currentMap.backgroundColor || '#1a1a1a',
             backgroundImage: mapBackground ? `url(${mapBackground})` : 'none',
@@ -158,21 +160,34 @@ function MapScreen() {
             if (!bonus) return null;
 
             const size = placedBonus.size || 60;
+            const isSelected = selectedBonusId === placedBonus.id;
 
             return (
               <Draggable
                 key={placedBonus.id}
                 position={placedBonus.position}
-                onStop={(e, data) => handleBonusDrag(placedBonus.id, e, data)}
+                onDrag={(e, data) => handleBonusDrag(placedBonus.id, e, data)}
                 disabled={resizing !== null}
               >
-                <div className="bonus-item">
-                  <button
-                    className="remove-bonus"
-                    onClick={() => removeBonus(placedBonus.id)}
-                  >
-                    ×
-                  </button>
+                <div
+                  className="bonus-item"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedBonusId(placedBonus.id);
+                  }}
+                >
+                  {isSelected && (
+                    <button
+                      className="remove-bonus"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeBonus(placedBonus.id);
+                        setSelectedBonusId(null);
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
                   {bonus.imageUrl && (
                     <img
                       src={bonus.imageUrl}
@@ -180,11 +195,13 @@ function MapScreen() {
                       style={{ width: size, height: size }}
                     />
                   )}
-                  <span className="bonus-name">{bonus.name}</span>
-                  <div
-                    className="resize-handle"
-                    onMouseDown={(e) => handleResizeStart(e, placedBonus.id, size)}
-                  />
+                  {isSelected && <span className="bonus-name">{bonus.name}</span>}
+                  {isSelected && (
+                    <div
+                      className="resize-handle"
+                      onMouseDown={(e) => handleResizeStart(e, placedBonus.id, size)}
+                    />
+                  )}
                 </div>
               </Draggable>
             );
