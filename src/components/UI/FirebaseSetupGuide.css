@@ -1,0 +1,165 @@
+.setup-guide {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #1a1a1a;
+  color: #fff;
+  overflow-y: auto;
+  z-index: 10000;
+  padding: 2rem;
+}
+
+.setup-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.setup-guide h1 {
+  color: #d4af37;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.setup-intro {
+  font-size: 1.2rem;
+  text-align: center;
+  color: #ccc;
+  margin-bottom: 3rem;
+}
+
+.setup-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.setup-step {
+  display: flex;
+  gap: 1.5rem;
+  background: #2a2a2a;
+  padding: 2rem;
+  border-radius: 8px;
+  border-left: 4px solid #d4af37;
+}
+
+.step-number {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  background: #d4af37;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-content h3 {
+  color: #d4af37;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.step-content p {
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+.step-content ul {
+  list-style: none;
+  padding-left: 1rem;
+  margin: 1rem 0;
+}
+
+.step-content li {
+  color: #ccc;
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.step-content li:before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #d4af37;
+}
+
+.setup-link {
+  display: inline-block;
+  background: #d4af37;
+  color: #000;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+  margin: 0.5rem 0;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.setup-link:hover {
+  background: #e4bf47;
+  transform: translateX(4px);
+}
+
+.step-content pre {
+  background: #1a1a1a;
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.step-content code {
+  color: #4CAF50;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+}
+
+.refresh-button {
+  background: #4CAF50;
+  color: #fff;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-button:hover {
+  background: #5CBF60;
+  transform: scale(1.05);
+}
+
+.setup-help {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background: #2a2a2a;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.setup-help p {
+  margin: 0;
+  color: #ccc;
+}
+
+.setup-help a {
+  color: #d4af37;
+  text-decoration: underline;
+}
+
+.setup-help a:hover {
+  color: #e4bf47;
+}

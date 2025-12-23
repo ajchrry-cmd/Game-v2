@@ -28,14 +28,23 @@ function MapEditor({ map, onClose }) {
     setIsSaving(true);
     try {
       console.log('Saving map:', mapData);
-      await saveMap(mapData);
+
+      // Add timeout to prevent infinite hang
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Operation timed out. Firestore may not be enabled.')), 10000)
+      );
+
+      await Promise.race([saveMap(mapData), timeoutPromise]);
+
       console.log('Map saved successfully');
       alert('Map saved successfully!');
       onClose();
     } catch (error) {
       console.error('Error saving map:', error);
-      alert(`Error saving map: ${error.message}\n\nPlease check:\n1. Firestore is enabled in Firebase Console\n2. Firestore rules are set\n3. Browser console for details`);
-    } finally {
+      const errorMessage = error.message.includes('timed out')
+        ? 'Save operation timed out.\n\nFirestore is likely not enabled in your Firebase project.\n\nPlease:\n1. Go to Firebase Console\n2. Enable Firestore Database\n3. Set the security rules\n4. See SETUP.md for details'
+        : `Error: ${error.message}\n\nPlease check:\n1. Firestore is enabled\n2. Firestore rules are set\n3. Internet connection\n4. Browser console for details`;
+      alert(errorMessage);
       setIsSaving(false);
     }
   };
