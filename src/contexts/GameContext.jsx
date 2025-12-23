@@ -364,7 +364,8 @@ export const GameProvider = ({ children }) => {
     const newPlacedBonus = {
       id: uuidv4(),
       bonusId,
-      position
+      position,
+      size: 60 // Default size in pixels
     };
     setPlacedBonuses([...placedBonuses, newPlacedBonus]);
   };
@@ -372,6 +373,12 @@ export const GameProvider = ({ children }) => {
   const updateBonusPosition = (placedBonusId, position) => {
     setPlacedBonuses(placedBonuses.map(pb =>
       pb.id === placedBonusId ? { ...pb, position } : pb
+    ));
+  };
+
+  const updateBonusSize = (placedBonusId, size) => {
+    setPlacedBonuses(placedBonuses.map(pb =>
+      pb.id === placedBonusId ? { ...pb, size } : pb
     ));
   };
 
@@ -477,6 +484,7 @@ export const GameProvider = ({ children }) => {
     placedBonuses,
     placeBonus,
     updateBonusPosition,
+    updateBonusSize,
     removeBonus,
 
     // Utilities

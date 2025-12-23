@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Draggable from 'react-draggable';
 import { useGame } from '../../contexts/GameContext';
 import './MapScreen.css';
@@ -16,8 +16,11 @@ function MapScreen() {
     placedBonuses,
     placeBonus,
     updateBonusPosition,
+    updateBonusSize,
     removeBonus
   } = useGame();
+
+  const [resizing, setResizing] = useState(null);
 
   const currentMap = maps.find(m => m.id === currentMapId);
 
@@ -33,6 +36,42 @@ function MapScreen() {
     // Place bonus at center of map
     placeBonus(bonusId, { x: 400, y: 300 });
   };
+
+  const handleResizeStart = (e, placedBonusId, currentSize) => {
+    e.stopPropagation();
+    setResizing({
+      id: placedBonusId,
+      startX: e.clientX,
+      startY: e.clientY,
+      startSize: currentSize
+    });
+  };
+
+  const handleResizeMove = (e) => {
+    if (!resizing) return;
+
+    const deltaX = e.clientX - resizing.startX;
+    const deltaY = e.clientY - resizing.startY;
+    const delta = Math.max(deltaX, deltaY); // Use larger delta for proportional resize
+
+    const newSize = Math.max(30, resizing.startSize + delta); // Min size 30px
+    updateBonusSize(resizing.id, newSize);
+  };
+
+  const handleResizeEnd = () => {
+    setResizing(null);
+  };
+
+  React.useEffect(() => {
+    if (resizing) {
+      window.addEventListener('mousemove', handleResizeMove);
+      window.addEventListener('mouseup', handleResizeEnd);
+      return () => {
+        window.removeEventListener('mousemove', handleResizeMove);
+        window.removeEventListener('mouseup', handleResizeEnd);
+      };
+    }
+  }, [resizing]);
 
   if (!currentMap) {
     return (
@@ -118,11 +157,14 @@ function MapScreen() {
             const bonus = bonuses.find(b => b.id === placedBonus.bonusId);
             if (!bonus) return null;
 
+            const size = placedBonus.size || 60;
+
             return (
               <Draggable
                 key={placedBonus.id}
                 position={placedBonus.position}
                 onDrag={(e, data) => handleBonusDrag(placedBonus.id, e, data)}
+                disabled={resizing !== null}
               >
                 <div className="bonus-item">
                   <button
@@ -131,8 +173,18 @@ function MapScreen() {
                   >
                     ×
                   </button>
-                  {bonus.imageUrl && <img src={bonus.imageUrl} alt={bonus.name} />}
+                  {bonus.imageUrl && (
+                    <img
+                      src={bonus.imageUrl}
+                      alt={bonus.name}
+                      style={{ width: size, height: size }}
+                    />
+                  )}
                   <span className="bonus-name">{bonus.name}</span>
+                  <div
+                    className="resize-handle"
+                    onMouseDown={(e) => handleResizeStart(e, placedBonus.id, size)}
+                  />
                 </div>
               </Draggable>
             );
