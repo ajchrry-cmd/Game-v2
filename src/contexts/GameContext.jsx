@@ -186,6 +186,7 @@ export const GameProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Error saving map:', error);
+      throw error; // Re-throw so caller can handle it
     }
   };
 

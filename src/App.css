@@ -7,6 +7,40 @@
   overflow: hidden;
 }
 
+.firebase-warning {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #c41e3a;
+  color: #fff;
+  padding: 1rem;
+  z-index: 9999;
+  text-align: center;
+  border-bottom: 3px solid #fff;
+}
+
+.firebase-warning strong {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.firebase-warning p {
+  margin: 0.5rem 0;
+}
+
+.firebase-warning ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.firebase-warning li {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
 .no-session {
   display: flex;
   flex-direction: column;

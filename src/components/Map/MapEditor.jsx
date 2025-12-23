@@ -22,10 +22,22 @@ function MapEditor({ map, onClose }) {
     width: 80,
     height: 80
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
-    await saveMap(mapData);
-    onClose();
+    setIsSaving(true);
+    try {
+      console.log('Saving map:', mapData);
+      await saveMap(mapData);
+      console.log('Map saved successfully');
+      alert('Map saved successfully!');
+      onClose();
+    } catch (error) {
+      console.error('Error saving map:', error);
+      alert(`Error saving map: ${error.message}\n\nPlease check:\n1. Firestore is enabled in Firebase Console\n2. Firestore rules are set\n3. Browser console for details`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleAddSquare = () => {
@@ -87,8 +99,10 @@ function MapEditor({ map, onClose }) {
             className="map-name-input"
           />
           <div className="header-actions">
-            <button className="primary" onClick={handleSave}>Save Map</button>
-            <button onClick={onClose}>Cancel</button>
+            <button className="primary" onClick={handleSave} disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Save Map'}
+            </button>
+            <button onClick={onClose} disabled={isSaving}>Cancel</button>
           </div>
         </div>
 
