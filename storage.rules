@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow read/write access to all files
+    // For a public game master app, this is acceptable
+    match /{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}
