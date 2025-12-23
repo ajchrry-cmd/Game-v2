@@ -215,6 +215,67 @@ export const GameProvider = ({ children }) => {
       querySnapshot.forEach((doc) => {
         loadedItems.push({ id: doc.id, ...doc.data() });
       });
+
+      // If no items exist, create some sample items
+      if (loadedItems.length === 0) {
+        const sampleItems = [
+          {
+            id: uuidv4(),
+            name: 'Health Potion',
+            description: 'Restores 50 HP',
+            price: 50,
+            imageUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=potion&backgroundColor=ff0000',
+            inShop: true
+          },
+          {
+            id: uuidv4(),
+            name: 'Iron Sword',
+            description: '+10 Attack damage',
+            price: 150,
+            imageUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=sword&backgroundColor=c0c0c0',
+            inShop: true
+          },
+          {
+            id: uuidv4(),
+            name: 'Wooden Shield',
+            description: '+5 Defense',
+            price: 100,
+            imageUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=shield&backgroundColor=8b4513',
+            inShop: true
+          },
+          {
+            id: uuidv4(),
+            name: 'Gold Coins',
+            description: 'Currency for trading',
+            price: 10,
+            imageUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=coins&backgroundColor=ffd700',
+            inShop: true
+          },
+          {
+            id: uuidv4(),
+            name: 'Magic Scroll',
+            description: 'Cast a random spell',
+            price: 200,
+            imageUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=scroll&backgroundColor=f5f5dc',
+            inShop: true
+          },
+          {
+            id: uuidv4(),
+            name: 'Leather Armor',
+            description: '+8 Defense',
+            price: 175,
+            imageUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=armor&backgroundColor=8b4513',
+            inShop: true
+          }
+        ];
+
+        // Save sample items to Firestore
+        for (const item of sampleItems) {
+          await setDoc(doc(db, 'items', item.id), item);
+          loadedItems.push(item);
+        }
+      }
+
       setItems(loadedItems);
     } catch (error) {
       console.error('Error loading items:', error);
