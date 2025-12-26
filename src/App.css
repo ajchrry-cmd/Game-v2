@@ -178,3 +178,62 @@ input:focus, select:focus, textarea:focus {
   justify-content: flex-end;
   margin-top: 1rem;
 }
+
+/* Mobile/Portrait Layout */
+@media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
+  .firebase-warning {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .firebase-warning strong {
+    font-size: 1rem;
+  }
+
+  .no-session h1 {
+    font-size: 2rem;
+  }
+
+  .no-session p {
+    font-size: 1.2rem;
+    padding: 0 1rem;
+  }
+
+  button {
+    padding: 0.6rem 1rem;
+    min-height: 44px;
+  }
+
+  input, select, textarea {
+    padding: 0.6rem;
+    font-size: 1rem;
+    min-height: 44px;
+  }
+
+  .modal {
+    padding: 1.5rem;
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+
+  .modal h2 {
+    font-size: 1.5rem;
+  }
+
+  .modal-close {
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 2rem;
+    padding: 0.5rem;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}

@@ -19,3 +19,15 @@
   font-size: 1.5rem;
   text-align: center;
 }
+
+/* Mobile/Portrait Layout */
+@media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
+  .scene-viewer {
+    touch-action: none;
+  }
+
+  .no-scene {
+    font-size: 1.2rem;
+    padding: 1rem;
+  }
+}

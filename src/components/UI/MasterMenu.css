@@ -103,3 +103,46 @@
   font-style: italic;
   margin: 0.5rem 0;
 }
+
+/* Mobile/Portrait Layout */
+@media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
+  .menu-toggle {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.75rem;
+    bottom: 1.5rem;
+    left: 1.5rem;
+  }
+
+  .menu-panel {
+    padding: 1.5rem;
+    max-height: 95vh;
+    width: 95vw;
+    max-width: none;
+  }
+
+  .menu-panel h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .menu-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .menu-section h3 {
+    font-size: 1.1rem;
+  }
+
+  .menu-section button {
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+    min-height: 48px; /* Better touch target */
+  }
+
+  .submenu button {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.75rem;
+    min-height: 44px;
+  }
+}

@@ -163,3 +163,72 @@
 .setup-help a:hover {
   color: #e4bf47;
 }
+
+/* Mobile/Portrait Layout */
+@media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
+  .setup-guide {
+    padding: 1rem;
+  }
+
+  .setup-content {
+    max-width: 100%;
+  }
+
+  .setup-guide h1 {
+    font-size: 1.75rem;
+  }
+
+  .setup-intro {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .setup-steps {
+    gap: 1.5rem;
+  }
+
+  .setup-step {
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .step-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .step-content p {
+    font-size: 0.95rem;
+  }
+
+  .step-content pre {
+    font-size: 0.85rem;
+    overflow-x: auto;
+  }
+
+  .step-content code {
+    font-size: 0.85rem;
+  }
+
+  .refresh-button {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .setup-help {
+    margin-top: 2rem;
+    padding: 1rem;
+  }
+
+  .setup-link {
+    display: block;
+    text-align: center;
+  }
+}

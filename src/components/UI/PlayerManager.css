@@ -133,3 +133,46 @@
 .inventory-items select {
   width: 100%;
 }
+
+/* Mobile/Portrait Layout */
+@media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
+  .player-form {
+    padding: 0.75rem;
+  }
+
+  .player-card {
+    padding: 0.75rem;
+  }
+
+  .player-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .player-stats {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .icon-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .icon-controls input[type="color"] {
+    width: 100%;
+    height: 48px;
+  }
+
+  .inventory-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .remove-item {
+    width: 100%;
+    height: 44px;
+  }
+}
