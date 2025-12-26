@@ -176,16 +176,24 @@ function MapScreen() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          style={{
-            backgroundColor: currentMap.backgroundColor || '#1a1a1a',
-            backgroundImage: mapBackground ? `url(${mapBackground})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transform: `translate(${mapTransform.x}px, ${mapTransform.y}px) scale(${mapTransform.scale})`,
-            transformOrigin: '0 0',
-            transition: isPanning || lastTouchDistance ? 'none' : 'transform 0.1s ease-out'
-          }}
         >
+          <div
+            className="map-content"
+            style={{
+              backgroundColor: currentMap.backgroundColor || '#1a1a1a',
+              backgroundImage: mapBackground ? `url(${mapBackground})` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              transform: `translate(${mapTransform.x}px, ${mapTransform.y}px) scale(${mapTransform.scale})`,
+              transformOrigin: '0 0',
+              transition: isPanning || lastTouchDistance ? 'none' : 'transform 0.1s ease-out',
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
+          >
           {/* Render map squares */}
           {currentMap.squares?.map(square => (
             <div
@@ -295,6 +303,7 @@ function MapScreen() {
               </Draggable>
             );
           })}
+          </div>
         </div>
       </div>
 

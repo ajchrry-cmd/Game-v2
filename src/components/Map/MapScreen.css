@@ -51,6 +51,14 @@
   height: 100%;
 }
 
+.map-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .no-map {
   display: flex;
   align-items: center;
