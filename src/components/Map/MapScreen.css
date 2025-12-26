@@ -351,6 +351,7 @@
 @media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
   .map-screen {
     flex-direction: column;
+    overflow: hidden; /* Prevent map from overlapping player panel */
   }
 
   .map-container {
@@ -358,6 +359,14 @@
     width: 100%;
     min-height: 400px;
     touch-action: none; /* Prevent default touch behaviors */
+    overflow: hidden; /* Clip at container but canvas can transform */
+    position: relative;
+  }
+
+  .map-canvas {
+    border: 3px solid #d4af37; /* Golden outline showing map boundaries */
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+    box-sizing: border-box;
   }
 
   .zoom-controls {
