@@ -44,9 +44,11 @@
 }
 
 .map-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  position: relative;
 }
 
 .no-map {
@@ -363,9 +365,16 @@
     position: relative;
   }
 
-  .map-canvas {
+  .map-canvas::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     border: 3px solid #d4af37; /* Golden outline showing map boundaries */
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+    box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.2);
+    pointer-events: none; /* Don't interfere with touch events */
     box-sizing: border-box;
   }
 
