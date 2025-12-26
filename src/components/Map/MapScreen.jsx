@@ -22,6 +22,10 @@ function MapScreen() {
 
   const [resizing, setResizing] = useState(null);
   const [selectedBonusId, setSelectedBonusId] = useState(null);
+  const [mapTransform, setMapTransform] = useState({ scale: 1, x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [lastTouchDistance, setLastTouchDistance] = useState(null);
 
   const currentMap = maps.find(m => m.id === currentMapId);
 
@@ -74,6 +78,60 @@ function MapScreen() {
     }
   }, [resizing]);
 
+  // Pan and Zoom handlers for mobile
+  const getTouchDistance = (touches) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      // Pinch zoom
+      const distance = getTouchDistance(e.touches);
+      setLastTouchDistance(distance);
+    } else if (e.touches.length === 1) {
+      // Pan
+      setIsPanning(true);
+      setPanStart({
+        x: e.touches[0].clientX - mapTransform.x,
+        y: e.touches[0].clientY - mapTransform.y
+      });
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2 && lastTouchDistance) {
+      // Pinch zoom
+      e.preventDefault();
+      const distance = getTouchDistance(e.touches);
+      const scaleDelta = distance / lastTouchDistance;
+      const newScale = Math.max(0.5, Math.min(3, mapTransform.scale * scaleDelta));
+
+      setMapTransform(prev => ({
+        ...prev,
+        scale: newScale
+      }));
+      setLastTouchDistance(distance);
+    } else if (e.touches.length === 1 && isPanning) {
+      // Pan
+      e.preventDefault();
+      const newX = e.touches[0].clientX - panStart.x;
+      const newY = e.touches[0].clientY - panStart.y;
+
+      setMapTransform(prev => ({
+        ...prev,
+        x: newX,
+        y: newY
+      }));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsPanning(false);
+    setLastTouchDistance(null);
+  };
+
   if (!currentMap) {
     return (
       <div className="map-screen">
@@ -84,17 +142,48 @@ function MapScreen() {
     );
   }
 
+  const handleZoomIn = () => {
+    setMapTransform(prev => ({
+      ...prev,
+      scale: Math.min(3, prev.scale * 1.2)
+    }));
+  };
+
+  const handleZoomOut = () => {
+    setMapTransform(prev => ({
+      ...prev,
+      scale: Math.max(0.5, prev.scale / 1.2)
+    }));
+  };
+
+  const handleResetZoom = () => {
+    setMapTransform({ scale: 1, x: 0, y: 0 });
+  };
+
   return (
     <div className="map-screen">
       <div className="map-container">
+        {/* Mobile zoom controls */}
+        <div className="zoom-controls">
+          <button onClick={handleZoomIn} title="Zoom In">+</button>
+          <button onClick={handleZoomOut} title="Zoom Out">−</button>
+          <button onClick={handleResetZoom} title="Reset">⟲</button>
+        </div>
+
         <div
           className="map-canvas"
           onClick={() => setSelectedBonusId(null)}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           style={{
             backgroundColor: currentMap.backgroundColor || '#1a1a1a',
             backgroundImage: mapBackground ? `url(${mapBackground})` : 'none',
             backgroundSize: 'cover',
-            backgroundPosition: 'center'
+            backgroundPosition: 'center',
+            transform: `translate(${mapTransform.x}px, ${mapTransform.y}px) scale(${mapTransform.scale})`,
+            transformOrigin: '0 0',
+            transition: isPanning || lastTouchDistance ? 'none' : 'transform 0.1s ease-out'
           }}
         >
           {/* Render map squares */}
