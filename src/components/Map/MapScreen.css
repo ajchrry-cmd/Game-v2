@@ -314,3 +314,83 @@
   text-align: center;
   font-weight: 500;
 }
+
+/* Mobile/Portrait Layout */
+@media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
+  .map-screen {
+    flex-direction: column;
+  }
+
+  .map-container {
+    flex: 0 0 65vh; /* Map takes 65% of viewport height */
+    width: 100%;
+    min-height: 400px;
+  }
+
+  .player-panel {
+    width: 100%;
+    flex: 1;
+    min-height: 200px;
+    max-height: 35vh;
+    border-left: none;
+    border-top: 2px solid #444;
+    padding: 1rem;
+  }
+
+  .player-panel h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .player-info {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .player-info h3 {
+    font-size: 1.1rem;
+  }
+
+  .player-stats {
+    gap: 0.5rem;
+  }
+
+  .stat {
+    padding: 0.4rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .inventory-grid {
+    gap: 0.4rem;
+  }
+
+  .bonus-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+
+  .bonus-section h2 {
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .bonus-grid {
+    gap: 0.5rem;
+  }
+
+  .bonus-card {
+    padding: 0.5rem;
+  }
+
+  .bonus-card img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .bonus-label {
+    font-size: 0.75rem;
+  }
+}
