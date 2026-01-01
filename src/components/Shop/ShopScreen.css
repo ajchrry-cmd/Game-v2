@@ -27,12 +27,19 @@
   overflow: hidden;
   border: 2px solid #444;
   transition: all 0.3s;
+  cursor: pointer;
 }
 
 .shop-item:hover {
   border-color: #d4af37;
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.shop-item.selected {
+  border-color: #d4af37;
+  border-width: 3px;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
 }
 
 .item-image {
@@ -73,6 +80,50 @@
   font-size: 1rem;
   line-height: 1.5;
   margin: 0;
+  margin-bottom: 1rem;
+}
+
+.give-item-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #444;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.give-item-section label {
+  color: #d4af37;
+  font-size: 0.95rem;
+  font-weight: bold;
+}
+
+.give-item-section select {
+  width: 100%;
+  padding: 0.6rem;
+  background: #1a1a1a;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.give-item-section select:focus {
+  outline: none;
+  border-color: #d4af37;
+}
+
+.give-button {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.give-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .no-items {
@@ -122,5 +173,15 @@
   .no-items {
     font-size: 1.2rem;
     padding: 2rem 1rem;
+  }
+
+  .give-item-section select {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .give-button {
+    min-height: 48px;
+    font-size: 1rem;
   }
 }
