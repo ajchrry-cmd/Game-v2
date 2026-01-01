@@ -137,6 +137,19 @@
   cursor: grabbing;
 }
 
+.layer-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.layer-controls button {
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  min-height: 40px;
+}
+
 /* Mobile/Portrait Layout */
 @media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
   .map-editor {

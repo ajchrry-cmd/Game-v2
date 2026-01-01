@@ -138,6 +138,56 @@ function MapEditor({ map, onClose }) {
     }
   };
 
+  const bringToFront = (squareId) => {
+    setMapData(prevMapData => {
+      const index = prevMapData.squares.findIndex(s => s.id === squareId);
+      if (index === -1 || index === prevMapData.squares.length - 1) return prevMapData;
+
+      const newSquares = [...prevMapData.squares];
+      const [square] = newSquares.splice(index, 1);
+      newSquares.push(square);
+
+      return { ...prevMapData, squares: newSquares };
+    });
+  };
+
+  const sendToBack = (squareId) => {
+    setMapData(prevMapData => {
+      const index = prevMapData.squares.findIndex(s => s.id === squareId);
+      if (index === -1 || index === 0) return prevMapData;
+
+      const newSquares = [...prevMapData.squares];
+      const [square] = newSquares.splice(index, 1);
+      newSquares.unshift(square);
+
+      return { ...prevMapData, squares: newSquares };
+    });
+  };
+
+  const bringForward = (squareId) => {
+    setMapData(prevMapData => {
+      const index = prevMapData.squares.findIndex(s => s.id === squareId);
+      if (index === -1 || index === prevMapData.squares.length - 1) return prevMapData;
+
+      const newSquares = [...prevMapData.squares];
+      [newSquares[index], newSquares[index + 1]] = [newSquares[index + 1], newSquares[index]];
+
+      return { ...prevMapData, squares: newSquares };
+    });
+  };
+
+  const sendBackward = (squareId) => {
+    setMapData(prevMapData => {
+      const index = prevMapData.squares.findIndex(s => s.id === squareId);
+      if (index === -1 || index === 0) return prevMapData;
+
+      const newSquares = [...prevMapData.squares];
+      [newSquares[index], newSquares[index - 1]] = [newSquares[index - 1], newSquares[index]];
+
+      return { ...prevMapData, squares: newSquares };
+    });
+  };
+
   const handleDrag = (squareId, e, data) => {
     handleUpdateSquare(squareId, {
       position: { x: data.x, y: data.y }
@@ -593,6 +643,23 @@ function MapEditor({ map, onClose }) {
                         }}
                       />
                       <span>{selectedSquare.rotation || 0}°</span>
+                    </div>
+                    <div className="form-group">
+                      <label>Layer Order</label>
+                      <div className="layer-controls">
+                        <button onClick={() => bringToFront(selectedSquare.id)} title="Bring to Front">
+                          ⬆⬆
+                        </button>
+                        <button onClick={() => bringForward(selectedSquare.id)} title="Bring Forward">
+                          ⬆
+                        </button>
+                        <button onClick={() => sendBackward(selectedSquare.id)} title="Send Backward">
+                          ⬇
+                        </button>
+                        <button onClick={() => sendToBack(selectedSquare.id)} title="Send to Back">
+                          ⬇⬇
+                        </button>
+                      </div>
                     </div>
                     <button className="danger" onClick={() => handleDeleteSquare(selectedSquare.id)}>
                       Delete Square
