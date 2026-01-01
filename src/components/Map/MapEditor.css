@@ -94,19 +94,15 @@
 .editor-square {
   position: absolute;
   cursor: move;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid rgba(255, 255, 255, 0.3);
   transition: border-color 0.2s;
   user-select: none;
 }
 
-.editor-square:hover {
+.editor-square:hover > div {
   border-color: rgba(255, 255, 255, 0.6);
 }
 
-.editor-square.selected {
+.editor-square.selected > div {
   border-color: #d4af37;
   border-width: 3px;
 }

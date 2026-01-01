@@ -650,21 +650,32 @@ function MapEditor({ map, onClose }) {
                       style={{
                         width: square.size.width,
                         height: square.size.height,
-                        backgroundColor: square.color,
-                        borderRadius: square.shape === 'circle' ? '50%' : square.shape === 'hexagon' ? '10%' : '0',
-                        transform: `rotate(${square.rotation || 0}deg)`,
-                        transformOrigin: square.shape === 'line' ? '0 50%' : 'center',
-                        clipPath: square.shape === 'hexagon'
-                          ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-                          : square.shape === 'triangle'
-                          ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
-                          : 'none',
                         pointerEvents: mode === 'draw' ? 'none' : 'auto',
-                        zIndex: 5,
-                        border: square.shape === 'line' ? 'none' : '2px solid rgba(255, 255, 255, 0.3)'
+                        zIndex: 5
                       }}
                     >
-                      {square.text && square.shape !== 'line' && <span>{square.text}</span>}
+                      {/* Inner wrapper for rotation */}
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          backgroundColor: square.color,
+                          borderRadius: square.shape === 'circle' ? '50%' : square.shape === 'hexagon' ? '10%' : '0',
+                          transform: `rotate(${square.rotation || 0}deg)`,
+                          transformOrigin: square.shape === 'line' ? '0 50%' : 'center',
+                          clipPath: square.shape === 'hexagon'
+                            ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                            : square.shape === 'triangle'
+                            ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
+                            : 'none',
+                          border: square.shape === 'line' ? 'none' : '2px solid rgba(255, 255, 255, 0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        {square.text && square.shape !== 'line' && <span>{square.text}</span>}
+                      </div>
                       {isSelected && mode === 'shapes' && (
                         <>
                           {/* Resize handle */}
