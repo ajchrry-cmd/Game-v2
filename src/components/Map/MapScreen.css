@@ -74,6 +74,12 @@
   pointer-events: none;
 }
 
+.map-line {
+  display: block !important;
+  align-items: unset !important;
+  justify-content: unset !important;
+}
+
 .player-token {
   position: absolute;
   cursor: move;

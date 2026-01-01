@@ -198,7 +198,7 @@ function MapScreen() {
           {currentMap.squares?.map(square => (
             <div
               key={square.id}
-              className="map-square"
+              className={`map-square ${square.shape === 'line' ? 'map-line' : ''}`}
               style={{
                 position: 'absolute',
                 left: square.position.x,
@@ -208,10 +208,11 @@ function MapScreen() {
                 backgroundColor: square.color,
                 borderRadius: square.shape === 'circle' ? '50%' : square.shape === 'hexagon' ? '10%' : '0',
                 transform: `rotate(${square.rotation || 0}deg)`,
+                transformOrigin: square.shape === 'line' ? '0 50%' : 'center',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '2px solid rgba(255, 255, 255, 0.3)',
+                border: square.shape === 'line' ? 'none' : '2px solid rgba(255, 255, 255, 0.3)',
                 clipPath: square.shape === 'hexagon'
                   ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
                   : square.shape === 'triangle'
@@ -219,7 +220,7 @@ function MapScreen() {
                   : 'none'
               }}
             >
-              {square.text && (
+              {square.text && square.shape !== 'line' && (
                 <span style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 'bold' }}>
                   {square.text}
                 </span>

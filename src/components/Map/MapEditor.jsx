@@ -21,7 +21,9 @@ function MapEditor({ map, onClose }) {
     color: '#d4af37',
     text: '',
     width: 80,
-    height: 80
+    height: 80,
+    lineLength: 100,
+    lineThickness: 3
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -99,10 +101,13 @@ function MapEditor({ map, onClose }) {
       id: uuidv4(),
       shape: newSquare.shape,
       position: { x: 200, y: 200 },
-      size: { width: newSquare.width, height: newSquare.height },
+      size: newSquare.shape === 'line'
+        ? { width: newSquare.lineLength, height: newSquare.lineThickness }
+        : { width: newSquare.width, height: newSquare.height },
       color: newSquare.color,
-      text: newSquare.text,
-      rotation: 0
+      text: newSquare.shape === 'line' ? '' : newSquare.text,
+      rotation: 0,
+      lineThickness: newSquare.shape === 'line' ? newSquare.lineThickness : undefined
     };
     setMapData({
       ...mapData,
@@ -321,7 +326,7 @@ function MapEditor({ map, onClose }) {
                   )}
                 </div>
 
-                <h3>Add Square</h3>
+                <h3>Add Shape</h3>
                 <div className="form-group">
                   <label>Shape</label>
                   <select
@@ -332,6 +337,7 @@ function MapEditor({ map, onClose }) {
                     <option value="circle">Circle</option>
                     <option value="hexagon">Hexagon</option>
                     <option value="triangle">Triangle</option>
+                    <option value="line">Line</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -342,23 +348,49 @@ function MapEditor({ map, onClose }) {
                     onChange={(e) => setNewSquare({ ...newSquare, color: e.target.value })}
                   />
                 </div>
-                <div className="form-group">
-                  <label>Text</label>
-                  <input
-                    type="text"
-                    value={newSquare.text}
-                    onChange={(e) => setNewSquare({ ...newSquare, text: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Size</label>
-                  <input
-                    type="number"
-                    value={newSquare.width}
-                    onChange={(e) => setNewSquare({ ...newSquare, width: parseInt(e.target.value) || 80 })}
-                    placeholder="Width"
-                  />
-                </div>
+                {newSquare.shape === 'line' ? (
+                  <>
+                    <div className="form-group">
+                      <label>Length</label>
+                      <input
+                        type="number"
+                        value={newSquare.lineLength}
+                        onChange={(e) => setNewSquare({ ...newSquare, lineLength: parseInt(e.target.value) || 100 })}
+                        min="10"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Thickness</label>
+                      <input
+                        type="number"
+                        value={newSquare.lineThickness}
+                        onChange={(e) => setNewSquare({ ...newSquare, lineThickness: parseInt(e.target.value) || 3 })}
+                        min="1"
+                        max="20"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="form-group">
+                      <label>Text</label>
+                      <input
+                        type="text"
+                        value={newSquare.text}
+                        onChange={(e) => setNewSquare({ ...newSquare, text: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Size</label>
+                      <input
+                        type="number"
+                        value={newSquare.width}
+                        onChange={(e) => setNewSquare({ ...newSquare, width: parseInt(e.target.value) || 80 })}
+                        placeholder="Width"
+                      />
+                    </div>
+                  </>
+                )}
                 <button className="primary" onClick={handleAddSquare}>Add to Map</button>
 
                 {selectedSquare && (
@@ -378,6 +410,7 @@ function MapEditor({ map, onClose }) {
                         <option value="circle">Circle</option>
                         <option value="hexagon">Hexagon</option>
                         <option value="triangle">Triangle</option>
+                        <option value="line">Line</option>
                       </select>
                     </div>
                     <div className="form-group">
@@ -392,46 +425,82 @@ function MapEditor({ map, onClose }) {
                         }}
                       />
                     </div>
-                    <div className="form-group">
-                      <label>Text</label>
-                      <input
-                        type="text"
-                        value={selectedSquare.text}
-                        onChange={(e) => {
-                          const updated = { ...selectedSquare, text: e.target.value };
-                          handleUpdateSquare(selectedSquare.id, { text: e.target.value });
-                          setSelectedSquare(updated);
-                        }}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Width</label>
-                      <input
-                        type="number"
-                        value={selectedSquare.size.width}
-                        onChange={(e) => {
-                          const newWidth = parseInt(e.target.value) || 30;
-                          const updated = { ...selectedSquare, size: { ...selectedSquare.size, width: newWidth } };
-                          handleUpdateSquare(selectedSquare.id, { size: { ...selectedSquare.size, width: newWidth } });
-                          setSelectedSquare(updated);
-                        }}
-                        min="30"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Height</label>
-                      <input
-                        type="number"
-                        value={selectedSquare.size.height}
-                        onChange={(e) => {
-                          const newHeight = parseInt(e.target.value) || 30;
-                          const updated = { ...selectedSquare, size: { ...selectedSquare.size, height: newHeight } };
-                          handleUpdateSquare(selectedSquare.id, { size: { ...selectedSquare.size, height: newHeight } });
-                          setSelectedSquare(updated);
-                        }}
-                        min="30"
-                      />
-                    </div>
+                    {selectedSquare.shape === 'line' ? (
+                      <>
+                        <div className="form-group">
+                          <label>Length</label>
+                          <input
+                            type="number"
+                            value={selectedSquare.size.width}
+                            onChange={(e) => {
+                              const newLength = parseInt(e.target.value) || 10;
+                              const updated = { ...selectedSquare, size: { ...selectedSquare.size, width: newLength } };
+                              handleUpdateSquare(selectedSquare.id, { size: { ...selectedSquare.size, width: newLength } });
+                              setSelectedSquare(updated);
+                            }}
+                            min="10"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Thickness</label>
+                          <input
+                            type="number"
+                            value={selectedSquare.size.height}
+                            onChange={(e) => {
+                              const newThickness = parseInt(e.target.value) || 1;
+                              const updated = { ...selectedSquare, size: { ...selectedSquare.size, height: newThickness } };
+                              handleUpdateSquare(selectedSquare.id, { size: { ...selectedSquare.size, height: newThickness } });
+                              setSelectedSquare(updated);
+                            }}
+                            min="1"
+                            max="20"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="form-group">
+                          <label>Text</label>
+                          <input
+                            type="text"
+                            value={selectedSquare.text || ''}
+                            onChange={(e) => {
+                              const updated = { ...selectedSquare, text: e.target.value };
+                              handleUpdateSquare(selectedSquare.id, { text: e.target.value });
+                              setSelectedSquare(updated);
+                            }}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Width</label>
+                          <input
+                            type="number"
+                            value={selectedSquare.size.width}
+                            onChange={(e) => {
+                              const newWidth = parseInt(e.target.value) || 30;
+                              const updated = { ...selectedSquare, size: { ...selectedSquare.size, width: newWidth } };
+                              handleUpdateSquare(selectedSquare.id, { size: { ...selectedSquare.size, width: newWidth } });
+                              setSelectedSquare(updated);
+                            }}
+                            min="30"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Height</label>
+                          <input
+                            type="number"
+                            value={selectedSquare.size.height}
+                            onChange={(e) => {
+                              const newHeight = parseInt(e.target.value) || 30;
+                              const updated = { ...selectedSquare, size: { ...selectedSquare.size, height: newHeight } };
+                              handleUpdateSquare(selectedSquare.id, { size: { ...selectedSquare.size, height: newHeight } });
+                              setSelectedSquare(updated);
+                            }}
+                            min="30"
+                          />
+                        </div>
+                      </>
+                    )}
                     <div className="form-group">
                       <label>Rotation</label>
                       <input
@@ -498,7 +567,7 @@ function MapEditor({ map, onClose }) {
                     disabled={mode === 'draw' || resizing !== null}
                   >
                     <div
-                      className={`editor-square ${isSelected ? 'selected' : ''}`}
+                      className={`editor-square ${isSelected ? 'selected' : ''} ${square.shape === 'line' ? 'editor-line' : ''}`}
                       onClick={() => mode === 'shapes' && setSelectedSquare(square)}
                       style={{
                         width: square.size.width,
@@ -506,23 +575,25 @@ function MapEditor({ map, onClose }) {
                         backgroundColor: square.color,
                         borderRadius: square.shape === 'circle' ? '50%' : square.shape === 'hexagon' ? '10%' : '0',
                         transform: `rotate(${square.rotation || 0}deg)`,
+                        transformOrigin: square.shape === 'line' ? '0 50%' : 'center',
                         clipPath: square.shape === 'hexagon'
                           ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
                           : square.shape === 'triangle'
                           ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
                           : 'none',
                         pointerEvents: mode === 'draw' ? 'none' : 'auto',
-                        zIndex: 5
+                        zIndex: 5,
+                        border: square.shape === 'line' ? 'none' : '2px solid rgba(255, 255, 255, 0.3)'
                       }}
                     >
-                      {square.text && <span>{square.text}</span>}
+                      {square.text && square.shape !== 'line' && <span>{square.text}</span>}
                       {isSelected && mode === 'shapes' && (
                         <div
                           className="shape-resize-handle"
                           onMouseDown={(e) => handleResizeStart(e, square.id, square.size.width, square.size.height)}
                           style={{
                             position: 'absolute',
-                            bottom: '-8px',
+                            bottom: square.shape === 'line' ? '50%' : '-8px',
                             right: '-8px',
                             width: '20px',
                             height: '20px',
@@ -530,7 +601,8 @@ function MapEditor({ map, onClose }) {
                             border: '2px solid #fff',
                             borderRadius: '50%',
                             cursor: 'nwse-resize',
-                            zIndex: 10
+                            zIndex: 10,
+                            transform: square.shape === 'line' ? 'translateY(50%)' : 'none'
                           }}
                         />
                       )}
