@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Draggable from 'react-draggable';
 import { useGame } from '../../contexts/GameContext';
 import { v4 as uuidv4 } from 'uuid';
@@ -109,26 +109,26 @@ function MapEditor({ map, onClose }) {
       rotation: 0,
       lineThickness: newSquare.shape === 'line' ? newSquare.lineThickness : undefined
     };
-    setMapData({
-      ...mapData,
-      squares: [...mapData.squares, square]
-    });
+    setMapData(prevMapData => ({
+      ...prevMapData,
+      squares: [...prevMapData.squares, square]
+    }));
   };
 
   const handleUpdateSquare = (squareId, updates) => {
-    setMapData({
-      ...mapData,
-      squares: mapData.squares.map(s =>
+    setMapData(prevMapData => ({
+      ...prevMapData,
+      squares: prevMapData.squares.map(s =>
         s.id === squareId ? { ...s, ...updates } : s
       )
-    });
+    }));
   };
 
   const handleDeleteSquare = (squareId) => {
-    setMapData({
-      ...mapData,
-      squares: mapData.squares.filter(s => s.id !== squareId)
-    });
+    setMapData(prevMapData => ({
+      ...prevMapData,
+      squares: prevMapData.squares.filter(s => s.id !== squareId)
+    }));
     if (selectedSquare?.id === squareId) {
       setSelectedSquare(null);
     }
@@ -202,7 +202,7 @@ function MapEditor({ map, onClose }) {
     });
   };
 
-  const handleResizeMove = (e) => {
+  const handleResizeMove = useCallback((e) => {
     if (!resizing) return;
 
     const deltaX = e.clientX - resizeStart.x;
@@ -210,14 +210,25 @@ function MapEditor({ map, onClose }) {
     const newWidth = Math.max(30, resizeStart.width + deltaX);
     const newHeight = Math.max(30, resizeStart.height + deltaY);
 
-    handleUpdateSquare(resizing, {
-      size: { width: newWidth, height: newHeight }
-    });
-  };
+    setMapData(prevMapData => ({
+      ...prevMapData,
+      squares: prevMapData.squares.map(s =>
+        s.id === resizing ? { ...s, size: { width: newWidth, height: newHeight } } : s
+      )
+    }));
 
-  const handleResizeEnd = () => {
+    // Update selectedSquare if it's the one being resized
+    setSelectedSquare(prevSelected => {
+      if (prevSelected?.id === resizing) {
+        return { ...prevSelected, size: { width: newWidth, height: newHeight } };
+      }
+      return prevSelected;
+    });
+  }, [resizing, resizeStart]);
+
+  const handleResizeEnd = useCallback(() => {
     setResizing(null);
-  };
+  }, []);
 
   // Add global mouse event listeners for resize
   useEffect(() => {
@@ -229,7 +240,7 @@ function MapEditor({ map, onClose }) {
         window.removeEventListener('mouseup', handleResizeEnd);
       };
     }
-  }, [resizing, resizeStart]);
+  }, [resizing, handleResizeMove, handleResizeEnd]);
 
   return (
     <div className="modal-overlay">
