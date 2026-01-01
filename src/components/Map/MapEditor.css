@@ -132,6 +132,15 @@
   transform: scale(1.2);
 }
 
+.shape-rotate-handle {
+  transition: transform 0.2s;
+}
+
+.shape-rotate-handle:hover {
+  transform: translateX(-50%) scale(1.2);
+  cursor: grabbing;
+}
+
 /* Mobile/Portrait Layout */
 @media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
   .map-editor {

@@ -39,6 +39,10 @@ function MapEditor({ map, onClose }) {
   const [resizing, setResizing] = useState(null);
   const [resizeStart, setResizeStart] = useState({ width: 0, height: 0, x: 0, y: 0 });
 
+  // Rotation state
+  const [rotating, setRotating] = useState(null);
+  const [rotateStart, setRotateStart] = useState({ angle: 0, centerX: 0, centerY: 0 });
+
   // Initialize canvas
   useEffect(() => {
     if (canvasRef.current) {
@@ -241,6 +245,69 @@ function MapEditor({ map, onClose }) {
       };
     }
   }, [resizing, handleResizeMove, handleResizeEnd]);
+
+  // Rotation functions
+  const handleRotateStart = (e, squareId, position, size, currentRotation) => {
+    e.stopPropagation();
+    setRotating(squareId);
+
+    // Get canvas container position
+    const canvas = document.querySelector('.editor-canvas');
+    const rect = canvas.getBoundingClientRect();
+
+    // Calculate center of the shape relative to viewport
+    const centerX = rect.left + position.x + size.width / 2;
+    const centerY = rect.top + position.y + size.height / 2;
+
+    setRotateStart({
+      angle: currentRotation || 0,
+      centerX,
+      centerY
+    });
+  };
+
+  const handleRotateMove = useCallback((e) => {
+    if (!rotating) return;
+
+    // Calculate angle from center to mouse position
+    const dx = e.clientX - rotateStart.centerX;
+    const dy = e.clientY - rotateStart.centerY;
+    let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+    // Normalize angle to 0-360
+    angle = (angle + 90 + 360) % 360;
+
+    setMapData(prevMapData => ({
+      ...prevMapData,
+      squares: prevMapData.squares.map(s =>
+        s.id === rotating ? { ...s, rotation: Math.round(angle) } : s
+      )
+    }));
+
+    // Update selectedSquare if it's the one being rotated
+    setSelectedSquare(prevSelected => {
+      if (prevSelected?.id === rotating) {
+        return { ...prevSelected, rotation: Math.round(angle) };
+      }
+      return prevSelected;
+    });
+  }, [rotating, rotateStart]);
+
+  const handleRotateEnd = useCallback(() => {
+    setRotating(null);
+  }, []);
+
+  // Add global mouse event listeners for rotation
+  useEffect(() => {
+    if (rotating) {
+      window.addEventListener('mousemove', handleRotateMove);
+      window.addEventListener('mouseup', handleRotateEnd);
+      return () => {
+        window.removeEventListener('mousemove', handleRotateMove);
+        window.removeEventListener('mouseup', handleRotateEnd);
+      };
+    }
+  }, [rotating, handleRotateMove, handleRotateEnd]);
 
   return (
     <div className="modal-overlay">
@@ -575,7 +642,7 @@ function MapEditor({ map, onClose }) {
                     key={square.id}
                     position={square.position}
                     onDrag={(e, data) => handleDrag(square.id, e, data)}
-                    disabled={mode === 'draw' || resizing !== null}
+                    disabled={mode === 'draw' || resizing !== null || rotating !== null}
                   >
                     <div
                       className={`editor-square ${isSelected ? 'selected' : ''} ${square.shape === 'line' ? 'editor-line' : ''}`}
@@ -599,23 +666,44 @@ function MapEditor({ map, onClose }) {
                     >
                       {square.text && square.shape !== 'line' && <span>{square.text}</span>}
                       {isSelected && mode === 'shapes' && (
-                        <div
-                          className="shape-resize-handle"
-                          onMouseDown={(e) => handleResizeStart(e, square.id, square.size.width, square.size.height)}
-                          style={{
-                            position: 'absolute',
-                            bottom: square.shape === 'line' ? '50%' : '-8px',
-                            right: '-8px',
-                            width: '20px',
-                            height: '20px',
-                            background: '#d4af37',
-                            border: '2px solid #fff',
-                            borderRadius: '50%',
-                            cursor: 'nwse-resize',
-                            zIndex: 10,
-                            transform: square.shape === 'line' ? 'translateY(50%)' : 'none'
-                          }}
-                        />
+                        <>
+                          {/* Resize handle */}
+                          <div
+                            className="shape-resize-handle"
+                            onMouseDown={(e) => handleResizeStart(e, square.id, square.size.width, square.size.height)}
+                            style={{
+                              position: 'absolute',
+                              bottom: square.shape === 'line' ? '50%' : '-8px',
+                              right: '-8px',
+                              width: '20px',
+                              height: '20px',
+                              background: '#d4af37',
+                              border: '2px solid #fff',
+                              borderRadius: '50%',
+                              cursor: 'nwse-resize',
+                              zIndex: 10,
+                              transform: square.shape === 'line' ? 'translateY(50%)' : 'none'
+                            }}
+                          />
+                          {/* Rotation handle */}
+                          <div
+                            className="shape-rotate-handle"
+                            onMouseDown={(e) => handleRotateStart(e, square.id, square.position, square.size, square.rotation)}
+                            style={{
+                              position: 'absolute',
+                              top: '-8px',
+                              left: '50%',
+                              width: '20px',
+                              height: '20px',
+                              background: '#47d4af',
+                              border: '2px solid #fff',
+                              borderRadius: '50%',
+                              cursor: 'grab',
+                              zIndex: 10,
+                              transform: 'translateX(-50%)'
+                            }}
+                          />
+                        </>
                       )}
                     </div>
                   </Draggable>
