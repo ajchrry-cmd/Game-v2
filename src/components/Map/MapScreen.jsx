@@ -227,6 +227,23 @@ function MapScreen() {
             </div>
           ))}
 
+          {/* Render drawing layer */}
+          {currentMap.drawingData && (
+            <img
+              src={currentMap.drawingData}
+              alt="Map drawing"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+                objectFit: 'fill'
+              }}
+            />
+          )}
+
           {/* Render player tokens */}
           {players.map(player => {
             const position = playerPositions[player.id] || player.position || { x: 100, y: 100 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Draggable from 'react-draggable';
 import { useGame } from '../../contexts/GameContext';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,7 +11,8 @@ function MapEditor({ map, onClose }) {
       name: 'New Map',
       squares: [],
       backgroundColor: '#1a1a1a',
-      backgroundImage: null
+      backgroundImage: null,
+      drawingData: null
     }
   );
   const [selectedSquare, setSelectedSquare] = useState(null);
@@ -24,17 +25,57 @@ function MapEditor({ map, onClose }) {
   });
   const [isSaving, setIsSaving] = useState(false);
 
+  // Drawing state
+  const [mode, setMode] = useState('shapes'); // 'shapes' or 'draw'
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [brushColor, setBrushColor] = useState('#ff0000');
+  const [brushSize, setBrushSize] = useState(5);
+  const canvasRef = useRef(null);
+  const [context, setContext] = useState(null);
+
+  // Initialize canvas
+  useEffect(() => {
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      setContext(ctx);
+
+      // Set canvas size to match container
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+
+      // Load existing drawing if available
+      if (mapData.drawingData) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = mapData.drawingData;
+      }
+    }
+  }, [canvasRef.current]);
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      console.log('Saving map:', mapData);
+      // Save canvas drawing as data URL
+      let drawingData = null;
+      if (canvasRef.current) {
+        drawingData = canvasRef.current.toDataURL();
+      }
 
-      // Add timeout to prevent infinite hang
+      const mapToSave = {
+        ...mapData,
+        drawingData
+      };
+
+      console.log('Saving map:', mapToSave);
+
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Operation timed out. Firestore may not be enabled.')), 10000)
       );
 
-      await Promise.race([saveMap(mapData), timeoutPromise]);
+      await Promise.race([saveMap(mapToSave), timeoutPromise]);
 
       console.log('Map saved successfully');
       alert('Map saved successfully!');
@@ -97,6 +138,49 @@ function MapEditor({ map, onClose }) {
     }
   };
 
+  // Drawing functions
+  const startDrawing = (e) => {
+    if (mode !== 'draw' || !context) return;
+
+    setIsDrawing(true);
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    context.beginPath();
+    context.moveTo(x, y);
+    context.strokeStyle = brushColor;
+    context.lineWidth = brushSize;
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+  };
+
+  const draw = (e) => {
+    if (!isDrawing || mode !== 'draw' || !context) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    context.lineTo(x, y);
+    context.stroke();
+  };
+
+  const stopDrawing = () => {
+    if (isDrawing) {
+      setIsDrawing(false);
+      if (context) {
+        context.closePath();
+      }
+    }
+  };
+
+  const clearDrawing = () => {
+    if (context && canvasRef.current) {
+      context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    }
+  };
+
   return (
     <div className="modal-overlay">
       <div className="map-editor" onClick={(e) => e.stopPropagation()}>
@@ -117,88 +201,87 @@ function MapEditor({ map, onClose }) {
 
         <div className="editor-content">
           <div className="editor-sidebar">
-            <h3>Map Settings</h3>
-            <div className="form-group">
-              <label>Background Color</label>
-              <input
-                type="color"
-                value={mapData.backgroundColor}
-                onChange={(e) => setMapData({ ...mapData, backgroundColor: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>Background Image URL</label>
-              <input
-                type="text"
-                value={mapData.backgroundImage || ''}
-                onChange={(e) => setMapData({ ...mapData, backgroundImage: e.target.value })}
-                placeholder="https://example.com/background.png"
-              />
-              <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>Or upload a file:</p>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleBackgroundUpload(e.target.files[0])}
-              />
-              {mapData.backgroundImage && (
-                <button onClick={() => setMapData({ ...mapData, backgroundImage: null })}>
-                  Remove Image
-                </button>
-              )}
-            </div>
-
-            <h3>Add Square</h3>
-            <div className="form-group">
-              <label>Shape</label>
-              <select
-                value={newSquare.shape}
-                onChange={(e) => setNewSquare({ ...newSquare, shape: e.target.value })}
+            <h3>Mode</h3>
+            <div className="mode-selector">
+              <button
+                className={mode === 'shapes' ? 'primary' : ''}
+                onClick={() => setMode('shapes')}
               >
-                <option value="square">Square</option>
-                <option value="circle">Circle</option>
-                <option value="hexagon">Hexagon</option>
-                <option value="triangle">Triangle</option>
-              </select>
+                Shapes
+              </button>
+              <button
+                className={mode === 'draw' ? 'primary' : ''}
+                onClick={() => setMode('draw')}
+              >
+                Draw
+              </button>
             </div>
-            <div className="form-group">
-              <label>Color</label>
-              <input
-                type="color"
-                value={newSquare.color}
-                onChange={(e) => setNewSquare({ ...newSquare, color: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>Text</label>
-              <input
-                type="text"
-                value={newSquare.text}
-                onChange={(e) => setNewSquare({ ...newSquare, text: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>Size</label>
-              <input
-                type="number"
-                value={newSquare.width}
-                onChange={(e) => setNewSquare({ ...newSquare, width: parseInt(e.target.value) || 80 })}
-                placeholder="Width"
-              />
-            </div>
-            <button className="primary" onClick={handleAddSquare}>Add to Map</button>
 
-            {selectedSquare && (
+            {mode === 'draw' && (
               <>
-                <h3>Edit Selected</h3>
+                <h3>Drawing Tools</h3>
+                <div className="form-group">
+                  <label>Brush Color</label>
+                  <input
+                    type="color"
+                    value={brushColor}
+                    onChange={(e) => setBrushColor(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Brush Size: {brushSize}px</label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="50"
+                    value={brushSize}
+                    onChange={(e) => setBrushSize(parseInt(e.target.value))}
+                  />
+                </div>
+                <button className="danger" onClick={clearDrawing}>
+                  Clear Drawing
+                </button>
+              </>
+            )}
+
+            {mode === 'shapes' && (
+              <>
+                <h3>Map Settings</h3>
+                <div className="form-group">
+                  <label>Background Color</label>
+                  <input
+                    type="color"
+                    value={mapData.backgroundColor}
+                    onChange={(e) => setMapData({ ...mapData, backgroundColor: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Background Image URL</label>
+                  <input
+                    type="text"
+                    value={mapData.backgroundImage || ''}
+                    onChange={(e) => setMapData({ ...mapData, backgroundImage: e.target.value })}
+                    placeholder="https://example.com/background.png"
+                  />
+                  <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>Or upload a file:</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleBackgroundUpload(e.target.files[0])}
+                  />
+                  {mapData.backgroundImage && (
+                    <button onClick={() => setMapData({ ...mapData, backgroundImage: null })}>
+                      Remove Image
+                    </button>
+                  )}
+                </div>
+
+                <h3>Add Square</h3>
                 <div className="form-group">
                   <label>Shape</label>
                   <select
-                    value={selectedSquare.shape}
-                    onChange={(e) => {
-                      const updated = { ...selectedSquare, shape: e.target.value };
-                      handleUpdateSquare(selectedSquare.id, { shape: e.target.value });
-                      setSelectedSquare(updated);
-                    }}
+                    value={newSquare.shape}
+                    onChange={(e) => setNewSquare({ ...newSquare, shape: e.target.value })}
                   >
                     <option value="square">Square</option>
                     <option value="circle">Circle</option>
@@ -210,44 +293,92 @@ function MapEditor({ map, onClose }) {
                   <label>Color</label>
                   <input
                     type="color"
-                    value={selectedSquare.color}
-                    onChange={(e) => {
-                      const updated = { ...selectedSquare, color: e.target.value };
-                      handleUpdateSquare(selectedSquare.id, { color: e.target.value });
-                      setSelectedSquare(updated);
-                    }}
+                    value={newSquare.color}
+                    onChange={(e) => setNewSquare({ ...newSquare, color: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
                   <label>Text</label>
                   <input
                     type="text"
-                    value={selectedSquare.text}
-                    onChange={(e) => {
-                      const updated = { ...selectedSquare, text: e.target.value };
-                      handleUpdateSquare(selectedSquare.id, { text: e.target.value });
-                      setSelectedSquare(updated);
-                    }}
+                    value={newSquare.text}
+                    onChange={(e) => setNewSquare({ ...newSquare, text: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Rotation</label>
+                  <label>Size</label>
                   <input
-                    type="range"
-                    min="0"
-                    max="360"
-                    value={selectedSquare.rotation || 0}
-                    onChange={(e) => {
-                      const updated = { ...selectedSquare, rotation: parseInt(e.target.value) };
-                      handleUpdateSquare(selectedSquare.id, { rotation: parseInt(e.target.value) });
-                      setSelectedSquare(updated);
-                    }}
+                    type="number"
+                    value={newSquare.width}
+                    onChange={(e) => setNewSquare({ ...newSquare, width: parseInt(e.target.value) || 80 })}
+                    placeholder="Width"
                   />
-                  <span>{selectedSquare.rotation || 0}°</span>
                 </div>
-                <button className="danger" onClick={() => handleDeleteSquare(selectedSquare.id)}>
-                  Delete Square
-                </button>
+                <button className="primary" onClick={handleAddSquare}>Add to Map</button>
+
+                {selectedSquare && (
+                  <>
+                    <h3>Edit Selected</h3>
+                    <div className="form-group">
+                      <label>Shape</label>
+                      <select
+                        value={selectedSquare.shape}
+                        onChange={(e) => {
+                          const updated = { ...selectedSquare, shape: e.target.value };
+                          handleUpdateSquare(selectedSquare.id, { shape: e.target.value });
+                          setSelectedSquare(updated);
+                        }}
+                      >
+                        <option value="square">Square</option>
+                        <option value="circle">Circle</option>
+                        <option value="hexagon">Hexagon</option>
+                        <option value="triangle">Triangle</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Color</label>
+                      <input
+                        type="color"
+                        value={selectedSquare.color}
+                        onChange={(e) => {
+                          const updated = { ...selectedSquare, color: e.target.value };
+                          handleUpdateSquare(selectedSquare.id, { color: e.target.value });
+                          setSelectedSquare(updated);
+                        }}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Text</label>
+                      <input
+                        type="text"
+                        value={selectedSquare.text}
+                        onChange={(e) => {
+                          const updated = { ...selectedSquare, text: e.target.value };
+                          handleUpdateSquare(selectedSquare.id, { text: e.target.value });
+                          setSelectedSquare(updated);
+                        }}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Rotation</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="360"
+                        value={selectedSquare.rotation || 0}
+                        onChange={(e) => {
+                          const updated = { ...selectedSquare, rotation: parseInt(e.target.value) };
+                          handleUpdateSquare(selectedSquare.id, { rotation: parseInt(e.target.value) });
+                          setSelectedSquare(updated);
+                        }}
+                      />
+                      <span>{selectedSquare.rotation || 0}°</span>
+                    </div>
+                    <button className="danger" onClick={() => handleDeleteSquare(selectedSquare.id)}>
+                      Delete Square
+                    </button>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -259,18 +390,41 @@ function MapEditor({ map, onClose }) {
                 backgroundColor: mapData.backgroundColor,
                 backgroundImage: mapData.backgroundImage ? `url(${mapData.backgroundImage})` : 'none',
                 backgroundSize: 'cover',
-                backgroundPosition: 'center'
+                backgroundPosition: 'center',
+                pointerEvents: mode === 'draw' ? 'none' : 'auto'
               }}
             >
+              {/* Drawing canvas */}
+              <canvas
+                ref={canvasRef}
+                className="drawing-canvas"
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  cursor: mode === 'draw' ? 'crosshair' : 'default',
+                  pointerEvents: mode === 'draw' ? 'auto' : 'none',
+                  zIndex: mode === 'draw' ? 10 : 1
+                }}
+              />
+
+              {/* Shapes layer */}
               {mapData.squares.map(square => (
                 <Draggable
                   key={square.id}
                   position={square.position}
                   onDrag={(e, data) => handleDrag(square.id, e, data)}
+                  disabled={mode === 'draw'}
                 >
                   <div
                     className={`editor-square ${selectedSquare?.id === square.id ? 'selected' : ''}`}
-                    onClick={() => setSelectedSquare(square)}
+                    onClick={() => mode === 'shapes' && setSelectedSquare(square)}
                     style={{
                       width: square.size.width,
                       height: square.size.height,
@@ -281,7 +435,9 @@ function MapEditor({ map, onClose }) {
                         ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
                         : square.shape === 'triangle'
                         ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
-                        : 'none'
+                        : 'none',
+                      pointerEvents: mode === 'draw' ? 'none' : 'auto',
+                      zIndex: 5
                     }}
                   >
                     {square.text && <span>{square.text}</span>}
