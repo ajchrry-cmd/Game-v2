@@ -118,6 +118,14 @@
   text-align: center;
 }
 
+.shape-resize-handle {
+  transition: transform 0.2s;
+}
+
+.shape-resize-handle:hover {
+  transform: scale(1.2);
+}
+
 /* Mobile/Portrait Layout */
 @media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
   .map-editor {

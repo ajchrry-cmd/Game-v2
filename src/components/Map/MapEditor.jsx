@@ -33,6 +33,10 @@ function MapEditor({ map, onClose }) {
   const canvasRef = useRef(null);
   const [context, setContext] = useState(null);
 
+  // Resize state
+  const [resizing, setResizing] = useState(null);
+  const [resizeStart, setResizeStart] = useState({ width: 0, height: 0, x: 0, y: 0 });
+
   // Initialize canvas
   useEffect(() => {
     if (canvasRef.current) {
@@ -180,6 +184,47 @@ function MapEditor({ map, onClose }) {
       context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     }
   };
+
+  // Resize functions
+  const handleResizeStart = (e, squareId, currentWidth, currentHeight) => {
+    e.stopPropagation();
+    setResizing(squareId);
+    setResizeStart({
+      width: currentWidth,
+      height: currentHeight,
+      x: e.clientX,
+      y: e.clientY
+    });
+  };
+
+  const handleResizeMove = (e) => {
+    if (!resizing) return;
+
+    const deltaX = e.clientX - resizeStart.x;
+    const deltaY = e.clientY - resizeStart.y;
+    const newWidth = Math.max(30, resizeStart.width + deltaX);
+    const newHeight = Math.max(30, resizeStart.height + deltaY);
+
+    handleUpdateSquare(resizing, {
+      size: { width: newWidth, height: newHeight }
+    });
+  };
+
+  const handleResizeEnd = () => {
+    setResizing(null);
+  };
+
+  // Add global mouse event listeners for resize
+  useEffect(() => {
+    if (resizing) {
+      window.addEventListener('mousemove', handleResizeMove);
+      window.addEventListener('mouseup', handleResizeEnd);
+      return () => {
+        window.removeEventListener('mousemove', handleResizeMove);
+        window.removeEventListener('mouseup', handleResizeEnd);
+      };
+    }
+  }, [resizing, resizeStart]);
 
   return (
     <div className="modal-overlay">
@@ -360,6 +405,34 @@ function MapEditor({ map, onClose }) {
                       />
                     </div>
                     <div className="form-group">
+                      <label>Width</label>
+                      <input
+                        type="number"
+                        value={selectedSquare.size.width}
+                        onChange={(e) => {
+                          const newWidth = parseInt(e.target.value) || 30;
+                          const updated = { ...selectedSquare, size: { ...selectedSquare.size, width: newWidth } };
+                          handleUpdateSquare(selectedSquare.id, { size: { ...selectedSquare.size, width: newWidth } });
+                          setSelectedSquare(updated);
+                        }}
+                        min="30"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Height</label>
+                      <input
+                        type="number"
+                        value={selectedSquare.size.height}
+                        onChange={(e) => {
+                          const newHeight = parseInt(e.target.value) || 30;
+                          const updated = { ...selectedSquare, size: { ...selectedSquare.size, height: newHeight } };
+                          handleUpdateSquare(selectedSquare.id, { size: { ...selectedSquare.size, height: newHeight } });
+                          setSelectedSquare(updated);
+                        }}
+                        min="30"
+                      />
+                    </div>
+                    <div className="form-group">
                       <label>Rotation</label>
                       <input
                         type="range"
@@ -415,35 +488,56 @@ function MapEditor({ map, onClose }) {
               />
 
               {/* Shapes layer */}
-              {mapData.squares.map(square => (
-                <Draggable
-                  key={square.id}
-                  position={square.position}
-                  onDrag={(e, data) => handleDrag(square.id, e, data)}
-                  disabled={mode === 'draw'}
-                >
-                  <div
-                    className={`editor-square ${selectedSquare?.id === square.id ? 'selected' : ''}`}
-                    onClick={() => mode === 'shapes' && setSelectedSquare(square)}
-                    style={{
-                      width: square.size.width,
-                      height: square.size.height,
-                      backgroundColor: square.color,
-                      borderRadius: square.shape === 'circle' ? '50%' : square.shape === 'hexagon' ? '10%' : '0',
-                      transform: `rotate(${square.rotation || 0}deg)`,
-                      clipPath: square.shape === 'hexagon'
-                        ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-                        : square.shape === 'triangle'
-                        ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
-                        : 'none',
-                      pointerEvents: mode === 'draw' ? 'none' : 'auto',
-                      zIndex: 5
-                    }}
+              {mapData.squares.map(square => {
+                const isSelected = selectedSquare?.id === square.id;
+                return (
+                  <Draggable
+                    key={square.id}
+                    position={square.position}
+                    onDrag={(e, data) => handleDrag(square.id, e, data)}
+                    disabled={mode === 'draw' || resizing !== null}
                   >
-                    {square.text && <span>{square.text}</span>}
-                  </div>
-                </Draggable>
-              ))}
+                    <div
+                      className={`editor-square ${isSelected ? 'selected' : ''}`}
+                      onClick={() => mode === 'shapes' && setSelectedSquare(square)}
+                      style={{
+                        width: square.size.width,
+                        height: square.size.height,
+                        backgroundColor: square.color,
+                        borderRadius: square.shape === 'circle' ? '50%' : square.shape === 'hexagon' ? '10%' : '0',
+                        transform: `rotate(${square.rotation || 0}deg)`,
+                        clipPath: square.shape === 'hexagon'
+                          ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                          : square.shape === 'triangle'
+                          ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
+                          : 'none',
+                        pointerEvents: mode === 'draw' ? 'none' : 'auto',
+                        zIndex: 5
+                      }}
+                    >
+                      {square.text && <span>{square.text}</span>}
+                      {isSelected && mode === 'shapes' && (
+                        <div
+                          className="shape-resize-handle"
+                          onMouseDown={(e) => handleResizeStart(e, square.id, square.size.width, square.size.height)}
+                          style={{
+                            position: 'absolute',
+                            bottom: '-8px',
+                            right: '-8px',
+                            width: '20px',
+                            height: '20px',
+                            background: '#d4af37',
+                            border: '2px solid #fff',
+                            borderRadius: '50%',
+                            cursor: 'nwse-resize',
+                            zIndex: 10
+                          }}
+                        />
+                      )}
+                    </div>
+                  </Draggable>
+                );
+              })}
             </div>
           </div>
         </div>
