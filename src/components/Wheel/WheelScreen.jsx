@@ -6,9 +6,11 @@ function WheelScreen() {
   const { wheels, currentWheelId, saveWheel } = useGame();
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [editingSegment, setEditingSegment] = useState(null);
   const canvasRef = useRef(null);
 
   const currentWheel = wheels.find(w => w.id === currentWheelId);
+  const isBattleWheel = currentWheel?.type === 'battle';
 
   useEffect(() => {
     if (currentWheel && canvasRef.current) {
@@ -101,6 +103,37 @@ function WheelScreen() {
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.stroke();
+  };
+
+  const handleUpdateSegment = (index, field, value) => {
+    if (!isBattleWheel) return;
+
+    const newSegments = [...currentWheel.segments];
+    newSegments[index] = { ...newSegments[index], [field]: value };
+    saveWheel({ ...currentWheel, segments: newSegments });
+  };
+
+  const handleAddSegment = () => {
+    if (!isBattleWheel) return;
+
+    const newSegment = {
+      text: `Option ${currentWheel.segments.length + 1}`,
+      color: '#' + Math.floor(Math.random()*16777215).toString(16),
+      weight: 1
+    };
+    saveWheel({ ...currentWheel, segments: [...currentWheel.segments, newSegment] });
+  };
+
+  const handleRemoveSegment = (index) => {
+    if (!isBattleWheel || currentWheel.segments.length <= 2) return;
+
+    const newSegments = currentWheel.segments.filter((_, i) => i !== index);
+    saveWheel({ ...currentWheel, segments: newSegments });
+  };
+
+  const calculatePercentage = (segments, weight) => {
+    const totalWeight = segments.reduce((sum, seg) => sum + (seg.weight || 1), 0);
+    return ((weight / totalWeight) * 100).toFixed(1);
   };
 
   const spinWheel = () => {
@@ -197,6 +230,51 @@ function WheelScreen() {
         <div className="result-display">
           <h2>Result:</h2>
           <p>{currentWheel.segments[currentWheel.lastResult]?.text}</p>
+        </div>
+      )}
+      {isBattleWheel && (
+        <div className="battle-wheel-editor">
+          <h2>Edit Segments</h2>
+          <div className="segments-list">
+            {currentWheel.segments.map((segment, index) => (
+              <div key={index} className="segment-edit-row">
+                <input
+                  type="text"
+                  placeholder="Name"
+                  value={segment.text}
+                  onChange={(e) => handleUpdateSegment(index, 'text', e.target.value)}
+                  className="segment-name-input"
+                />
+                <input
+                  type="color"
+                  value={segment.color}
+                  onChange={(e) => handleUpdateSegment(index, 'color', e.target.value)}
+                  className="segment-color-input"
+                />
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="Weight"
+                  value={segment.weight || 1}
+                  onChange={(e) => handleUpdateSegment(index, 'weight', parseInt(e.target.value) || 1)}
+                  className="segment-weight-input"
+                />
+                <span className="segment-percentage">{calculatePercentage(currentWheel.segments, segment.weight || 1)}%</span>
+                <button
+                  className="remove-segment-btn"
+                  onClick={() => handleRemoveSegment(index)}
+                  disabled={currentWheel.segments.length <= 2}
+                  title="Remove segment"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+          <button className="add-segment-btn" onClick={handleAddSegment}>
+            + Add Segment
+          </button>
         </div>
       )}
     </div>

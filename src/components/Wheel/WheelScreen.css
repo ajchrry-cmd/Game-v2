@@ -124,3 +124,154 @@
     padding: 1rem;
   }
 }
+
+/* Battle Wheel Editor */
+.battle-wheel-editor {
+  margin-top: 2rem;
+  background: #2a2a2a;
+  padding: 1.5rem;
+  border-radius: 12px;
+  max-width: 800px;
+  width: 100%;
+}
+
+.battle-wheel-editor h2 {
+  color: #d4af37;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.segments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.segment-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1a1a1a;
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+.segment-name-input {
+  flex: 2;
+  padding: 0.5rem;
+  background: #2a2a2a;
+  border: 2px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.segment-name-input:focus {
+  outline: none;
+  border-color: #d4af37;
+}
+
+.segment-color-input {
+  width: 50px;
+  height: 40px;
+  border: 2px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.segment-weight-input {
+  width: 70px;
+  padding: 0.5rem;
+  background: #2a2a2a;
+  border: 2px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.segment-weight-input:focus {
+  outline: none;
+  border-color: #d4af37;
+}
+
+.segment-percentage {
+  min-width: 50px;
+  color: #d4af37;
+  font-weight: bold;
+  text-align: right;
+  font-size: 1rem;
+}
+
+.remove-segment-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ff4444;
+  color: #fff;
+  border: 2px solid #fff;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.remove-segment-btn:hover:not(:disabled) {
+  background: #cc0000;
+}
+
+.remove-segment-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.add-segment-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: #d4af37;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-segment-btn:hover {
+  background: #e4bf47;
+  transform: translateY(-2px);
+}
+
+@media screen and (max-width: 768px) {
+  .battle-wheel-editor {
+    padding: 1rem;
+    max-width: 100%;
+  }
+
+  .segment-edit-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .segment-name-input {
+    flex: 1 1 100%;
+  }
+
+  .segment-weight-input {
+    width: 60px;
+  }
+
+  .segment-percentage {
+    min-width: 45px;
+    font-size: 0.9rem;
+  }
+}

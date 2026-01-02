@@ -8,6 +8,7 @@ function WheelManager({ onClose }) {
   const [showNewForm, setShowNewForm] = useState(false);
   const [newWheel, setNewWheel] = useState({
     name: '',
+    type: 'regular',
     segments: [
       { text: 'Option 1', color: '#FF6B6B', weight: 1 },
       { text: 'Option 2', color: '#4ECDC4', weight: 1 },
@@ -25,6 +26,7 @@ function WheelManager({ onClose }) {
     await saveWheel({ ...newWheel, lastResult: null });
     setNewWheel({
       name: '',
+      type: 'regular',
       segments: [
         { text: 'Option 1', color: '#FF6B6B', weight: 1 },
         { text: 'Option 2', color: '#4ECDC4', weight: 1 },
@@ -132,6 +134,17 @@ function WheelManager({ onClose }) {
               </div>
 
               <div className="form-group">
+                <label>Wheel Type</label>
+                <select
+                  value={newWheel.type}
+                  onChange={(e) => setNewWheel({ ...newWheel, type: e.target.value })}
+                >
+                  <option value="regular">Regular Wheel</option>
+                  <option value="battle">Battle Wheel (editable on screen)</option>
+                </select>
+              </div>
+
+              <div className="form-group">
                 <label>Segments (with weight/percentage)</label>
                 {newWheel.segments.map((segment, index) => (
                   <div key={index} className="segment-row-extended">
@@ -186,6 +199,17 @@ function WheelManager({ onClose }) {
                   value={editingWheel.name}
                   onChange={(e) => setEditingWheel({ ...editingWheel, name: e.target.value })}
                 />
+              </div>
+
+              <div className="form-group">
+                <label>Wheel Type</label>
+                <select
+                  value={editingWheel.type || 'regular'}
+                  onChange={(e) => setEditingWheel({ ...editingWheel, type: e.target.value })}
+                >
+                  <option value="regular">Regular Wheel</option>
+                  <option value="battle">Battle Wheel (editable on screen)</option>
+                </select>
               </div>
 
               <div className="form-group">
