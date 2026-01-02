@@ -184,13 +184,27 @@ export const GameProvider = ({ children }) => {
 
   const saveMap = async (map) => {
     try {
-      // Remove undefined values to prevent Firestore errors
-      const cleanMap = Object.entries(map).reduce((acc, [key, value]) => {
-        if (value !== undefined) {
-          acc[key] = value;
+      // Recursively remove undefined values to prevent Firestore errors
+      const cleanObject = (obj) => {
+        if (obj === null || obj === undefined) return null;
+
+        if (Array.isArray(obj)) {
+          return obj.map(item => cleanObject(item));
         }
-        return acc;
-      }, {});
+
+        if (typeof obj === 'object') {
+          return Object.entries(obj).reduce((acc, [key, value]) => {
+            if (value !== undefined) {
+              acc[key] = cleanObject(value);
+            }
+            return acc;
+          }, {});
+        }
+
+        return obj;
+      };
+
+      const cleanMap = cleanObject(map);
 
       if (map.id) {
         await setDoc(doc(db, 'maps', map.id), cleanMap);
