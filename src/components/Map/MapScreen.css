@@ -173,6 +173,30 @@
   color: #fff;
 }
 
+.stat-input {
+  display: block;
+  width: 100%;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  background: #1a1a1a;
+  border: 2px solid #444;
+  border-radius: 4px;
+  padding: 0.25rem;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.stat-input:hover {
+  border-color: #666;
+}
+
+.stat-input:focus {
+  outline: none;
+  border-color: #d4af37;
+  background: #252525;
+}
+
 .player-inventory {
   margin-top: 0.75rem;
 }
@@ -417,6 +441,11 @@
 
   .stat-value {
     font-size: 1.2rem;
+  }
+
+  .stat-input {
+    font-size: 1.2rem;
+    padding: 0.2rem;
   }
 
   .inventory-grid {

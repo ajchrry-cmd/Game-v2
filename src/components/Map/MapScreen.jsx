@@ -11,6 +11,7 @@ function MapScreen() {
     items,
     playerPositions,
     updatePlayerPosition,
+    updatePlayer,
     mapBackground,
     bonuses,
     placedBonuses,
@@ -336,11 +337,21 @@ function MapScreen() {
               <div className="player-stats">
                 <div className="stat">
                   <span className="stat-label">Power</span>
-                  <span className="stat-value">{player.power}</span>
+                  <input
+                    type="number"
+                    className="stat-input"
+                    value={player.power}
+                    onChange={(e) => updatePlayer(player.id, { power: parseInt(e.target.value) || 0 })}
+                  />
                 </div>
                 <div className="stat">
                   <span className="stat-label">Money</span>
-                  <span className="stat-value">{player.money}</span>
+                  <input
+                    type="number"
+                    className="stat-input"
+                    value={player.money}
+                    onChange={(e) => updatePlayer(player.id, { money: parseInt(e.target.value) || 0 })}
+                  />
                 </div>
               </div>
               <div className="player-inventory">
