@@ -12,7 +12,7 @@
 }
 
 .zoom-controls {
-  display: none;
+  display: flex;
   position: absolute;
   bottom: 20px;
   right: 20px;
@@ -434,7 +434,7 @@
   }
 
   .zoom-controls {
-    display: flex; /* Show zoom controls on mobile */
+    display: flex;
   }
 
   .player-panel {

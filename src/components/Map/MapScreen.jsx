@@ -141,6 +141,60 @@ function MapScreen() {
     setLastTouchDistance(null);
   };
 
+  // Mouse-based pan handlers
+  const handleMouseDown = (e) => {
+    // Middle mouse button or space + left click for panning
+    if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+      e.preventDefault();
+      setIsPanning(true);
+      setPanStart({
+        x: e.clientX - mapTransform.x,
+        y: e.clientY - mapTransform.y
+      });
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isPanning) return;
+
+    const newX = e.clientX - panStart.x;
+    const newY = e.clientY - panStart.y;
+
+    setMapTransform(prev => ({
+      ...prev,
+      x: newX,
+      y: newY
+    }));
+  };
+
+  const handleMouseUp = () => {
+    setIsPanning(false);
+  };
+
+  // Mouse wheel zoom
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newScale = Math.max(0.5, Math.min(3, mapTransform.scale * delta));
+
+    setMapTransform(prev => ({
+      ...prev,
+      scale: newScale
+    }));
+  };
+
+  // Add global mouse event listeners for panning
+  React.useEffect(() => {
+    if (isPanning) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isPanning, panStart, mapTransform.x, mapTransform.y]);
+
   if (!currentMap) {
     return (
       <div className="map-screen">
@@ -172,7 +226,7 @@ function MapScreen() {
   return (
     <div className="map-screen">
       <div className="map-container">
-        {/* Mobile zoom controls */}
+        {/* Zoom controls */}
         <div className="zoom-controls">
           <button onClick={handleZoomIn} title="Zoom In">+</button>
           <button onClick={handleZoomOut} title="Zoom Out">−</button>
@@ -185,6 +239,9 @@ function MapScreen() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onWheel={handleWheel}
+          style={{ cursor: isPanning ? 'grabbing' : 'default' }}
         >
           <div
             className="map-content"
