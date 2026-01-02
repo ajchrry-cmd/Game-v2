@@ -15,11 +15,11 @@ function BonusManager({ onClose }) {
 
   const handleSaveBonus = async () => {
     if (!newBonus.name.trim()) {
-      alert('Please enter a name for the bonus item');
+      alert('Please enter a name for the mob');
       return;
     }
     if (!newBonus.imageUrl) {
-      alert('Please upload an image for the bonus item');
+      alert('Please upload an image for the mob');
       return;
     }
     if (uploading) {
@@ -36,11 +36,11 @@ function BonusManager({ onClose }) {
 
   const handleUpdateBonus = async () => {
     if (!editingBonus.name.trim()) {
-      alert('Please enter a name for the bonus item');
+      alert('Please enter a name for the mob');
       return;
     }
     if (!editingBonus.imageUrl) {
-      alert('Please upload an image for the bonus item');
+      alert('Please upload an image for the mob');
       return;
     }
     if (editUploading) {
@@ -98,18 +98,18 @@ function BonusManager({ onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal manager-modal" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>×</button>
-        <h2>Bonus Items Manager</h2>
+        <h2>Mobs Manager</h2>
 
         <div className="manager-content">
           <div className="manager-actions">
             <button className="primary" onClick={() => setShowNewForm(!showNewForm)}>
-              + Create Bonus Item
+              + Create Mob
             </button>
           </div>
 
           {showNewForm && (
             <div className="player-form">
-              <h3>New Bonus Item</h3>
+              <h3>New Mob</h3>
               <div className="form-group">
                 <label>Name</label>
                 <input
@@ -149,7 +149,7 @@ function BonusManager({ onClose }) {
                   onClick={handleSaveBonus}
                   disabled={uploading}
                 >
-                  {uploading ? 'Uploading...' : 'Save Bonus Item'}
+                  {uploading ? 'Uploading...' : 'Save Mob'}
                 </button>
                 <button onClick={() => setShowNewForm(false)}>Cancel</button>
               </div>
@@ -158,7 +158,7 @@ function BonusManager({ onClose }) {
 
           {editingBonus && (
             <div className="player-form">
-              <h3>Edit Bonus Item</h3>
+              <h3>Edit Mob</h3>
               <div className="form-group">
                 <label>Name</label>
                 <input
@@ -198,7 +198,7 @@ function BonusManager({ onClose }) {
                   onClick={handleUpdateBonus}
                   disabled={editUploading}
                 >
-                  {editUploading ? 'Uploading...' : 'Update Bonus Item'}
+                  {editUploading ? 'Uploading...' : 'Update Mob'}
                 </button>
                 <button onClick={() => setEditingBonus(null)}>Cancel</button>
               </div>
@@ -207,7 +207,7 @@ function BonusManager({ onClose }) {
 
           <div className="grid-list">
             {bonuses.length === 0 ? (
-              <p className="empty-state">No bonus items created yet</p>
+              <p className="empty-state">No mobs created yet</p>
             ) : (
               bonuses.map(bonus => (
                 <div key={bonus.id} className="grid-item">

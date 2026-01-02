@@ -112,7 +112,7 @@ function MasterMenu() {
               <button onClick={() => openManager('session')}>Sessions</button>
               <button onClick={() => openManager('players')}>Players</button>
               <button onClick={() => openManager('items')}>Items</button>
-              <button onClick={() => openManager('bonuses')}>Bonus Items</button>
+              <button onClick={() => openManager('bonuses')}>Mobs</button>
               <button onClick={() => openManager('maps')}>Maps</button>
               <button onClick={() => openManager('wheels')}>Wheels</button>
               <button onClick={() => openManager('scenes')}>Scene Images</button>

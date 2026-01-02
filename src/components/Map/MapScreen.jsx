@@ -395,9 +395,9 @@ function MapScreen() {
         )}
 
         <div className="bonus-section">
-          <h2>Bonus Items</h2>
+          <h2>Mobs</h2>
           {bonuses.length === 0 ? (
-            <p className="empty-state">No bonus items created</p>
+            <p className="empty-state">No mobs created</p>
           ) : (
             <div className="bonus-grid">
               {bonuses.map(bonus => (
