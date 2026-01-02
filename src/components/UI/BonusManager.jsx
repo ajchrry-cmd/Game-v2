@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import './Manager.css';
 
@@ -12,6 +12,14 @@ function BonusManager({ onClose }) {
   });
   const [uploading, setUploading] = useState(false);
   const [editUploading, setEditUploading] = useState(false);
+
+  // Drawing state
+  const [imageMode, setImageMode] = useState('url'); // 'url', 'upload', or 'draw'
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [brushColor, setBrushColor] = useState('#000000');
+  const [brushSize, setBrushSize] = useState(5);
+  const canvasRef = useRef(null);
+  const [canvasContext, setCanvasContext] = useState(null);
 
   const handleSaveBonus = async () => {
     if (!newBonus.name.trim()) {
@@ -94,6 +102,64 @@ function BonusManager({ onClose }) {
     }
   };
 
+  // Initialize canvas
+  useEffect(() => {
+    if (canvasRef.current && imageMode === 'draw') {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      setCanvasContext(ctx);
+
+      // Set white background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  }, [imageMode]);
+
+  // Drawing functions
+  const startDrawing = (e) => {
+    if (!canvasContext) return;
+    setIsDrawing(true);
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    canvasContext.beginPath();
+    canvasContext.moveTo(x, y);
+    canvasContext.strokeStyle = brushColor;
+    canvasContext.lineWidth = brushSize;
+    canvasContext.lineCap = 'round';
+    canvasContext.lineJoin = 'round';
+  };
+
+  const draw = (e) => {
+    if (!isDrawing || !canvasContext) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    canvasContext.lineTo(x, y);
+    canvasContext.stroke();
+  };
+
+  const stopDrawing = () => {
+    if (isDrawing && canvasContext) {
+      setIsDrawing(false);
+      canvasContext.closePath();
+      // Save canvas as data URL
+      const dataUrl = canvasRef.current.toDataURL();
+      setNewBonus({ ...newBonus, imageUrl: dataUrl });
+    }
+  };
+
+  const clearCanvas = () => {
+    if (canvasContext && canvasRef.current) {
+      canvasContext.fillStyle = '#ffffff';
+      canvasContext.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      setNewBonus({ ...newBonus, imageUrl: '' });
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal manager-modal" onClick={(e) => e.stopPropagation()}>
@@ -120,22 +186,94 @@ function BonusManager({ onClose }) {
                 />
               </div>
               <div className="form-group">
-                <label>Image URL</label>
-                <input
-                  type="text"
-                  value={newBonus.imageUrl}
-                  onChange={(e) => setNewBonus({ ...newBonus, imageUrl: e.target.value })}
-                  placeholder="https://example.com/image.png"
-                  disabled={uploading}
-                />
-                <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>Or upload a file:</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e.target.files[0])}
-                  disabled={uploading}
-                />
-                {uploading && <p style={{ color: '#d4af37', marginTop: 10 }}>Uploading image...</p>}
+                <label>Image Method</label>
+                <div className="image-mode-tabs">
+                  <button
+                    type="button"
+                    className={imageMode === 'url' ? 'active' : ''}
+                    onClick={() => setImageMode('url')}
+                  >
+                    URL
+                  </button>
+                  <button
+                    type="button"
+                    className={imageMode === 'upload' ? 'active' : ''}
+                    onClick={() => setImageMode('upload')}
+                  >
+                    Upload
+                  </button>
+                  <button
+                    type="button"
+                    className={imageMode === 'draw' ? 'active' : ''}
+                    onClick={() => setImageMode('draw')}
+                  >
+                    Draw
+                  </button>
+                </div>
+
+                {imageMode === 'url' && (
+                  <input
+                    type="text"
+                    value={newBonus.imageUrl}
+                    onChange={(e) => setNewBonus({ ...newBonus, imageUrl: e.target.value })}
+                    placeholder="https://example.com/image.png"
+                    style={{ marginTop: '10px' }}
+                  />
+                )}
+
+                {imageMode === 'upload' && (
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e.target.files[0])}
+                      disabled={uploading}
+                      style={{ marginTop: '10px' }}
+                    />
+                    {uploading && <p style={{ color: '#d4af37', marginTop: 10 }}>Uploading image...</p>}
+                  </>
+                )}
+
+                {imageMode === 'draw' && (
+                  <div className="drawing-tools" style={{ marginTop: '10px' }}>
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center' }}>
+                      <label style={{ margin: 0 }}>Brush Color:</label>
+                      <input
+                        type="color"
+                        value={brushColor}
+                        onChange={(e) => setBrushColor(e.target.value)}
+                      />
+                      <label style={{ margin: 0 }}>Size: {brushSize}px</label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="50"
+                        value={brushSize}
+                        onChange={(e) => setBrushSize(parseInt(e.target.value))}
+                      />
+                      <button type="button" onClick={clearCanvas} className="danger">
+                        Clear
+                      </button>
+                    </div>
+                    <canvas
+                      ref={canvasRef}
+                      width={300}
+                      height={300}
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseLeave={stopDrawing}
+                      style={{
+                        border: '2px solid #444',
+                        borderRadius: '8px',
+                        cursor: 'crosshair',
+                        backgroundColor: '#ffffff',
+                        display: 'block'
+                      }}
+                    />
+                  </div>
+                )}
+
                 {newBonus.imageUrl && !uploading && (
                   <div style={{ marginTop: 10 }}>
                     <img src={newBonus.imageUrl} alt="Preview" style={{ width: 100, borderRadius: 8 }} />
