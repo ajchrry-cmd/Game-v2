@@ -450,27 +450,6 @@ function MapScreen() {
             </div>
           ))
         )}
-
-        <div className="bonus-section">
-          <h2>Mobs</h2>
-          {bonuses.length === 0 ? (
-            <p className="empty-state">No mobs created</p>
-          ) : (
-            <div className="bonus-grid">
-              {bonuses.map(bonus => (
-                <div
-                  key={bonus.id}
-                  className="bonus-card"
-                  onClick={() => handlePlaceBonus(bonus.id)}
-                  title={`Click to place ${bonus.name}`}
-                >
-                  {bonus.imageUrl && <img src={bonus.imageUrl} alt={bonus.name} />}
-                  <span className="bonus-label">{bonus.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -18,7 +18,9 @@ function MasterMenu() {
     wheels,
     setCurrentWheelId,
     scenes,
-    setCurrentSceneId
+    setCurrentSceneId,
+    bonuses,
+    placeBonus
   } = useGame();
 
   const [activeManager, setActiveManager] = useState(null);
@@ -41,6 +43,16 @@ function MasterMenu() {
   const switchToScene = (sceneId) => {
     setCurrentSceneId(sceneId);
     setCurrentScene('scene');
+    setMenuOpen(false);
+  };
+
+  const handlePlaceBonus = (bonusId) => {
+    // Make sure we're on the map scene
+    if (currentScene !== 'map') {
+      setCurrentScene('map');
+    }
+    // Place bonus at center of map
+    placeBonus(bonusId, { x: 400, y: 300 });
     setMenuOpen(false);
   };
 
@@ -94,6 +106,23 @@ function MasterMenu() {
                       onClick={() => switchToScene(scene.id)}
                     >
                       {scene.name}
+                    </button>
+                  ))
+                )}
+              </div>
+
+              <div className="submenu">
+                <label>Add Mobs:</label>
+                {bonuses.length === 0 ? (
+                  <p className="empty-state">No mobs created</p>
+                ) : (
+                  bonuses.map(bonus => (
+                    <button
+                      key={bonus.id}
+                      onClick={() => handlePlaceBonus(bonus.id)}
+                      title={`Click to place ${bonus.name}`}
+                    >
+                      {bonus.name}
                     </button>
                   ))
                 )}
