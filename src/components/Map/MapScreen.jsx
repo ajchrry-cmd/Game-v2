@@ -43,6 +43,14 @@ function MapScreen() {
     placeBonus(bonusId, { x: 400, y: 300 });
   };
 
+  const handleRemoveItem = (playerId, itemIndex) => {
+    const player = players.find(p => p.id === playerId);
+    if (!player) return;
+
+    const newInventory = player.inventory.filter((_, i) => i !== itemIndex);
+    updatePlayer(playerId, { inventory: newInventory });
+  };
+
   const handleResizeStart = (e, placedBonusId, currentSize) => {
     e.stopPropagation();
     setResizing({
@@ -366,6 +374,13 @@ function MapScreen() {
                           <>
                             {item.imageUrl && <img src={item.imageUrl} alt={item.name} />}
                             <span className="item-tooltip">{item.name}</span>
+                            <button
+                              className="remove-item-btn"
+                              onClick={() => handleRemoveItem(player.id, index)}
+                              title="Remove item"
+                            >
+                              ×
+                            </button>
                           </>
                         ) : (
                           <span className="empty-slot">—</span>
