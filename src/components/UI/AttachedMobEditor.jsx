@@ -127,10 +127,7 @@ function AttachedMobEditor({ player, onClose, onSave }) {
                       width: `${mobSize}px`,
                       height: `${mobSize}px`,
                       cursor: 'move',
-                      zIndex: 10,
-                      border: isSelected ? '2px solid #d4af37' : '2px solid transparent',
-                      borderRadius: '4px',
-                      boxSizing: 'content-box'
+                      zIndex: 10
                     }}
                   >
                     {mob.imageUrl && (
@@ -198,7 +195,7 @@ function AttachedMobEditor({ player, onClose, onSave }) {
               <input
                 type="range"
                 min="0.2"
-                max="1.5"
+                max="6.0"
                 step="0.1"
                 value={attachedMobs[selectedMobIndex]?.size || 0.6}
                 onChange={(e) => handleSizeChange(selectedMobIndex, parseFloat(e.target.value))}
