@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
+import AttachedMobEditor from './AttachedMobEditor';
 import './Manager.css';
 
 function PlayerManager({ onClose }) {
@@ -16,6 +17,7 @@ function PlayerManager({ onClose }) {
 
   const [editingPlayer, setEditingPlayer] = useState(null);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [editingMobsForPlayer, setEditingMobsForPlayer] = useState(null);
   const [newPlayer, setNewPlayer] = useState({
     name: '',
     power: 0,
@@ -93,6 +95,7 @@ function PlayerManager({ onClose }) {
   const shopItems = items.filter(item => item.inShop);
 
   return (
+    <>
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal manager-modal" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>×</button>
@@ -343,6 +346,15 @@ function PlayerManager({ onClose }) {
                         </select>
                       )}
                     </div>
+                    {(player.attachedMobs || []).length > 0 && (
+                      <button
+                        className="primary"
+                        onClick={() => setEditingMobsForPlayer(player)}
+                        style={{ marginTop: '0.5rem', width: '100%' }}
+                      >
+                        Position Attached Mobs
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
@@ -351,6 +363,17 @@ function PlayerManager({ onClose }) {
         </div>
       </div>
     </div>
+
+    {editingMobsForPlayer && (
+      <AttachedMobEditor
+        player={editingMobsForPlayer}
+        onClose={() => setEditingMobsForPlayer(null)}
+        onSave={(attachedMobs) => {
+          updatePlayer(editingMobsForPlayer.id, { attachedMobs });
+        }}
+      />
+    )}
+  </>
   );
 }
 
