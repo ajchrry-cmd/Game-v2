@@ -286,72 +286,87 @@ function MapScreen() {
               left: 0
             }}
           >
-          {/* Render map squares */}
-          {currentMap.squares?.map(square => (
-            <div
-              key={square.id}
-              className={`map-square ${square.shape === 'line' ? 'map-line' : ''}`}
-              style={{
-                position: 'absolute',
-                left: square.position.x,
-                top: square.position.y,
-                width: square.size.width,
-                height: square.size.height,
-                backgroundColor: square.color,
-                borderRadius: square.shape === 'circle' ? '50%' : square.shape === 'hexagon' ? '10%' : '0',
-                transform: `rotate(${square.rotation || 0}deg)`,
-                transformOrigin: square.shape === 'line' ? '0 50%' : 'center',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: square.shape === 'line' ? 'none' : '2px solid rgba(255, 255, 255, 0.3)',
-                clipPath: square.shape === 'hexagon'
-                  ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-                  : square.shape === 'triangle'
-                  ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
-                  : 'none'
-              }}
-            >
-              {square.text && square.shape !== 'line' && (
-                <span style={{
-                  fontSize: `${square.textSize || 16}px`,
-                  color: square.textColor || '#ffffff',
-                  fontWeight: 'bold',
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
-                }}>
-                  {square.text}
-                </span>
-              )}
-            </div>
-          ))}
+          {/* Render map squares and mobs - combined and sorted by layerIndex */}
+          {(() => {
+            // Combine squares and mobs with type markers
+            const combinedItems = [
+              ...(currentMap.squares || []).map(square => ({ ...square, itemType: 'square' })),
+              ...(currentMap.placedMobs || []).map(mob => ({ ...mob, itemType: 'mob' }))
+            ].sort((a, b) => (a.layerIndex || 0) - (b.layerIndex || 0));
 
-          {/* Render permanent mobs from map */}
-          {currentMap.placedMobs?.map(mob => (
-            <div
-              key={mob.id}
-              style={{
-                position: 'absolute',
-                left: mob.position.x,
-                top: mob.position.y,
-                width: `${mob.size}px`,
-                height: `${mob.size}px`,
-                pointerEvents: 'none',
-                zIndex: 3
-              }}
-            >
-              {mob.imageUrl && (
-                <img
-                  src={mob.imageUrl}
-                  alt={mob.name}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain'
-                  }}
-                />
-              )}
-            </div>
-          ))}
+            return combinedItems.map(item => {
+              if (item.itemType === 'square') {
+                const square = item;
+                return (
+                  <div
+                    key={square.id}
+                    className={`map-square ${square.shape === 'line' ? 'map-line' : ''}`}
+                    style={{
+                      position: 'absolute',
+                      left: square.position.x,
+                      top: square.position.y,
+                      width: square.size.width,
+                      height: square.size.height,
+                      backgroundColor: square.color,
+                      borderRadius: square.shape === 'circle' ? '50%' : square.shape === 'hexagon' ? '10%' : '0',
+                      transform: `rotate(${square.rotation || 0}deg)`,
+                      transformOrigin: square.shape === 'line' ? '0 50%' : 'center',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: square.shape === 'line' ? 'none' : '2px solid rgba(255, 255, 255, 0.3)',
+                      clipPath: square.shape === 'hexagon'
+                        ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                        : square.shape === 'triangle'
+                        ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
+                        : 'none',
+                      zIndex: square.layerIndex || 0
+                    }}
+                  >
+                    {square.text && square.shape !== 'line' && (
+                      <span style={{
+                        fontSize: `${square.textSize || 16}px`,
+                        color: square.textColor || '#ffffff',
+                        fontWeight: 'bold',
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
+                      }}>
+                        {square.text}
+                      </span>
+                    )}
+                  </div>
+                );
+              } else {
+                // Render mob
+                const mob = item;
+                return (
+                  <div
+                    key={mob.id}
+                    style={{
+                      position: 'absolute',
+                      left: mob.position.x,
+                      top: mob.position.y,
+                      width: `${mob.size}px`,
+                      height: `${mob.size}px`,
+                      pointerEvents: 'none',
+                      zIndex: mob.layerIndex || 0
+                    }}
+                  >
+                    {mob.imageUrl && (
+                      <img
+                        src={mob.imageUrl}
+                        alt={mob.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain'
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              }
+            });
+          })()}
 
           {/* Render drawing layer */}
           {currentMap.drawingData && (
