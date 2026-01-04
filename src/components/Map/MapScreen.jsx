@@ -408,7 +408,16 @@ function MapScreen() {
                   {(player.attachedMobs || []).map((attachedMob, index) => {
                     // Handle both old format (string) and new format (object)
                     const mobId = typeof attachedMob === 'string' ? attachedMob : attachedMob.mobId;
-                    const offset = typeof attachedMob === 'string' ? { x: 50, y: -50 } : (attachedMob.offset || { x: 50, y: -50 });
+                    const offsetRatio = typeof attachedMob === 'string'
+                      ? { x: 1, y: -1 } // Default ratio
+                      : (attachedMob.offset || { x: 1, y: -1 });
+
+                    // Convert ratio to pixels for current token size
+                    const offsetPixels = {
+                      x: offsetRatio.x * tokenSize,
+                      y: offsetRatio.y * tokenSize
+                    };
+
                     const size = attachedMob.size || 0.6; // Default to 60% of token size
                     const mob = bonuses.find(b => b.id === mobId);
                     if (!mob) return null;
@@ -418,13 +427,16 @@ function MapScreen() {
                     return (
                       <Draggable
                         key={`${player.id}-mob-${index}`}
-                        position={offset}
+                        position={offsetPixels}
                         onDrag={(e, data) => {
-                          // Update the offset when mob is dragged
+                          // Convert pixels back to ratio when saving
                           const newAttachedMobs = [...(player.attachedMobs || [])];
                           newAttachedMobs[index] = {
                             mobId: mobId,
-                            offset: { x: data.x, y: data.y },
+                            offset: {
+                              x: data.x / tokenSize,
+                              y: data.y / tokenSize
+                            },
                             size: size // Preserve size
                           };
                           updatePlayer(player.id, { attachedMobs: newAttachedMobs });

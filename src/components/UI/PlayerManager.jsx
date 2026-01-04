@@ -329,7 +329,7 @@ function PlayerManager({ onClose }) {
                             if (e.target.value) {
                               const newAttachedMob = {
                                 mobId: e.target.value,
-                                offset: { x: 50, y: -50 }, // Default position: top-right
+                                offset: { x: 1, y: -1 }, // Default position ratio: right and up
                                 size: 0.6 // Default size: 60% of token
                               };
                               const newAttachedMobs = [...(player.attachedMobs || []), newAttachedMob];
