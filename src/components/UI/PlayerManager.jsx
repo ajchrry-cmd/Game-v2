@@ -259,6 +259,7 @@ function PlayerManager({ onClose }) {
             ) : (
               players.map(player => (
                 <div key={player.id} className="player-card">
+                  {/* Header */}
                   <div className="player-header">
                     <h3>{player.name}</h3>
                     <button className="danger" onClick={() => removePlayer(player.id)}>
@@ -266,27 +267,32 @@ function PlayerManager({ onClose }) {
                     </button>
                   </div>
 
-                  <div className="player-stats">
-                    <div className="stat-group">
-                      <label>Power</label>
-                      <input
-                        type="number"
-                        value={player.power}
-                        onChange={(e) => handleUpdatePlayer(player.id, 'power', parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="stat-group">
-                      <label>Money</label>
-                      <input
-                        type="number"
-                        value={player.money}
-                        onChange={(e) => handleUpdatePlayer(player.id, 'money', parseInt(e.target.value) || 0)}
-                      />
+                  {/* Basic Stats */}
+                  <div className="section-card" style={{ background: 'rgba(78, 205, 196, 0.1)', borderLeft: '3px solid #4ECDC4' }}>
+                    <div className="section-header">⚡ Basic Stats</div>
+                    <div className="player-stats">
+                      <div className="stat-group">
+                        <label>Power</label>
+                        <input
+                          type="number"
+                          value={player.power}
+                          onChange={(e) => handleUpdatePlayer(player.id, 'power', parseInt(e.target.value) || 0)}
+                        />
+                      </div>
+                      <div className="stat-group">
+                        <label>Money</label>
+                        <input
+                          type="number"
+                          value={player.money}
+                          onChange={(e) => handleUpdatePlayer(player.id, 'money', parseInt(e.target.value) || 0)}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="player-icon-section">
-                    <label>Icon</label>
+                  {/* Icon Section */}
+                  <div className="section-card" style={{ background: 'rgba(255, 107, 107, 0.1)', borderLeft: '3px solid #FF6B6B' }}>
+                    <div className="section-header">🎨 Player Icon</div>
                     <div className="icon-controls">
                       <select
                         value={player.iconType}
@@ -321,8 +327,9 @@ function PlayerManager({ onClose }) {
                     </div>
                   </div>
 
-                  <div className="player-inventory">
-                    <label>Inventory ({player.inventory.length}/{player.inventorySlots || 4})</label>
+                  {/* Inventory */}
+                  <div className="section-card" style={{ background: 'rgba(250, 177, 160, 0.1)', borderLeft: '3px solid #FAB1A0' }}>
+                    <div className="section-header">🎒 Inventory ({player.inventory.length}/{player.inventorySlots || 4})</div>
                     <div className="inventory-items">
                       {player.inventory.map((itemId, index) => {
                         const item = items.find(i => i.id === itemId);
@@ -359,8 +366,9 @@ function PlayerManager({ onClose }) {
                     </div>
                   </div>
 
-                  <div className="player-inventory">
-                    <label>Attached Mobs ({(player.attachedMobs || []).length})</label>
+                  {/* Attached Mobs */}
+                  <div className="section-card" style={{ background: 'rgba(116, 185, 255, 0.1)', borderLeft: '3px solid #74B9FF' }}>
+                    <div className="section-header">🐉 Attached Mobs ({(player.attachedMobs || []).length}/3)</div>
                     <div className="inventory-items">
                       {(player.attachedMobs || []).map((attachedMob, index) => {
                         const mobId = typeof attachedMob === 'string' ? attachedMob : attachedMob.mobId;
@@ -399,8 +407,8 @@ function PlayerManager({ onClose }) {
                             if (e.target.value) {
                               const newAttachedMob = {
                                 mobId: e.target.value,
-                                offset: { x: 1, y: -1 }, // Default position ratio: right and up
-                                size: 0.6 // Default size: 60% of token
+                                offset: { x: 1, y: -1 },
+                                size: 0.6
                               };
                               const newAttachedMobs = [...(player.attachedMobs || []), newAttachedMob];
                               updatePlayer(player.id, { attachedMobs: newAttachedMobs });
@@ -423,44 +431,44 @@ function PlayerManager({ onClose }) {
                         onClick={() => setEditingMobsForPlayer(player)}
                         style={{ marginTop: '0.5rem', width: '100%' }}
                       >
-                        Position Attached Mobs
+                        📍 Position Attached Mobs
                       </button>
                     )}
                   </div>
 
-                  {/* Player Configuration Section */}
-                  <div className="player-config-section" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #444' }}>
-                    <h4 style={{ color: '#d4af37', marginBottom: '0.75rem' }}>Player Configuration</h4>
+                  {/* Configuration Section */}
+                  <div className="section-card" style={{ background: 'rgba(212, 175, 55, 0.1)', borderLeft: '3px solid #d4af37' }}>
+                    <div className="section-header">⚙️ Player Configuration</div>
 
-                    {/* Inventory Slots */}
-                    <div className="config-row">
-                      <label>Inventory Slots</label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="8"
-                        value={player.inventorySlots || 4}
-                        onChange={(e) => updatePlayer(player.id, { inventorySlots: parseInt(e.target.value) || 4 })}
-                        style={{ width: '80px' }}
-                      />
-                    </div>
-
-                    {/* Party Slots */}
-                    <div className="config-row">
-                      <label>Party Slots</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="4"
-                        value={player.partySlots || 0}
-                        onChange={(e) => updatePlayer(player.id, { partySlots: parseInt(e.target.value) || 0 })}
-                        style={{ width: '80px' }}
-                      />
+                    {/* Slot Configuration */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      <div className="config-box">
+                        <label style={{ fontSize: '0.85rem', color: '#999' }}>Inventory Slots</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="8"
+                          value={player.inventorySlots || 4}
+                          onChange={(e) => updatePlayer(player.id, { inventorySlots: parseInt(e.target.value) || 4 })}
+                          style={{ width: '100%', textAlign: 'center', fontWeight: 'bold' }}
+                        />
+                      </div>
+                      <div className="config-box">
+                        <label style={{ fontSize: '0.85rem', color: '#999' }}>Party Slots</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="4"
+                          value={player.partySlots || 0}
+                          onChange={(e) => updatePlayer(player.id, { partySlots: parseInt(e.target.value) || 0 })}
+                          style={{ width: '100%', textAlign: 'center', fontWeight: 'bold' }}
+                        />
+                      </div>
                     </div>
 
                     {/* Custom Stats */}
-                    <div className="custom-stats-section">
-                      <label>Custom Stats ({(player.customStats || []).length}/4)</label>
+                    <div className="subsection">
+                      <div className="subsection-title">📊 Custom Stats ({(player.customStats || []).length}/4)</div>
                       {(player.customStats || []).map((stat, index) => (
                         <div key={index} className="custom-stat-row" style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                           <input
@@ -474,7 +482,7 @@ function PlayerManager({ onClose }) {
                             type="number"
                             value={stat.value}
                             onChange={(e) => handleUpdateCustomStat(player.id, index, 'value', parseInt(e.target.value) || 0)}
-                            style={{ width: '80px' }}
+                            style={{ width: '80px', textAlign: 'center' }}
                           />
                           <button
                             className="danger"
@@ -488,7 +496,7 @@ function PlayerManager({ onClose }) {
                       {(player.customStats || []).length < 4 && (
                         <button
                           onClick={() => handleAddCustomStat(player.id)}
-                          style={{ marginTop: '0.5rem', width: '100%' }}
+                          style={{ marginTop: '0.5rem', width: '100%', fontSize: '0.85rem' }}
                         >
                           + Add Custom Stat
                         </button>
@@ -497,8 +505,8 @@ function PlayerManager({ onClose }) {
 
                     {/* Party Members */}
                     {(player.partySlots || 0) > 0 && (
-                      <div className="player-inventory" style={{ marginTop: '0.75rem' }}>
-                        <label>Party ({(player.party || []).length}/{player.partySlots || 0})</label>
+                      <div className="subsection" style={{ marginTop: '0.75rem' }}>
+                        <div className="subsection-title">👥 Party ({(player.party || []).length}/{player.partySlots || 0})</div>
                         <div className="inventory-items">
                           {(player.party || []).map((mobId, index) => {
                             const mob = bonuses.find(b => b.id === mobId);
@@ -549,8 +557,8 @@ function PlayerManager({ onClose }) {
                     )}
 
                     {/* Status Effects */}
-                    <div className="status-effects-section" style={{ marginTop: '0.75rem' }}>
-                      <label>Status Effects</label>
+                    <div className="subsection" style={{ marginTop: '0.75rem' }}>
+                      <div className="subsection-title">✨ Status Effects</div>
                       {(player.statusEffects || []).map((effect, index) => (
                         <div key={index} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                           <input
@@ -571,7 +579,7 @@ function PlayerManager({ onClose }) {
                       ))}
                       <button
                         onClick={() => handleAddStatusEffect(player.id)}
-                        style={{ marginTop: '0.5rem', width: '100%' }}
+                        style={{ marginTop: '0.5rem', width: '100%', fontSize: '0.85rem' }}
                       >
                         + Add Status Effect
                       </button>

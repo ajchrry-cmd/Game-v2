@@ -407,3 +407,57 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Player Manager Enhanced Sections */
+.section-card {
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s;
+}
+
+.section-card:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.section-header {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: 0.5px;
+}
+
+.config-box {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.75rem;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.config-box label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.subsection {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+}
+
+.subsection-title {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #d4af37;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
