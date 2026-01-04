@@ -116,6 +116,7 @@ function AttachedMobEditor({ player, onClose, onSave }) {
                   key={`mob-${index}`}
                   position={offsetPixels}
                   onDrag={(e, data) => handleDragMob(index, e, data)}
+                  style={{ border: 'none', outline: 'none' }}
                 >
                   <div
                     onClick={(e) => {
@@ -131,7 +132,10 @@ function AttachedMobEditor({ player, onClose, onSave }) {
                       border: 'none',
                       outline: 'none',
                       boxShadow: 'none',
-                      background: 'transparent'
+                      background: 'transparent',
+                      overflow: 'hidden',
+                      padding: 0,
+                      margin: 0
                     }}
                   >
                     {mob.imageUrl && (

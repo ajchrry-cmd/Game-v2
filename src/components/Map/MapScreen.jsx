@@ -441,6 +441,7 @@ function MapScreen() {
                           };
                           updatePlayer(player.id, { attachedMobs: newAttachedMobs });
                         }}
+                        style={{ border: 'none', outline: 'none' }}
                       >
                         <div
                           style={{
@@ -452,7 +453,10 @@ function MapScreen() {
                             border: 'none',
                             outline: 'none',
                             boxShadow: 'none',
-                            background: 'transparent'
+                            background: 'transparent',
+                            overflow: 'hidden',
+                            padding: 0,
+                            margin: 0
                           }}
                         >
                           {mob.imageUrl && (
