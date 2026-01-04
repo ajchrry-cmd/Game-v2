@@ -1,6 +1,9 @@
 .manager-modal {
-  min-width: 600px;
-  max-width: 800px;
+  min-width: 900px;
+  max-width: 1400px;
+  width: 85vw;
+  max-height: 90vh;
+  height: 85vh;
 }
 
 .manager-content {
@@ -42,7 +45,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 400px;
+  max-height: 70vh;
   overflow-y: auto;
 }
 
