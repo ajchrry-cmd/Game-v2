@@ -127,7 +127,11 @@ function AttachedMobEditor({ player, onClose, onSave }) {
                       width: `${mobSize}px`,
                       height: `${mobSize}px`,
                       cursor: 'move',
-                      zIndex: 10
+                      zIndex: 10,
+                      border: 'none',
+                      outline: 'none',
+                      boxShadow: 'none',
+                      background: 'transparent'
                     }}
                   >
                     {mob.imageUrl && (
