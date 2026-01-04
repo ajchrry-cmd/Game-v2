@@ -225,10 +225,12 @@ function WheelScreen() {
     // Check if this spin is still in progress based on elapsed time
     const elapsed = Date.now() - wheelSpinStartTime;
     if (elapsed >= wheelSpinDuration) {
+      console.log('Spin already completed, elapsed:', elapsed, 'ms - clearing spin state');
       // Spin already completed before we got here, just set final state
       const finalRotation = wheelSpinTargetRotation % 360;
       setWheelRotation(finalRotation);
       setIsSpinning(false);
+      setWheelSpinActive(false); // Clear the active flag so new spins can start
       return;
     }
 
