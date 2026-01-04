@@ -92,12 +92,12 @@ function WheelScreen() {
     ctx.lineWidth = 4;
     ctx.stroke();
 
-    // Draw pointer
+    // Draw pointer (on the right side)
     ctx.fillStyle = '#FF0000';
     ctx.beginPath();
-    ctx.moveTo(centerX, 20);
-    ctx.lineTo(centerX - 20, 60);
-    ctx.lineTo(centerX + 20, 60);
+    ctx.moveTo(canvas.width - 20, centerY);  // Right side tip
+    ctx.lineTo(canvas.width - 60, centerY - 20);  // Top left of triangle
+    ctx.lineTo(canvas.width - 60, centerY + 20);  // Bottom left of triangle
     ctx.closePath();
     ctx.fill();
     ctx.strokeStyle = '#fff';
@@ -163,9 +163,9 @@ function WheelScreen() {
       } else {
         setIsSpinning(false);
         // Calculate which segment the pointer is pointing at
-        // Pointer is at top (270 degrees in standard coords, or -90 from right)
+        // Pointer is at right side (0 degrees in standard coords)
         // We need to account for the wheel's rotation
-        const pointerAngle = 270; // Top of circle
+        const pointerAngle = 0; // Right side of circle
         const wheelAngle = currentRotation % 360;
 
         // The actual angle we're pointing at on the wheel
