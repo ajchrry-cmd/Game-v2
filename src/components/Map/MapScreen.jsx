@@ -377,6 +377,7 @@ function MapScreen() {
                 onDrag={(e, data) => handleDrag(player.id, e, data)}
               >
                 <div className="player-token">
+                  {/* Main player icon */}
                   {player.iconType === 'custom' && player.iconUrl ? (
                     <img
                       src={player.iconUrl}
@@ -402,6 +403,49 @@ function MapScreen() {
                       }}
                     />
                   )}
+
+                  {/* Attached mobs */}
+                  {(player.attachedMobs || []).map((mobId, index) => {
+                    const mob = bonuses.find(b => b.id === mobId);
+                    if (!mob) return null;
+
+                    // Position mobs in a circle around the player
+                    const angle = (index / Math.max(1, player.attachedMobs.length)) * 2 * Math.PI;
+                    const radius = tokenSize * 0.8;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    const mobSize = tokenSize * 0.6;
+
+                    return (
+                      <div
+                        key={mobId}
+                        style={{
+                          position: 'absolute',
+                          width: `${mobSize}px`,
+                          height: `${mobSize}px`,
+                          left: `${x}px`,
+                          top: `${y}px`,
+                          transform: 'translate(-50%, -50%)',
+                          pointerEvents: 'none',
+                          zIndex: 10
+                        }}
+                      >
+                        {mob.imageUrl && (
+                          <img
+                            src={mob.imageUrl}
+                            alt={mob.name}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))'
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+
                   <span className="player-name">{player.name}</span>
                 </div>
               </Draggable>

@@ -10,7 +10,8 @@ function PlayerManager({ onClose }) {
     removePlayer,
     items,
     uploadImage,
-    currentSession
+    currentSession,
+    bonuses
   } = useGame();
 
   const [editingPlayer, setEditingPlayer] = useState(null);
@@ -278,6 +279,60 @@ function PlayerManager({ onClose }) {
                           {items.map(item => (
                             <option key={item.id} value={item.id}>
                               {item.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="player-inventory">
+                    <label>Attached Mobs ({(player.attachedMobs || []).length})</label>
+                    <div className="inventory-items">
+                      {(player.attachedMobs || []).map((mobId, index) => {
+                        const mob = bonuses.find(b => b.id === mobId);
+                        return mob ? (
+                          <div key={index} className="inventory-item">
+                            {mob.imageUrl && (
+                              <img
+                                src={mob.imageUrl}
+                                alt={mob.name}
+                                style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  objectFit: 'contain',
+                                  marginRight: '8px'
+                                }}
+                              />
+                            )}
+                            <span>{mob.name}</span>
+                            <button
+                              className="remove-item"
+                              onClick={() => {
+                                const newAttachedMobs = (player.attachedMobs || []).filter((_, i) => i !== index);
+                                updatePlayer(player.id, { attachedMobs: newAttachedMobs });
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ) : null;
+                      })}
+                      {(player.attachedMobs || []).length < 3 && (
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              const newAttachedMobs = [...(player.attachedMobs || []), e.target.value];
+                              updatePlayer(player.id, { attachedMobs: newAttachedMobs });
+                              e.target.value = '';
+                            }
+                          }}
+                        >
+                          <option value="">+ Add Mob</option>
+                          {bonuses.map(mob => (
+                            <option key={mob.id} value={mob.id}>
+                              {mob.name}
                             </option>
                           ))}
                         </select>
