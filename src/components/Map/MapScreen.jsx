@@ -408,11 +408,12 @@ function MapScreen() {
                   {(player.attachedMobs || []).map((attachedMob, index) => {
                     // Handle both old format (string) and new format (object)
                     const mobId = typeof attachedMob === 'string' ? attachedMob : attachedMob.mobId;
-                    const offset = typeof attachedMob === 'string' ? { x: 50, y: -50 } : attachedMob.offset;
+                    const offset = typeof attachedMob === 'string' ? { x: 50, y: -50 } : (attachedMob.offset || { x: 50, y: -50 });
+                    const size = attachedMob.size || 0.6; // Default to 60% of token size
                     const mob = bonuses.find(b => b.id === mobId);
                     if (!mob) return null;
 
-                    const mobSize = tokenSize * 0.6;
+                    const mobSize = tokenSize * size;
 
                     return (
                       <Draggable
@@ -423,7 +424,8 @@ function MapScreen() {
                           const newAttachedMobs = [...(player.attachedMobs || [])];
                           newAttachedMobs[index] = {
                             mobId: mobId,
-                            offset: { x: data.x, y: data.y }
+                            offset: { x: data.x, y: data.y },
+                            size: size // Preserve size
                           };
                           updatePlayer(player.id, { attachedMobs: newAttachedMobs });
                         }}
