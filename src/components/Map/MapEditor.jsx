@@ -48,6 +48,8 @@ function MapEditor({ map, onClose }) {
 
   // Mob placement state
   const [selectedMobId, setSelectedMobId] = useState(null);
+  const [selectedPlacedMob, setSelectedPlacedMob] = useState(null);
+  const [resizingMob, setResizingMob] = useState(null);
 
   // Initialize canvas
   useEffect(() => {
@@ -207,6 +209,39 @@ function MapEditor({ map, onClose }) {
           : m
       )
     }));
+  };
+
+  const handleMobResizeStart = (e, mobId, currentSize) => {
+    e.stopPropagation();
+    setResizingMob({
+      id: mobId,
+      startX: e.clientX,
+      startY: e.clientY,
+      startSize: currentSize
+    });
+  };
+
+  const handleMobResizeMove = (e) => {
+    if (!resizingMob) return;
+
+    const deltaX = e.clientX - resizingMob.startX;
+    const deltaY = e.clientY - resizingMob.startY;
+    const delta = Math.max(deltaX, deltaY);
+
+    const newSize = Math.max(30, resizingMob.startSize + delta);
+
+    setMapData(prevMapData => ({
+      ...prevMapData,
+      placedMobs: (prevMapData.placedMobs || []).map(m =>
+        m.id === resizingMob.id
+          ? { ...m, size: newSize }
+          : m
+      )
+    }));
+  };
+
+  const handleMobResizeEnd = () => {
+    setResizingMob(null);
   };
 
   const bringForward = (squareId) => {
@@ -403,6 +438,18 @@ function MapEditor({ map, onClose }) {
       };
     }
   }, [rotating, handleRotateMove, handleRotateEnd]);
+
+  // Add global mouse event listeners for mob resize
+  useEffect(() => {
+    if (resizingMob) {
+      window.addEventListener('mousemove', handleMobResizeMove);
+      window.addEventListener('mouseup', handleMobResizeEnd);
+      return () => {
+        window.removeEventListener('mousemove', handleMobResizeMove);
+        window.removeEventListener('mouseup', handleMobResizeEnd);
+      };
+    }
+  }, [resizingMob]);
 
   return (
     <div className="modal-overlay">
@@ -941,54 +988,80 @@ function MapEditor({ map, onClose }) {
               })}
 
               {/* Placed Mobs layer */}
-              {(mapData.placedMobs || []).map(mob => (
-                <Draggable
-                  key={mob.id}
-                  position={mob.position}
-                  onDrag={(e, data) => handleDragMob(mob.id, e, data)}
-                  disabled={mode === 'draw'}
-                >
-                  <div
-                    style={{
-                      width: `${mob.size}px`,
-                      height: `${mob.size}px`,
-                      position: 'absolute',
-                      cursor: mode === 'draw' ? 'default' : 'move',
-                      pointerEvents: mode === 'draw' ? 'none' : 'auto',
-                      zIndex: 6
-                    }}
+              {(mapData.placedMobs || []).map(mob => {
+                const isSelected = selectedPlacedMob === mob.id;
+                return (
+                  <Draggable
+                    key={mob.id}
+                    position={mob.position}
+                    onDrag={(e, data) => handleDragMob(mob.id, e, data)}
+                    disabled={mode === 'draw' || resizingMob !== null}
                   >
-                    {mob.imageUrl && (
-                      <img
-                        src={mob.imageUrl}
-                        alt={mob.name}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain',
-                          border: '2px solid rgba(212, 175, 55, 0.5)',
-                          borderRadius: '4px',
-                          background: 'rgba(0, 0, 0, 0.3)'
-                        }}
-                      />
-                    )}
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '-20px',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      fontSize: '0.7rem',
-                      color: '#d4af37',
-                      background: 'rgba(0, 0, 0, 0.8)',
-                      padding: '2px 6px',
-                      borderRadius: '3px',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {mob.name}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPlacedMob(mob.id);
+                        setSelectedSquare(null);
+                      }}
+                      style={{
+                        width: `${mob.size}px`,
+                        height: `${mob.size}px`,
+                        position: 'absolute',
+                        cursor: mode === 'draw' ? 'default' : 'move',
+                        pointerEvents: mode === 'draw' ? 'none' : 'auto',
+                        zIndex: 6
+                      }}
+                    >
+                      {mob.imageUrl && (
+                        <img
+                          src={mob.imageUrl}
+                          alt={mob.name}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            border: isSelected ? '3px solid #d4af37' : '2px solid rgba(212, 175, 55, 0.5)',
+                            borderRadius: '4px',
+                            background: 'rgba(0, 0, 0, 0.3)'
+                          }}
+                        />
+                      )}
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '-20px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        fontSize: '0.7rem',
+                        color: '#d4af37',
+                        background: 'rgba(0, 0, 0, 0.8)',
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {mob.name}
+                      </div>
+                      {/* Resize handle - only show when selected */}
+                      {isSelected && (
+                        <div
+                          onMouseDown={(e) => handleMobResizeStart(e, mob.id, mob.size)}
+                          style={{
+                            position: 'absolute',
+                            bottom: '-8px',
+                            right: '-8px',
+                            width: '20px',
+                            height: '20px',
+                            background: '#d4af37',
+                            border: '2px solid #fff',
+                            borderRadius: '50%',
+                            cursor: 'nwse-resize',
+                            zIndex: 10
+                          }}
+                        />
+                      )}
                     </div>
-                  </div>
-                </Draggable>
-              ))}
+                  </Draggable>
+                );
+              })}
             </div>
           </div>
         </div>
