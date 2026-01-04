@@ -16,12 +16,10 @@ function MobPlacer({ onClose }) {
   };
 
   return (
-    <div className="manager-overlay" onClick={onClose}>
-      <div className="manager-panel" onClick={(e) => e.stopPropagation()}>
-        <div className="manager-header">
-          <h2>Place Mobs on Map</h2>
-          <button className="close-button" onClick={onClose}>×</button>
-        </div>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal manager-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}>×</button>
+        <h2>Place Mobs on Map</h2>
 
         <div className="manager-content">
           {bonuses.length === 0 ? (
