@@ -425,56 +425,40 @@ function MapScreen() {
                     const mobSize = tokenSize * size;
 
                     return (
-                      <Draggable
+                      <div
                         key={`${player.id}-mob-${index}`}
-                        position={offsetPixels}
-                        onDrag={(e, data) => {
-                          // Convert pixels back to ratio when saving
-                          const newAttachedMobs = [...(player.attachedMobs || [])];
-                          newAttachedMobs[index] = {
-                            mobId: mobId,
-                            offset: {
-                              x: data.x / tokenSize,
-                              y: data.y / tokenSize
-                            },
-                            size: size // Preserve size
-                          };
-                          updatePlayer(player.id, { attachedMobs: newAttachedMobs });
+                        style={{
+                          position: 'absolute',
+                          left: offsetPixels.x,
+                          top: offsetPixels.y,
+                          width: `${mobSize}px`,
+                          height: `${mobSize}px`,
+                          zIndex: 10,
+                          border: 'none',
+                          outline: 'none',
+                          boxShadow: 'none',
+                          background: 'transparent',
+                          overflow: 'hidden',
+                          padding: 0,
+                          margin: 0,
+                          pointerEvents: 'none'
                         }}
-                        style={{ border: 'none', outline: 'none' }}
                       >
-                        <div
-                          style={{
-                            position: 'absolute',
-                            width: `${mobSize}px`,
-                            height: `${mobSize}px`,
-                            cursor: 'move',
-                            zIndex: 10,
-                            border: 'none',
-                            outline: 'none',
-                            boxShadow: 'none',
-                            background: 'transparent',
-                            overflow: 'hidden',
-                            padding: 0,
-                            margin: 0
-                          }}
-                        >
-                          {mob.imageUrl && (
-                            <img
-                              src={mob.imageUrl}
-                              alt={mob.name}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain',
-                                border: 'none',
-                                borderRadius: '0',
-                                outline: 'none'
-                              }}
-                            />
-                          )}
-                        </div>
-                      </Draggable>
+                        {mob.imageUrl && (
+                          <img
+                            src={mob.imageUrl}
+                            alt={mob.name}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              border: 'none',
+                              borderRadius: '0',
+                              outline: 'none'
+                            }}
+                          />
+                        )}
+                      </div>
                     );
                   })}
 
