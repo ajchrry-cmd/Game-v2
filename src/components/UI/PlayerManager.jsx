@@ -289,7 +289,8 @@ function PlayerManager({ onClose }) {
                   <div className="player-inventory">
                     <label>Attached Mobs ({(player.attachedMobs || []).length})</label>
                     <div className="inventory-items">
-                      {(player.attachedMobs || []).map((mobId, index) => {
+                      {(player.attachedMobs || []).map((attachedMob, index) => {
+                        const mobId = typeof attachedMob === 'string' ? attachedMob : attachedMob.mobId;
                         const mob = bonuses.find(b => b.id === mobId);
                         return mob ? (
                           <div key={index} className="inventory-item">
@@ -323,7 +324,11 @@ function PlayerManager({ onClose }) {
                           value=""
                           onChange={(e) => {
                             if (e.target.value) {
-                              const newAttachedMobs = [...(player.attachedMobs || []), e.target.value];
+                              const newAttachedMob = {
+                                mobId: e.target.value,
+                                offset: { x: 50, y: -50 } // Default position: top-right
+                              };
+                              const newAttachedMobs = [...(player.attachedMobs || []), newAttachedMob];
                               updatePlayer(player.id, { attachedMobs: newAttachedMobs });
                               e.target.value = '';
                             }
