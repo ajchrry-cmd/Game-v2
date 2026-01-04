@@ -3,7 +3,25 @@ import { useGame } from '../../contexts/GameContext';
 import './WheelScreen.css';
 
 function WheelScreen() {
-  const { wheels, currentWheelId, saveWheel, wheelRotation, setWheelRotation, wheelLastResult, setWheelLastResult } = useGame();
+  const {
+    wheels,
+    currentWheelId,
+    saveWheel,
+    wheelRotation,
+    setWheelRotation,
+    wheelLastResult,
+    setWheelLastResult,
+    wheelSpinActive,
+    setWheelSpinActive,
+    wheelSpinStartTime,
+    setWheelSpinStartTime,
+    wheelSpinStartRotation,
+    setWheelSpinStartRotation,
+    wheelSpinTargetRotation,
+    setWheelSpinTargetRotation,
+    wheelSpinDuration,
+    setWheelSpinDuration
+  } = useGame();
   const [isSpinning, setIsSpinning] = useState(false);
   const [editingSegment, setEditingSegment] = useState(null);
   const canvasRef = useRef(null);
@@ -161,36 +179,46 @@ function WheelScreen() {
   };
 
   const spinWheel = () => {
-    if (isSpinning || !currentWheel) return;
+    if (wheelSpinActive || !currentWheel) return;
 
-    setIsSpinning(true);
+    // Calculate spin parameters
     const spins = 5 + Math.random() * 5; // 5-10 full rotations
     const extraDegrees = Math.random() * 360;
     const totalRotation = spins * 360 + extraDegrees;
     const duration = 4000; // 4 seconds
+    const targetRotation = wheelRotation + totalRotation;
 
-    const startTime = Date.now();
-    const startRotation = wheelRotation;
+    // Set spin state (this will sync to all users and trigger animations)
+    setWheelSpinActive(true);
+    setWheelSpinStartTime(Date.now());
+    setWheelSpinStartRotation(wheelRotation);
+    setWheelSpinTargetRotation(targetRotation);
+    setWheelSpinDuration(duration);
+  };
+
+  // Animation effect - runs when spin becomes active
+  useEffect(() => {
+    if (!wheelSpinActive || !currentWheel) return;
+
+    setIsSpinning(true);
+    let animationFrame;
 
     const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
+      const elapsed = Date.now() - wheelSpinStartTime;
+      const progress = Math.min(elapsed / wheelSpinDuration, 1);
 
       // Easing function for smooth deceleration
       const easeOut = 1 - Math.pow(1 - progress, 3);
-      const currentRotation = startRotation + totalRotation * easeOut;
+      const currentRotation = wheelSpinStartRotation + (wheelSpinTargetRotation - wheelSpinStartRotation) * easeOut;
 
       setWheelRotation(currentRotation % 360);
 
       if (progress < 1) {
-        requestAnimationFrame(animate);
+        animationFrame = requestAnimationFrame(animate);
       } else {
         setIsSpinning(false);
+
         // Calculate which segment the pointer is pointing at
-        // Pointer is at right side (0 degrees in screen coords), stays fixed while wheel rotates
-        // Canvas rotates by wheelAngle, so segments drawn at angle A appear at (A + wheelAngle) in screen coords
-        // To find what's at screen angle 0, we need the segment at drawing angle (0 - wheelAngle) = -wheelAngle
-        // Which is equivalent to (360 - wheelAngle) % 360
         const wheelAngle = currentRotation % 360;
         const targetAngle = (360 - wheelAngle) % 360;
         const targetRadians = (targetAngle * Math.PI) / 180;
@@ -213,13 +241,21 @@ function WheelScreen() {
           cumulativeAngle += segmentAngle;
         }
 
-        // Save the result to session state (syncs with all users)
+        // Save the result and deactivate spin
         setWheelLastResult(resultIndex);
+        setWheelSpinActive(false);
       }
     };
 
-    requestAnimationFrame(animate);
-  };
+    animationFrame = requestAnimationFrame(animate);
+
+    // Cleanup animation on unmount or if spin is cancelled
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [wheelSpinActive, wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration, currentWheel]);
 
   if (!currentWheel) {
     return (

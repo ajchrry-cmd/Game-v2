@@ -49,6 +49,11 @@ export const GameProvider = ({ children }) => {
   // Wheel-specific state (synced with session)
   const [wheelRotation, setWheelRotation] = useState(0);
   const [wheelLastResult, setWheelLastResult] = useState(null);
+  const [wheelSpinActive, setWheelSpinActive] = useState(false);
+  const [wheelSpinStartTime, setWheelSpinStartTime] = useState(null);
+  const [wheelSpinStartRotation, setWheelSpinStartRotation] = useState(0);
+  const [wheelSpinTargetRotation, setWheelSpinTargetRotation] = useState(0);
+  const [wheelSpinDuration, setWheelSpinDuration] = useState(0);
 
   // UI state
   const [menuOpen, setMenuOpen] = useState(false);
@@ -101,7 +106,12 @@ export const GameProvider = ({ children }) => {
         currentWheelId: null,
         wheelState: {
           rotation: 0,
-          lastResult: null
+          lastResult: null,
+          spinActive: false,
+          spinStartTime: null,
+          spinStartRotation: 0,
+          spinTargetRotation: 0,
+          spinDuration: 0
         }
       };
       const docRef = await addDoc(collection(db, 'sessions'), newSession);
@@ -140,6 +150,11 @@ export const GameProvider = ({ children }) => {
           setPlacedBonuses(session.currentMapState?.placedBonuses || []);
           setWheelRotation(session.wheelState?.rotation || 0);
           setWheelLastResult(session.wheelState?.lastResult || null);
+          setWheelSpinActive(session.wheelState?.spinActive || false);
+          setWheelSpinStartTime(session.wheelState?.spinStartTime || null);
+          setWheelSpinStartRotation(session.wheelState?.spinStartRotation || 0);
+          setWheelSpinTargetRotation(session.wheelState?.spinTargetRotation || 0);
+          setWheelSpinDuration(session.wheelState?.spinDuration || 0);
 
           // Reset flag after state updates are queued
           setTimeout(() => {
@@ -179,7 +194,12 @@ export const GameProvider = ({ children }) => {
         currentWheelId,
         wheelState: {
           rotation: wheelRotation,
-          lastResult: wheelLastResult
+          lastResult: wheelLastResult,
+          spinActive: wheelSpinActive,
+          spinStartTime: wheelSpinStartTime,
+          spinStartRotation: wheelSpinStartRotation,
+          spinTargetRotation: wheelSpinTargetRotation,
+          spinDuration: wheelSpinDuration
         }
       };
       await setDoc(doc(db, 'sessions', currentSession.id), sessionData);
@@ -212,7 +232,7 @@ export const GameProvider = ({ children }) => {
       }, 100); // Reduced from 1000ms to 100ms for near-instant sync
       return () => clearTimeout(timer);
     }
-  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses, wheelRotation, wheelLastResult]);
+  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses, wheelRotation, wheelLastResult, wheelSpinActive, wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration]);
 
   // Cleanup session listener on unmount
   useEffect(() => {
@@ -613,6 +633,16 @@ export const GameProvider = ({ children }) => {
     setWheelRotation,
     wheelLastResult,
     setWheelLastResult,
+    wheelSpinActive,
+    setWheelSpinActive,
+    wheelSpinStartTime,
+    setWheelSpinStartTime,
+    wheelSpinStartRotation,
+    setWheelSpinStartRotation,
+    wheelSpinTargetRotation,
+    setWheelSpinTargetRotation,
+    wheelSpinDuration,
+    setWheelSpinDuration,
 
     // Scenes
     scenes,
