@@ -5,14 +5,14 @@
 
 export const defaultUISettings = {
   playerPanelWidth: 380,
-  playerCardFontSize: 1,
-  playerCardSpacing: 1.25,
+  playerCardFontSize: 0.9,
+  playerCardSpacing: 0.75,
   primaryColor: '#d4af37',
   secondaryColor: '#2a2a2a',
-  inventorySlotSize: 70,
-  playerInfoPadding: 1.25,
-  partySlotSize: 60,
-  statSize: 1
+  inventorySlotSize: 60,
+  playerInfoPadding: 0.85,
+  partySlotSize: 55,
+  statSize: 0.9
 };
 
 /**

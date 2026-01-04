@@ -199,45 +199,45 @@ function UICustomization({ onClose }) {
               </button>
               <button
                 onClick={() => setSettings({
-                  playerPanelWidth: 450,
-                  playerCardFontSize: 1.1,
-                  playerCardSpacing: 1.5,
+                  playerPanelWidth: 420,
+                  playerCardFontSize: 1,
+                  playerCardSpacing: 1,
                   primaryColor: '#d4af37',
                   secondaryColor: '#2a2a2a',
-                  inventorySlotSize: 75,
-                  playerInfoPadding: 1.5,
-                  partySlotSize: 65,
-                  statSize: 1.1
+                  inventorySlotSize: 70,
+                  playerInfoPadding: 1.1,
+                  partySlotSize: 60,
+                  statSize: 1
                 })}
               >
                 Comfortable
               </button>
               <button
                 onClick={() => setSettings({
-                  playerPanelWidth: 500,
-                  playerCardFontSize: 1.2,
-                  playerCardSpacing: 1.75,
+                  playerPanelWidth: 480,
+                  playerCardFontSize: 1.1,
+                  playerCardSpacing: 1.25,
                   primaryColor: '#d4af37',
                   secondaryColor: '#2a2a2a',
-                  inventorySlotSize: 80,
-                  playerInfoPadding: 1.75,
-                  partySlotSize: 70,
-                  statSize: 1.2
+                  inventorySlotSize: 75,
+                  playerInfoPadding: 1.25,
+                  partySlotSize: 65,
+                  statSize: 1.1
                 })}
               >
                 Large
               </button>
               <button
                 onClick={() => setSettings({
-                  playerPanelWidth: 350,
-                  playerCardFontSize: 0.85,
-                  playerCardSpacing: 1,
+                  playerPanelWidth: 340,
+                  playerCardFontSize: 0.8,
+                  playerCardSpacing: 0.5,
                   primaryColor: '#d4af37',
                   secondaryColor: '#2a2a2a',
-                  inventorySlotSize: 60,
-                  playerInfoPadding: 1,
-                  partySlotSize: 50,
-                  statSize: 0.85
+                  inventorySlotSize: 50,
+                  playerInfoPadding: 0.65,
+                  partySlotSize: 45,
+                  statSize: 0.8
                 })}
               >
                 Compact
