@@ -20,6 +20,8 @@ function MapEditor({ map, onClose }) {
     shape: 'square',
     color: '#d4af37',
     text: '',
+    textSize: 16,
+    textColor: '#ffffff',
     width: 80,
     height: 80,
     lineLength: 100,
@@ -509,7 +511,25 @@ function MapEditor({ map, onClose }) {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Size</label>
+                      <label>Text Size</label>
+                      <input
+                        type="number"
+                        value={newSquare.textSize}
+                        onChange={(e) => setNewSquare({ ...newSquare, textSize: parseInt(e.target.value) || 16 })}
+                        min="8"
+                        max="72"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Text Color</label>
+                      <input
+                        type="color"
+                        value={newSquare.textColor}
+                        onChange={(e) => setNewSquare({ ...newSquare, textColor: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Shape Size</label>
                       <input
                         type="number"
                         value={newSquare.width}
@@ -595,6 +615,33 @@ function MapEditor({ map, onClose }) {
                             onChange={(e) => {
                               const updated = { ...selectedSquare, text: e.target.value };
                               handleUpdateSquare(selectedSquare.id, { text: e.target.value });
+                              setSelectedSquare(updated);
+                            }}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Text Size</label>
+                          <input
+                            type="number"
+                            value={selectedSquare.textSize || 16}
+                            onChange={(e) => {
+                              const newSize = parseInt(e.target.value) || 16;
+                              const updated = { ...selectedSquare, textSize: newSize };
+                              handleUpdateSquare(selectedSquare.id, { textSize: newSize });
+                              setSelectedSquare(updated);
+                            }}
+                            min="8"
+                            max="72"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Text Color</label>
+                          <input
+                            type="color"
+                            value={selectedSquare.textColor || '#ffffff'}
+                            onChange={(e) => {
+                              const updated = { ...selectedSquare, textColor: e.target.value };
+                              handleUpdateSquare(selectedSquare.id, { textColor: e.target.value });
                               setSelectedSquare(updated);
                             }}
                           />
@@ -741,7 +788,16 @@ function MapEditor({ map, onClose }) {
                           justifyContent: 'center'
                         }}
                       >
-                        {square.text && square.shape !== 'line' && <span>{square.text}</span>}
+                        {square.text && square.shape !== 'line' && (
+                          <span style={{
+                            fontSize: `${square.textSize || 16}px`,
+                            color: square.textColor || '#ffffff',
+                            fontWeight: 'bold',
+                            textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
+                          }}>
+                            {square.text}
+                          </span>
+                        )}
                       </div>
                       {isSelected && mode === 'shapes' && (
                         <>
