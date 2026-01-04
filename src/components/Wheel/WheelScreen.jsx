@@ -25,6 +25,7 @@ function WheelScreen() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [editingSegment, setEditingSegment] = useState(null);
   const canvasRef = useRef(null);
+  const lastAnimatedSpinTime = useRef(null); // Track which spin we last animated
 
   const currentWheel = wheels.find(w => w.id === currentWheelId);
   const isBattleWheel = currentWheel?.type === 'battle';
@@ -201,6 +202,12 @@ function WheelScreen() {
     // Only start animation if we have valid spin parameters and a start time
     if (!wheelSpinStartTime || !currentWheel || wheelSpinDuration === 0) return;
 
+    // Check if we've already animated this spin
+    if (lastAnimatedSpinTime.current === wheelSpinStartTime) return;
+
+    // Mark this spin as being animated
+    lastAnimatedSpinTime.current = wheelSpinStartTime;
+
     // Check if this spin is still in progress based on elapsed time
     const elapsed = Date.now() - wheelSpinStartTime;
     if (elapsed >= wheelSpinDuration) {
@@ -211,6 +218,7 @@ function WheelScreen() {
       return;
     }
 
+    console.log('Starting wheel animation, elapsed:', elapsed, 'ms');
     setIsSpinning(true);
     let animationFrame;
     let hasCompleted = false;
@@ -255,6 +263,7 @@ function WheelScreen() {
         }
 
         // Save the result (only set these once per animation)
+        console.log('Wheel animation completed, result:', resultIndex);
         setWheelLastResult(resultIndex);
 
         // Clear spin state after a delay to prevent rapid re-spins
