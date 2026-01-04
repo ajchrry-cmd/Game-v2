@@ -187,11 +187,13 @@ function WheelScreen() {
       } else {
         setIsSpinning(false);
         // Calculate which segment the pointer is pointing at
-        // Pointer is at right side (0 degrees), stays fixed while wheel rotates
-        // When wheel rotates counter-clockwise by X degrees,
-        // the segment that was at angle X is now at the pointer
+        // Pointer is at right side (0 degrees in screen coords), stays fixed while wheel rotates
+        // Canvas rotates by wheelAngle, so segments drawn at angle A appear at (A + wheelAngle) in screen coords
+        // To find what's at screen angle 0, we need the segment at drawing angle (0 - wheelAngle) = -wheelAngle
+        // Which is equivalent to (360 - wheelAngle) % 360
         const wheelAngle = currentRotation % 360;
-        const targetRadians = (wheelAngle * Math.PI) / 180;
+        const targetAngle = (360 - wheelAngle) % 360;
+        const targetRadians = (targetAngle * Math.PI) / 180;
 
         // Calculate total weight and find which segment
         const totalWeight = currentWheel.segments.reduce((sum, seg) => sum + (seg.weight || 1), 0);
@@ -247,10 +249,10 @@ function WheelScreen() {
       >
         {isSpinning ? 'Spinning...' : 'SPIN'}
       </button>
-      {currentWheel.lastResult !== null && currentWheel.lastResult !== undefined && (
+      {wheelLastResult !== null && wheelLastResult !== undefined && (
         <div className="result-display">
           <h2>Result:</h2>
-          <p>{currentWheel.segments[currentWheel.lastResult]?.text}</p>
+          <p>{currentWheel.segments[wheelLastResult]?.text}</p>
         </div>
       )}
       {isBattleWheel && (
