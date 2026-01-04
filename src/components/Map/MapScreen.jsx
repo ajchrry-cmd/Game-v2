@@ -256,6 +256,26 @@ function MapScreen() {
           <button onClick={handleTokenSizeIncrease} title="Increase Token Size">+</button>
         </div>
 
+        {selectedBonusId && (() => {
+          const selectedBonus = placedBonuses.find(pb => pb.id === selectedBonusId);
+          const bonus = selectedBonus && bonuses.find(b => b.id === selectedBonus.bonusId);
+          return selectedBonus && (
+            <div className="mob-size-controls">
+              <label>{bonus?.name} Size:</label>
+              <input
+                type="range"
+                min="30"
+                max="200"
+                step="5"
+                value={selectedBonus.size || 60}
+                onChange={(e) => updateBonusSize(selectedBonusId, parseInt(e.target.value))}
+                style={{ width: '150px', marginLeft: '8px', marginRight: '8px' }}
+              />
+              <span>{selectedBonus.size || 60}px</span>
+            </div>
+          );
+        })()}
+
         <div
           className="map-canvas"
           onClick={() => setSelectedBonusId(null)}
