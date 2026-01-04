@@ -187,14 +187,11 @@ function WheelScreen() {
       } else {
         setIsSpinning(false);
         // Calculate which segment the pointer is pointing at
-        // Pointer is at right side (0 degrees in standard coords)
-        // We need to account for the wheel's rotation
-        const pointerAngle = 0; // Right side of circle
+        // Pointer is at right side (0 degrees), stays fixed while wheel rotates
+        // When wheel rotates counter-clockwise by X degrees,
+        // the segment that was at angle X is now at the pointer
         const wheelAngle = currentRotation % 360;
-
-        // The actual angle we're pointing at on the wheel
-        const targetAngle = (pointerAngle - wheelAngle + 360) % 360;
-        const targetRadians = (targetAngle * Math.PI) / 180;
+        const targetRadians = (wheelAngle * Math.PI) / 180;
 
         // Calculate total weight and find which segment
         const totalWeight = currentWheel.segments.reduce((sum, seg) => sum + (seg.weight || 1), 0);
