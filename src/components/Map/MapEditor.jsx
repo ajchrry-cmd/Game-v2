@@ -5,11 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 import './MapEditor.css';
 
 function MapEditor({ map, onClose }) {
-  const { saveMap, uploadImage } = useGame();
+  const { saveMap, uploadImage, bonuses } = useGame();
   const [mapData, setMapData] = useState(
     map || {
       name: 'New Map',
       squares: [],
+      placedMobs: [],
       backgroundColor: '#1a1a1a',
       backgroundImage: null,
       drawingData: null
@@ -44,6 +45,9 @@ function MapEditor({ map, onClose }) {
   // Rotation state
   const [rotating, setRotating] = useState(null);
   const [rotateStart, setRotateStart] = useState({ angle: 0, centerX: 0, centerY: 0 });
+
+  // Mob placement state
+  const [selectedMobId, setSelectedMobId] = useState(null);
 
   // Initialize canvas
   useEffect(() => {
@@ -164,6 +168,45 @@ function MapEditor({ map, onClose }) {
 
       return { ...prevMapData, squares: newSquares };
     });
+  };
+
+  const handlePlaceMob = () => {
+    if (!selectedMobId) return;
+
+    const mob = bonuses.find(b => b.id === selectedMobId);
+    if (!mob) return;
+
+    const placedMob = {
+      id: uuidv4(),
+      mobId: selectedMobId,
+      name: mob.name,
+      imageUrl: mob.imageUrl,
+      position: { x: 400, y: 300 },
+      size: 80
+    };
+
+    setMapData(prevMapData => ({
+      ...prevMapData,
+      placedMobs: [...(prevMapData.placedMobs || []), placedMob]
+    }));
+  };
+
+  const handleRemoveMob = (mobPlacementId) => {
+    setMapData(prevMapData => ({
+      ...prevMapData,
+      placedMobs: (prevMapData.placedMobs || []).filter(m => m.id !== mobPlacementId)
+    }));
+  };
+
+  const handleDragMob = (mobPlacementId, e, data) => {
+    setMapData(prevMapData => ({
+      ...prevMapData,
+      placedMobs: (prevMapData.placedMobs || []).map(m =>
+        m.id === mobPlacementId
+          ? { ...m, position: { x: data.x, y: data.y } }
+          : m
+      )
+    }));
   };
 
   const bringForward = (squareId) => {
@@ -713,6 +756,59 @@ function MapEditor({ map, onClose }) {
                     </button>
                   </>
                 )}
+
+                <h3>Place Mobs</h3>
+                <div className="form-group">
+                  <label>Select Mob</label>
+                  {bonuses.length === 0 ? (
+                    <p style={{ color: '#999', fontSize: '0.9rem' }}>No mobs created yet</p>
+                  ) : (
+                    <select
+                      value={selectedMobId || ''}
+                      onChange={(e) => setSelectedMobId(e.target.value)}
+                    >
+                      <option value="">-- Select a mob --</option>
+                      {bonuses.map(bonus => (
+                        <option key={bonus.id} value={bonus.id}>{bonus.name}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+                <button
+                  className="primary"
+                  onClick={handlePlaceMob}
+                  disabled={!selectedMobId}
+                >
+                  Place Mob on Map
+                </button>
+
+                {mapData.placedMobs && mapData.placedMobs.length > 0 && (
+                  <>
+                    <h3>Placed Mobs ({mapData.placedMobs.length})</h3>
+                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                      {mapData.placedMobs.map(mob => (
+                        <div key={mob.id} style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '0.5rem',
+                          background: '#2a2a2a',
+                          marginBottom: '0.5rem',
+                          borderRadius: '4px'
+                        }}>
+                          <span>{mob.name}</span>
+                          <button
+                            className="danger"
+                            onClick={() => handleRemoveMob(mob.id)}
+                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -843,6 +939,56 @@ function MapEditor({ map, onClose }) {
                   </Draggable>
                 );
               })}
+
+              {/* Placed Mobs layer */}
+              {(mapData.placedMobs || []).map(mob => (
+                <Draggable
+                  key={mob.id}
+                  position={mob.position}
+                  onDrag={(e, data) => handleDragMob(mob.id, e, data)}
+                  disabled={mode === 'draw'}
+                >
+                  <div
+                    style={{
+                      width: `${mob.size}px`,
+                      height: `${mob.size}px`,
+                      position: 'absolute',
+                      cursor: mode === 'draw' ? 'default' : 'move',
+                      pointerEvents: mode === 'draw' ? 'none' : 'auto',
+                      zIndex: 6
+                    }}
+                  >
+                    {mob.imageUrl && (
+                      <img
+                        src={mob.imageUrl}
+                        alt={mob.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                          border: '2px solid rgba(212, 175, 55, 0.5)',
+                          borderRadius: '4px',
+                          background: 'rgba(0, 0, 0, 0.3)'
+                        }}
+                      />
+                    )}
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '-20px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      fontSize: '0.7rem',
+                      color: '#d4af37',
+                      background: 'rgba(0, 0, 0, 0.8)',
+                      padding: '2px 6px',
+                      borderRadius: '3px',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {mob.name}
+                    </div>
+                  </div>
+                </Draggable>
+              ))}
             </div>
           </div>
         </div>

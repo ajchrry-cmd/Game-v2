@@ -287,9 +287,42 @@ function MapScreen() {
               }}
             >
               {square.text && square.shape !== 'line' && (
-                <span style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                <span style={{
+                  fontSize: `${square.textSize || 16}px`,
+                  color: square.textColor || '#ffffff',
+                  fontWeight: 'bold',
+                  textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
+                }}>
                   {square.text}
                 </span>
+              )}
+            </div>
+          ))}
+
+          {/* Render permanent mobs from map */}
+          {currentMap.placedMobs?.map(mob => (
+            <div
+              key={mob.id}
+              style={{
+                position: 'absolute',
+                left: mob.position.x,
+                top: mob.position.y,
+                width: `${mob.size}px`,
+                height: `${mob.size}px`,
+                pointerEvents: 'none',
+                zIndex: 3
+              }}
+            >
+              {mob.imageUrl && (
+                <img
+                  src={mob.imageUrl}
+                  alt={mob.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain'
+                  }}
+                />
               )}
             </div>
           ))}
