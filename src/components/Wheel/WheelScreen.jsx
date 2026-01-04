@@ -180,7 +180,11 @@ function WheelScreen() {
   };
 
   const spinWheel = () => {
-    if (wheelSpinActive || !currentWheel) return;
+    console.log('spinWheel called, wheelSpinActive:', wheelSpinActive, 'currentWheel:', currentWheel?.name);
+    if (wheelSpinActive || !currentWheel) {
+      console.log('Spin blocked - wheelSpinActive:', wheelSpinActive, 'currentWheel exists:', !!currentWheel);
+      return;
+    }
 
     // Calculate spin parameters
     const spins = 5 + Math.random() * 5; // 5-10 full rotations
@@ -188,6 +192,8 @@ function WheelScreen() {
     const totalRotation = spins * 360 + extraDegrees;
     const duration = 4000; // 4 seconds
     const targetRotation = wheelRotation + totalRotation;
+
+    console.log('Setting spin parameters - duration:', duration, 'targetRotation:', targetRotation);
 
     // Set spin state (this will sync to all users and trigger animations)
     setWheelSpinActive(true);
@@ -199,11 +205,19 @@ function WheelScreen() {
 
   // Animation effect - runs when spin state changes
   useEffect(() => {
+    console.log('Animation useEffect triggered - startTime:', wheelSpinStartTime, 'duration:', wheelSpinDuration, 'currentWheel:', currentWheel?.name);
+
     // Only start animation if we have valid spin parameters and a start time
-    if (!wheelSpinStartTime || !currentWheel || wheelSpinDuration === 0) return;
+    if (!wheelSpinStartTime || !currentWheel || wheelSpinDuration === 0) {
+      console.log('Animation blocked - startTime:', !!wheelSpinStartTime, 'currentWheel:', !!currentWheel, 'duration:', wheelSpinDuration);
+      return;
+    }
 
     // Check if we've already animated this spin
-    if (lastAnimatedSpinTime.current === wheelSpinStartTime) return;
+    if (lastAnimatedSpinTime.current === wheelSpinStartTime) {
+      console.log('Already animated this spin');
+      return;
+    }
 
     // Mark this spin as being animated
     lastAnimatedSpinTime.current = wheelSpinStartTime;
