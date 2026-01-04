@@ -31,6 +31,15 @@ function AttachedMobEditor({ player, onClose, onSave }) {
     setAttachedMobs(newAttachedMobs);
   };
 
+  const handleLayerChange = (index, newLayer) => {
+    const newAttachedMobs = [...attachedMobs];
+    newAttachedMobs[index] = {
+      ...newAttachedMobs[index],
+      layer: newLayer
+    };
+    setAttachedMobs(newAttachedMobs);
+  };
+
   const handleSave = () => {
     onSave(attachedMobs);
     onClose();
@@ -189,7 +198,7 @@ function AttachedMobEditor({ player, onClose, onSave }) {
           </div>
         </div>
 
-        {/* Size controls */}
+        {/* Size and Layer controls */}
         {selectedMobIndex !== null && (
           <div style={{
             marginTop: '2rem',
@@ -199,10 +208,12 @@ function AttachedMobEditor({ player, onClose, onSave }) {
             border: '2px solid #d4af37'
           }}>
             <h3 style={{ color: '#d4af37', marginBottom: '1rem' }}>
-              Adjust Size - {bonuses.find(b => b.id === (typeof attachedMobs[selectedMobIndex] === 'string' ? attachedMobs[selectedMobIndex] : attachedMobs[selectedMobIndex].mobId))?.name}
+              Adjust Settings - {bonuses.find(b => b.id === (typeof attachedMobs[selectedMobIndex] === 'string' ? attachedMobs[selectedMobIndex] : attachedMobs[selectedMobIndex].mobId))?.name}
             </h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <label style={{ color: '#fff' }}>Size:</label>
+
+            {/* Size Control */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+              <label style={{ color: '#fff', minWidth: '60px' }}>Size:</label>
               <input
                 type="range"
                 min="0.2"
@@ -214,6 +225,22 @@ function AttachedMobEditor({ player, onClose, onSave }) {
               />
               <span style={{ color: '#d4af37', minWidth: '50px' }}>
                 {Math.round((attachedMobs[selectedMobIndex]?.size || 0.6) * 100)}%
+              </span>
+            </div>
+
+            {/* Layer Control */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <label style={{ color: '#fff', minWidth: '60px' }}>Layer:</label>
+              <select
+                value={attachedMobs[selectedMobIndex]?.layer || 'above'}
+                onChange={(e) => handleLayerChange(selectedMobIndex, e.target.value)}
+                style={{ flex: 1, padding: '0.5rem', borderRadius: '4px' }}
+              >
+                <option value="below">Below Player</option>
+                <option value="above">Above Player</option>
+              </select>
+              <span style={{ color: '#999', minWidth: '50px', fontSize: '0.85rem' }}>
+                {attachedMobs[selectedMobIndex]?.layer === 'below' ? 'Back' : 'Front'}
               </span>
             </div>
           </div>

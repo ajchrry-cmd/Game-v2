@@ -408,7 +408,8 @@ function PlayerManager({ onClose }) {
                               const newAttachedMob = {
                                 mobId: e.target.value,
                                 offset: { x: 1, y: -1 },
-                                size: 0.6
+                                size: 0.6,
+                                layer: 'above' // Default to above player
                               };
                               const newAttachedMobs = [...(player.attachedMobs || []), newAttachedMob];
                               updatePlayer(player.id, { attachedMobs: newAttachedMobs });

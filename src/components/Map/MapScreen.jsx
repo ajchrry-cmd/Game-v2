@@ -390,7 +390,9 @@ function MapScreen() {
                         height: `${tokenSize}px`,
                         borderRadius: '50%',
                         border: '3px solid #fff',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)'
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
+                        position: 'relative',
+                        zIndex: 10
                       }}
                     />
                   ) : (
@@ -402,7 +404,9 @@ function MapScreen() {
                         height: `${tokenSize}px`,
                         borderRadius: '50%',
                         border: '3px solid #fff',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)'
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
+                        position: 'relative',
+                        zIndex: 10
                       }}
                     />
                   )}
@@ -422,10 +426,12 @@ function MapScreen() {
                     };
 
                     const size = attachedMob.size || 0.6; // Default to 60% of token size
+                    const layer = attachedMob.layer || 'above'; // Default to above player
                     const mob = bonuses.find(b => b.id === mobId);
                     if (!mob) return null;
 
                     const mobSize = tokenSize * size;
+                    const zIndex = layer === 'below' ? 5 : 15; // Below=5, Above=15
 
                     return (
                       <div
@@ -436,7 +442,7 @@ function MapScreen() {
                           top: offsetPixels.y,
                           width: `${mobSize}px`,
                           height: `${mobSize}px`,
-                          zIndex: 10,
+                          zIndex: zIndex,
                           border: 'none',
                           outline: 'none',
                           boxShadow: 'none',
