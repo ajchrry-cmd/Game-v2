@@ -57,19 +57,21 @@ function AttachedMobEditor({ player, onClose, onSave }) {
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          {/* Player token at center */}
+          {/* Player token at center - matching main map structure */}
           <div style={{
             position: 'relative',
-            width: `${tokenSize}px`,
-            height: `${tokenSize}px`
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
           }}>
+            {/* Player icon */}
             {player.iconType === 'custom' && player.iconUrl ? (
               <img
                 src={player.iconUrl}
                 alt={player.name}
                 style={{
-                  width: '100%',
-                  height: '100%',
+                  width: `${tokenSize}px`,
+                  height: `${tokenSize}px`,
                   borderRadius: '50%',
                   border: '3px solid #fff',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)'
@@ -78,8 +80,8 @@ function AttachedMobEditor({ player, onClose, onSave }) {
             ) : (
               <div
                 style={{
-                  width: '100%',
-                  height: '100%',
+                  width: `${tokenSize}px`,
+                  height: `${tokenSize}px`,
                   backgroundColor: player.iconColor || '#FF0000',
                   borderRadius: '50%',
                   border: '3px solid #fff',
@@ -163,14 +165,15 @@ function AttachedMobEditor({ player, onClose, onSave }) {
               );
             })}
 
+            {/* Player name - as flex item with margin-top to match MapScreen */}
             <span style={{
-              position: 'absolute',
-              bottom: '-25px',
-              left: '50%',
-              transform: 'translateX(-50%)',
+              marginTop: '4px',
               color: '#fff',
-              fontSize: '0.8rem',
+              fontSize: '0.85rem',
               fontWeight: 'bold',
+              background: 'rgba(0, 0, 0, 0.7)',
+              padding: '2px 6px',
+              borderRadius: '4px',
               whiteSpace: 'nowrap'
             }}>
               {player.name}
