@@ -33,6 +33,7 @@ function WheelScreen() {
     ctx.rotate((rotation * Math.PI) / 180);
 
     const segments = currentWheel.segments;
+    const isJanky = currentWheel.type === 'janky';
 
     // Calculate total weight
     const totalWeight = segments.reduce((sum, seg) => sum + (seg.weight || 1), 0);
@@ -45,16 +46,40 @@ function WheelScreen() {
       const startAngle = currentAngle;
       const endAngle = currentAngle + segmentAngle;
 
-      // Draw segment
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.arc(0, 0, radius, startAngle, endAngle);
-      ctx.closePath();
-      ctx.fillStyle = segment.color;
-      ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 3;
-      ctx.stroke();
+      if (isJanky) {
+        // Draw jagged/bumpy segment
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+
+        // Create jagged edge by drawing irregular points along the arc
+        const numPoints = 30;
+        for (let i = 0; i <= numPoints; i++) {
+          const angle = startAngle + (segmentAngle * i) / numPoints;
+          // Random variation in radius to create bumpy effect
+          const radiusVariation = radius * (0.85 + Math.random() * 0.15);
+          const x = Math.cos(angle) * radiusVariation;
+          const y = Math.sin(angle) * radiusVariation;
+          ctx.lineTo(x, y);
+        }
+
+        ctx.closePath();
+        ctx.fillStyle = segment.color;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      } else {
+        // Draw normal smooth segment
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = segment.color;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
 
       // Highlight if this is the last result
       if (currentWheel.lastResult === index) {

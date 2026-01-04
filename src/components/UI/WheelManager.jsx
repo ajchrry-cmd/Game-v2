@@ -141,6 +141,7 @@ function WheelManager({ onClose }) {
                 >
                   <option value="regular">Regular Wheel</option>
                   <option value="battle">Battle Wheel (editable on screen)</option>
+                  <option value="janky">Janky Wheel (bumpy/jagged)</option>
                 </select>
               </div>
 
@@ -209,6 +210,7 @@ function WheelManager({ onClose }) {
                 >
                   <option value="regular">Regular Wheel</option>
                   <option value="battle">Battle Wheel (editable on screen)</option>
+                  <option value="janky">Janky Wheel (bumpy/jagged)</option>
                 </select>
               </div>
 
