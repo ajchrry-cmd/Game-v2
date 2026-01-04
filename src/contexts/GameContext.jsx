@@ -46,6 +46,10 @@ export const GameProvider = ({ children }) => {
   // Map-specific state
   const [placedBonuses, setPlacedBonuses] = useState([]);
 
+  // Wheel-specific state (synced with session)
+  const [wheelRotation, setWheelRotation] = useState(0);
+  const [wheelLastResult, setWheelLastResult] = useState(null);
+
   // UI state
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -94,7 +98,11 @@ export const GameProvider = ({ children }) => {
         },
         currentScene: 'map',
         currentSceneId: null,
-        currentWheelId: null
+        currentWheelId: null,
+        wheelState: {
+          rotation: 0,
+          lastResult: null
+        }
       };
       const docRef = await addDoc(collection(db, 'sessions'), newSession);
       const session = { id: docRef.id, ...newSession };
@@ -130,6 +138,8 @@ export const GameProvider = ({ children }) => {
           setPlayerPositions(session.currentMapState?.playerPositions || {});
           setMapBackground(session.currentMapState?.background);
           setPlacedBonuses(session.currentMapState?.placedBonuses || []);
+          setWheelRotation(session.wheelState?.rotation || 0);
+          setWheelLastResult(session.wheelState?.lastResult || null);
 
           // Reset flag after state updates are queued
           setTimeout(() => {
@@ -166,7 +176,11 @@ export const GameProvider = ({ children }) => {
         },
         currentScene,
         currentSceneId,
-        currentWheelId
+        currentWheelId,
+        wheelState: {
+          rotation: wheelRotation,
+          lastResult: wheelLastResult
+        }
       };
       await setDoc(doc(db, 'sessions', currentSession.id), sessionData);
       setCurrentSession(sessionData);
@@ -198,7 +212,7 @@ export const GameProvider = ({ children }) => {
       }, 100); // Reduced from 1000ms to 100ms for near-instant sync
       return () => clearTimeout(timer);
     }
-  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses]);
+  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses, wheelRotation, wheelLastResult]);
 
   // Cleanup session listener on unmount
   useEffect(() => {
@@ -595,6 +609,10 @@ export const GameProvider = ({ children }) => {
     wheels,
     saveWheel,
     deleteWheel,
+    wheelRotation,
+    setWheelRotation,
+    wheelLastResult,
+    setWheelLastResult,
 
     // Scenes
     scenes,

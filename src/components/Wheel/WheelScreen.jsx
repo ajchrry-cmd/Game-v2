@@ -3,8 +3,7 @@ import { useGame } from '../../contexts/GameContext';
 import './WheelScreen.css';
 
 function WheelScreen() {
-  const { wheels, currentWheelId, saveWheel } = useGame();
-  const [rotation, setRotation] = useState(0);
+  const { wheels, currentWheelId, saveWheel, wheelRotation, setWheelRotation, wheelLastResult, setWheelLastResult } = useGame();
   const [isSpinning, setIsSpinning] = useState(false);
   const [editingSegment, setEditingSegment] = useState(null);
   const canvasRef = useRef(null);
@@ -16,7 +15,7 @@ function WheelScreen() {
     if (currentWheel && canvasRef.current) {
       drawWheel();
     }
-  }, [currentWheel, rotation]);
+  }, [currentWheel, wheelRotation, wheelLastResult]);
 
   const drawWheel = () => {
     const canvas = canvasRef.current;
@@ -30,7 +29,7 @@ function WheelScreen() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(centerX, centerY);
-    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.rotate((wheelRotation * Math.PI) / 180);
 
     const segments = currentWheel.segments;
     const isJanky = currentWheel.type === 'janky';
@@ -82,7 +81,7 @@ function WheelScreen() {
       }
 
       // Highlight if this is the last result
-      if (currentWheel.lastResult === index) {
+      if (wheelLastResult === index) {
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.arc(0, 0, radius, startAngle, endAngle);
@@ -171,7 +170,7 @@ function WheelScreen() {
     const duration = 4000; // 4 seconds
 
     const startTime = Date.now();
-    const startRotation = rotation;
+    const startRotation = wheelRotation;
 
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -181,7 +180,7 @@ function WheelScreen() {
       const easeOut = 1 - Math.pow(1 - progress, 3);
       const currentRotation = startRotation + totalRotation * easeOut;
 
-      setRotation(currentRotation % 360);
+      setWheelRotation(currentRotation % 360);
 
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -215,8 +214,8 @@ function WheelScreen() {
           cumulativeAngle += segmentAngle;
         }
 
-        // Save the result
-        saveWheel({ ...currentWheel, lastResult: resultIndex });
+        // Save the result to session state (syncs with all users)
+        setWheelLastResult(resultIndex);
       }
     };
 
