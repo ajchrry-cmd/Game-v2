@@ -9,6 +9,7 @@ import SceneManager from './SceneManager';
 import BonusManager from './BonusManager';
 import MobPlacer from './MobPlacer';
 import DiceRoller from './DiceRoller';
+import UICustomization from './UICustomization';
 import './MasterMenu.css';
 
 function MasterMenu() {
@@ -126,6 +127,7 @@ function MasterMenu() {
               <button onClick={() => openManager('maps')}>Maps</button>
               <button onClick={() => openManager('wheels')}>Wheels</button>
               <button onClick={() => openManager('scenes')}>Scene Images</button>
+              <button onClick={() => openManager('uiCustomization')}>⚙️ UI Customization</button>
             </div>
           </div>
         </div>
@@ -140,6 +142,7 @@ function MasterMenu() {
       {activeManager === 'scenes' && <SceneManager onClose={closeManager} />}
       {activeManager === 'mobPlacer' && <MobPlacer onClose={closeManager} />}
       {activeManager === 'diceRoller' && <DiceRoller onClose={closeManager} />}
+      {activeManager === 'uiCustomization' && <UICustomization onClose={closeManager} />}
     </>
   );
 }

@@ -172,28 +172,29 @@
 }
 
 .player-panel {
-  width: 380px;
-  background: #2a2a2a;
+  width: var(--player-panel-width, 380px);
+  background: var(--secondary-color, #2a2a2a);
   padding: 1.5rem;
   overflow-y: auto;
   border-left: 2px solid #444;
 }
 
 .player-panel h2 {
-  color: #d4af37;
+  color: var(--primary-color, #d4af37);
   margin-bottom: 1.5rem;
   text-align: center;
-  font-size: 2rem;
+  font-size: calc(var(--player-card-font-size, 1rem) * 2);
 }
 
 .player-info {
   background: #1a1a1a;
-  padding: 1.25rem;
+  padding: var(--player-info-padding, 1.25rem);
   border-radius: 10px;
-  margin-bottom: 1.25rem;
-  border: 2px solid #d4af37;
+  margin-bottom: var(--player-card-spacing, 1.25rem);
+  border: 2px solid var(--primary-color, #d4af37);
   box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
   transition: all 0.2s;
+  font-size: var(--player-card-font-size, 1rem);
 }
 
 .player-info:hover {
@@ -202,9 +203,9 @@
 }
 
 .player-info h3 {
-  color: #d4af37;
+  color: var(--primary-color, #d4af37);
   margin-bottom: 1rem;
-  font-size: 1.5rem;
+  font-size: calc(var(--player-card-font-size, 1rem) * 1.5);
   font-weight: bold;
   text-align: center;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -227,8 +228,8 @@
 
 .stat-label {
   display: block;
-  font-size: 0.95rem;
-  color: #d4af37;
+  font-size: calc(var(--player-card-font-size, 1rem) * 0.95);
+  color: var(--primary-color, #d4af37);
   margin-bottom: 0.5rem;
   font-weight: bold;
   text-transform: uppercase;
@@ -274,8 +275,8 @@
 
 .inventory-label {
   display: block;
-  font-size: 1rem;
-  color: #d4af37;
+  font-size: var(--player-card-font-size, 1rem);
+  color: var(--primary-color, #d4af37);
   margin-bottom: 0.75rem;
   font-weight: bold;
   text-transform: uppercase;
@@ -290,7 +291,7 @@
 
 .inventory-slot {
   aspect-ratio: 1;
-  background: #2a2a2a;
+  background: var(--secondary-color, #2a2a2a);
   border: 3px solid #555;
   border-radius: 8px;
   display: flex;
@@ -299,11 +300,11 @@
   position: relative;
   overflow: hidden;
   transition: all 0.2s;
-  min-height: 70px;
+  min-height: var(--inventory-slot-size, 70px);
 }
 
 .inventory-slot:hover {
-  border-color: #d4af37;
+  border-color: var(--primary-color, #d4af37);
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
 }

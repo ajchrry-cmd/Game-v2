@@ -7,11 +7,17 @@ import WheelScreen from './components/Wheel/WheelScreen';
 import SceneViewer from './components/Scenes/SceneViewer';
 import ShopScreen from './components/Shop/ShopScreen';
 import FirebaseSetupGuide from './components/UI/FirebaseSetupGuide';
+import { loadUISettings } from './utils/uiSettings';
 import './App.css';
 
 function App() {
   const { currentScene, currentSession } = useGame();
   const firebaseStatus = useFirebaseCheck();
+
+  // Load and apply UI customization settings on mount
+  useEffect(() => {
+    loadUISettings();
+  }, []);
 
   // Show setup guide if Firebase isn't ready
   if (firebaseStatus.firestore === 'error' || firebaseStatus.storage === 'error') {
