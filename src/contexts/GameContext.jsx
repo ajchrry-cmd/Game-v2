@@ -232,7 +232,7 @@ export const GameProvider = ({ children }) => {
       }, 100); // Reduced from 1000ms to 100ms for near-instant sync
       return () => clearTimeout(timer);
     }
-  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses, wheelRotation, wheelLastResult, wheelSpinActive, wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration]);
+  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses, wheelLastResult, wheelSpinActive, wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration]);
 
   // Cleanup session listener on unmount
   useEffect(() => {
