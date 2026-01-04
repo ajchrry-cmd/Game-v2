@@ -196,12 +196,24 @@ function WheelScreen() {
     setWheelSpinDuration(duration);
   };
 
-  // Animation effect - runs when spin becomes active
+  // Animation effect - runs when spin state changes
   useEffect(() => {
-    if (!wheelSpinActive || !currentWheel) return;
+    // Only start animation if we have valid spin parameters and a start time
+    if (!wheelSpinStartTime || !currentWheel || wheelSpinDuration === 0) return;
+
+    // Check if this spin is still in progress based on elapsed time
+    const elapsed = Date.now() - wheelSpinStartTime;
+    if (elapsed >= wheelSpinDuration) {
+      // Spin already completed before we got here, just set final state
+      const finalRotation = wheelSpinTargetRotation % 360;
+      setWheelRotation(finalRotation);
+      setIsSpinning(false);
+      return;
+    }
 
     setIsSpinning(true);
     let animationFrame;
+    let hasCompleted = false;
 
     const animate = () => {
       const elapsed = Date.now() - wheelSpinStartTime;
@@ -215,7 +227,8 @@ function WheelScreen() {
 
       if (progress < 1) {
         animationFrame = requestAnimationFrame(animate);
-      } else {
+      } else if (!hasCompleted) {
+        hasCompleted = true;
         setIsSpinning(false);
 
         // Calculate which segment the pointer is pointing at
@@ -241,21 +254,25 @@ function WheelScreen() {
           cumulativeAngle += segmentAngle;
         }
 
-        // Save the result and deactivate spin
+        // Save the result (only set these once per animation)
         setWheelLastResult(resultIndex);
-        setWheelSpinActive(false);
+
+        // Clear spin state after a delay to prevent rapid re-spins
+        setTimeout(() => {
+          setWheelSpinActive(false);
+        }, 100);
       }
     };
 
     animationFrame = requestAnimationFrame(animate);
 
-    // Cleanup animation on unmount or if spin is cancelled
+    // Cleanup animation on unmount or when spin parameters change
     return () => {
       if (animationFrame) {
         cancelAnimationFrame(animationFrame);
       }
     };
-  }, [wheelSpinActive, wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration, currentWheel]);
+  }, [wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration, currentWheel]);
 
   if (!currentWheel) {
     return (
