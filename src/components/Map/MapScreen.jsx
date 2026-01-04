@@ -27,6 +27,10 @@ function MapScreen() {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [lastTouchDistance, setLastTouchDistance] = useState(null);
+  const [tokenSize, setTokenSize] = useState(() => {
+    const saved = localStorage.getItem('playerTokenSize');
+    return saved ? parseInt(saved) : 50;
+  });
 
   const currentMap = maps.find(m => m.id === currentMapId);
 
@@ -219,6 +223,18 @@ function MapScreen() {
     }));
   };
 
+  const handleTokenSizeIncrease = () => {
+    const newSize = Math.min(100, tokenSize + 10);
+    setTokenSize(newSize);
+    localStorage.setItem('playerTokenSize', newSize);
+  };
+
+  const handleTokenSizeDecrease = () => {
+    const newSize = Math.max(30, tokenSize - 10);
+    setTokenSize(newSize);
+    localStorage.setItem('playerTokenSize', newSize);
+  };
+
   const handleResetZoom = () => {
     setMapTransform({ scale: 1, x: 0, y: 0 });
   };
@@ -231,6 +247,13 @@ function MapScreen() {
           <button onClick={handleZoomIn} title="Zoom In">+</button>
           <button onClick={handleZoomOut} title="Zoom Out">−</button>
           <button onClick={handleResetZoom} title="Reset">⟲</button>
+        </div>
+
+        <div className="token-size-controls">
+          <label>Player Size:</label>
+          <button onClick={handleTokenSizeDecrease} title="Decrease Token Size">−</button>
+          <span>{tokenSize}px</span>
+          <button onClick={handleTokenSizeIncrease} title="Increase Token Size">+</button>
         </div>
 
         <div
@@ -355,11 +378,28 @@ function MapScreen() {
               >
                 <div className="player-token">
                   {player.iconType === 'custom' && player.iconUrl ? (
-                    <img src={player.iconUrl} alt={player.name} />
+                    <img
+                      src={player.iconUrl}
+                      alt={player.name}
+                      style={{
+                        width: `${tokenSize}px`,
+                        height: `${tokenSize}px`,
+                        borderRadius: '50%',
+                        border: '3px solid #fff',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)'
+                      }}
+                    />
                   ) : (
                     <div
                       className="token-circle"
-                      style={{ backgroundColor: player.iconColor }}
+                      style={{
+                        backgroundColor: player.iconColor,
+                        width: `${tokenSize}px`,
+                        height: `${tokenSize}px`,
+                        borderRadius: '50%',
+                        border: '3px solid #fff',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)'
+                      }}
                     />
                   )}
                   <span className="player-name">{player.name}</span>

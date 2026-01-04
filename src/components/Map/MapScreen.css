@@ -43,6 +43,61 @@
   background: rgba(212, 175, 55, 0.2);
 }
 
+.token-size-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(42, 42, 42, 0.95);
+  padding: 10px 15px;
+  border-radius: 25px;
+  border: 2px solid #d4af37;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.token-size-controls label {
+  color: #d4af37;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-right: 5px;
+}
+
+.token-size-controls span {
+  color: #fff;
+  font-weight: bold;
+  min-width: 45px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.token-size-controls button {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: rgba(26, 26, 26, 0.8);
+  color: #d4af37;
+  border: 2px solid #d4af37;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.token-size-controls button:hover {
+  background: rgba(212, 175, 55, 0.2);
+  transform: scale(1.05);
+}
+
+.token-size-controls button:active {
+  transform: scale(0.95);
+}
+
 .map-canvas {
   position: absolute;
   top: 0;
