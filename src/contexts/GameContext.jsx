@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { db, storage } from '../firebase/config';
 import {
   collection,
@@ -8,7 +8,8 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
-  addDoc
+  addDoc,
+  onSnapshot
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
@@ -47,6 +48,9 @@ export const GameProvider = ({ children }) => {
 
   // UI state
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Real-time listener unsubscribe functions
+  const sessionUnsubscribe = useRef(null);
 
   // Load all persistent data
   useEffect(() => {
@@ -98,24 +102,41 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  const loadSession = async (sessionId) => {
+  const loadSession = (sessionId) => {
     try {
-      const docRef = doc(db, 'sessions', sessionId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const session = { id: docSnap.id, ...docSnap.data() };
-        setCurrentSession(session);
-        setPlayers(session.players || []);
-        setCurrentScene(session.currentScene || 'map');
-        setCurrentSceneId(session.currentSceneId);
-        setCurrentWheelId(session.currentWheelId);
-        setCurrentMapId(session.currentMap);
-        setPlayerPositions(session.currentMapState?.playerPositions || {});
-        setMapBackground(session.currentMapState?.background);
-        setPlacedBonuses(session.currentMapState?.placedBonuses || []);
+      // Unsubscribe from previous session if exists
+      if (sessionUnsubscribe.current) {
+        sessionUnsubscribe.current();
+        sessionUnsubscribe.current = null;
       }
+
+      // Set up real-time listener for the session
+      const docRef = doc(db, 'sessions', sessionId);
+      const unsubscribe = onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const session = { id: docSnap.id, ...docSnap.data() };
+          setCurrentSession(session);
+          setPlayers(session.players || []);
+          setCurrentScene(session.currentScene || 'map');
+          setCurrentSceneId(session.currentSceneId);
+          setCurrentWheelId(session.currentWheelId);
+          setCurrentMapId(session.currentMap);
+          setPlayerPositions(session.currentMapState?.playerPositions || {});
+          setMapBackground(session.currentMapState?.background);
+          setPlacedBonuses(session.currentMapState?.placedBonuses || []);
+        } else {
+          console.warn('Session no longer exists');
+          setCurrentSession(null);
+          setPlayers([]);
+        }
+      }, (error) => {
+        console.error('Error in session listener:', error);
+      });
+
+      // Store unsubscribe function
+      sessionUnsubscribe.current = unsubscribe;
     } catch (error) {
-      console.error('Error loading session:', error);
+      console.error('Error setting up session listener:', error);
     }
   };
 
@@ -158,15 +179,24 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  // Auto-save session when state changes
+  // Auto-save session when state changes (with short debounce for batching)
   useEffect(() => {
     if (currentSession) {
       const timer = setTimeout(() => {
         saveSession();
-      }, 1000);
+      }, 100); // Reduced from 1000ms to 100ms for near-instant sync
       return () => clearTimeout(timer);
     }
   }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses]);
+
+  // Cleanup session listener on unmount
+  useEffect(() => {
+    return () => {
+      if (sessionUnsubscribe.current) {
+        sessionUnsubscribe.current();
+      }
+    };
+  }, []);
 
   // ===== MAPS =====
   const loadMaps = async () => {
