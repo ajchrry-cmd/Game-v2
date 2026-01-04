@@ -7,6 +7,7 @@ import MapManager from './MapManager';
 import WheelManager from './WheelManager';
 import SceneManager from './SceneManager';
 import BonusManager from './BonusManager';
+import MobPlacer from './MobPlacer';
 import './MasterMenu.css';
 
 function MasterMenu() {
@@ -18,9 +19,7 @@ function MasterMenu() {
     wheels,
     setCurrentWheelId,
     scenes,
-    setCurrentSceneId,
-    bonuses,
-    placeBonus
+    setCurrentSceneId
   } = useGame();
 
   const [activeManager, setActiveManager] = useState(null);
@@ -43,16 +42,6 @@ function MasterMenu() {
   const switchToScene = (sceneId) => {
     setCurrentSceneId(sceneId);
     setCurrentScene('scene');
-    setMenuOpen(false);
-  };
-
-  const handlePlaceBonus = (bonusId) => {
-    // Make sure we're on the map scene
-    if (currentScene !== 'map') {
-      setCurrentScene('map');
-    }
-    // Place bonus at center of map
-    placeBonus(bonusId, { x: 400, y: 300 });
     setMenuOpen(false);
   };
 
@@ -111,22 +100,9 @@ function MasterMenu() {
                 )}
               </div>
 
-              <div className="submenu">
-                <label>Add Mobs:</label>
-                {bonuses.length === 0 ? (
-                  <p className="empty-state">No mobs created</p>
-                ) : (
-                  bonuses.map(bonus => (
-                    <button
-                      key={bonus.id}
-                      onClick={() => handlePlaceBonus(bonus.id)}
-                      title={`Click to place ${bonus.name}`}
-                    >
-                      {bonus.name}
-                    </button>
-                  ))
-                )}
-              </div>
+              <button onClick={() => openManager('mobPlacer')}>
+                Add Mobs
+              </button>
 
               <button
                 className={currentScene === 'shop' ? 'active' : ''}
@@ -157,6 +133,7 @@ function MasterMenu() {
       {activeManager === 'maps' && <MapManager onClose={closeManager} />}
       {activeManager === 'wheels' && <WheelManager onClose={closeManager} />}
       {activeManager === 'scenes' && <SceneManager onClose={closeManager} />}
+      {activeManager === 'mobPlacer' && <MobPlacer onClose={closeManager} />}
     </>
   );
 }
