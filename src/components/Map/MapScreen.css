@@ -220,7 +220,7 @@
 
 .stat {
   background: #2a2a2a;
-  padding: 0.75rem;
+  padding: calc(0.75rem * var(--stat-size, 1));
   border-radius: 6px;
   text-align: center;
   border: 1px solid #444;
@@ -228,9 +228,9 @@
 
 .stat-label {
   display: block;
-  font-size: calc(var(--player-card-font-size, 1rem) * 0.95);
+  font-size: calc(var(--player-card-font-size, 1rem) * 0.95 * var(--stat-size, 1));
   color: var(--primary-color, #d4af37);
-  margin-bottom: 0.5rem;
+  margin-bottom: calc(0.5rem * var(--stat-size, 1));
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -238,7 +238,7 @@
 
 .stat-value {
   display: block;
-  font-size: 1.5rem;
+  font-size: calc(1.5rem * var(--stat-size, 1));
   font-weight: bold;
   color: #fff;
 }
@@ -246,13 +246,13 @@
 .stat-input {
   display: block;
   width: 100%;
-  font-size: 1.5rem;
+  font-size: calc(1.5rem * var(--stat-size, 1));
   font-weight: bold;
   color: #fff;
   background: #1a1a1a;
   border: 2px solid #444;
   border-radius: 4px;
-  padding: 0.25rem;
+  padding: calc(0.25rem * var(--stat-size, 1));
   text-align: center;
   transition: all 0.2s;
 }
@@ -319,6 +319,33 @@
   color: #555;
   font-size: 2rem;
   font-weight: bold;
+}
+
+/* Party Slots */
+.party-slot {
+  aspect-ratio: 1;
+  background: var(--secondary-color, #2a2a2a);
+  border: 3px solid #555;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+  min-height: var(--party-slot-size, 60px);
+}
+
+.party-slot:hover {
+  border-color: var(--primary-color, #d4af37);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.party-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .item-tooltip {

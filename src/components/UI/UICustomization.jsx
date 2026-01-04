@@ -110,6 +110,36 @@ function UICustomization({ onClose }) {
                 onChange={(e) => handleChange('inventorySlotSize', parseInt(e.target.value))}
               />
             </div>
+
+            <div className="form-group">
+              <label>Party Slot Size: {settings.partySlotSize}px</label>
+              <input
+                type="range"
+                min="40"
+                max="100"
+                step="5"
+                value={settings.partySlotSize}
+                onChange={(e) => handleChange('partySlotSize', parseInt(e.target.value))}
+              />
+              <span style={{ fontSize: '0.85rem', color: '#999' }}>
+                Size of party member slots in player cards
+              </span>
+            </div>
+
+            <div className="form-group">
+              <label>Stat Size: {(settings.statSize * 100).toFixed(0)}%</label>
+              <input
+                type="range"
+                min="0.75"
+                max="1.5"
+                step="0.05"
+                value={settings.statSize}
+                onChange={(e) => handleChange('statSize', parseFloat(e.target.value))}
+              />
+              <span style={{ fontSize: '0.85rem', color: '#999' }}>
+                Size of custom stats like Power, Money, etc.
+              </span>
+            </div>
           </div>
 
           {/* Color Settings */}
@@ -175,7 +205,9 @@ function UICustomization({ onClose }) {
                   primaryColor: '#d4af37',
                   secondaryColor: '#2a2a2a',
                   inventorySlotSize: 75,
-                  playerInfoPadding: 1.5
+                  playerInfoPadding: 1.5,
+                  partySlotSize: 65,
+                  statSize: 1.1
                 })}
               >
                 Comfortable
@@ -188,7 +220,9 @@ function UICustomization({ onClose }) {
                   primaryColor: '#d4af37',
                   secondaryColor: '#2a2a2a',
                   inventorySlotSize: 80,
-                  playerInfoPadding: 1.75
+                  playerInfoPadding: 1.75,
+                  partySlotSize: 70,
+                  statSize: 1.2
                 })}
               >
                 Large
@@ -201,7 +235,9 @@ function UICustomization({ onClose }) {
                   primaryColor: '#d4af37',
                   secondaryColor: '#2a2a2a',
                   inventorySlotSize: 60,
-                  playerInfoPadding: 1
+                  playerInfoPadding: 1,
+                  partySlotSize: 50,
+                  statSize: 0.85
                 })}
               >
                 Compact

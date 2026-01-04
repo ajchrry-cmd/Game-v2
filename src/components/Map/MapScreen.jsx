@@ -626,7 +626,7 @@ function MapScreen() {
                         const mobId = party[index];
                         const mob = mobId ? bonuses.find(b => b.id === mobId) : null;
                         return (
-                          <div key={index} className="inventory-slot">
+                          <div key={index} className="party-slot">
                             {mob ? (
                               <>
                                 {mob.imageUrl && <img src={mob.imageUrl} alt={mob.name} />}

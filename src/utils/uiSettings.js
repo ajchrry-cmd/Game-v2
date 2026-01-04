@@ -10,7 +10,9 @@ export const defaultUISettings = {
   primaryColor: '#d4af37',
   secondaryColor: '#2a2a2a',
   inventorySlotSize: 70,
-  playerInfoPadding: 1.25
+  playerInfoPadding: 1.25,
+  partySlotSize: 60,
+  statSize: 1
 };
 
 /**
@@ -35,6 +37,8 @@ export const applyUISettings = (settings) => {
   document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor);
   document.documentElement.style.setProperty('--inventory-slot-size', `${settings.inventorySlotSize}px`);
   document.documentElement.style.setProperty('--player-info-padding', `${settings.playerInfoPadding}rem`);
+  document.documentElement.style.setProperty('--party-slot-size', `${settings.partySlotSize}px`);
+  document.documentElement.style.setProperty('--stat-size', settings.statSize);
 };
 
 /**
