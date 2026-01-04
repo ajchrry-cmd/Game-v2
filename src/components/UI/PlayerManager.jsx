@@ -24,7 +24,12 @@ function PlayerManager({ onClose }) {
     money: 0,
     iconType: 'token',
     iconColor: '#FF0000',
-    iconUrl: null
+    iconUrl: null,
+    inventorySlots: 4,
+    customStats: [],
+    partySlots: 0,
+    party: [],
+    statusEffects: []
   });
 
   if (!currentSession) {
@@ -52,7 +57,12 @@ function PlayerManager({ onClose }) {
       money: 0,
       iconType: 'token',
       iconColor: '#FF0000',
-      iconUrl: null
+      iconUrl: null,
+      inventorySlots: 4,
+      customStats: [],
+      partySlots: 0,
+      party: [],
+      statusEffects: []
     });
     setShowNewForm(false);
   };
@@ -63,8 +73,9 @@ function PlayerManager({ onClose }) {
 
   const handleAddItem = (playerId, itemId) => {
     const player = players.find(p => p.id === playerId);
-    if (player.inventory.length >= 4) {
-      alert('Inventory full (max 4 items)');
+    const maxSlots = player.inventorySlots || 4;
+    if (player.inventory.length >= maxSlots) {
+      alert(`Inventory full (max ${maxSlots} items)`);
       return;
     }
     updatePlayer(playerId, {
@@ -76,6 +87,65 @@ function PlayerManager({ onClose }) {
     const player = players.find(p => p.id === playerId);
     const newInventory = player.inventory.filter((_, i) => i !== itemIndex);
     updatePlayer(playerId, { inventory: newInventory });
+  };
+
+  const handleAddCustomStat = (playerId) => {
+    const player = players.find(p => p.id === playerId);
+    if ((player.customStats || []).length >= 4) {
+      alert('Maximum 4 custom stats allowed');
+      return;
+    }
+    const customStats = [...(player.customStats || []), { name: 'New Stat', value: 0 }];
+    updatePlayer(playerId, { customStats });
+  };
+
+  const handleUpdateCustomStat = (playerId, index, field, value) => {
+    const player = players.find(p => p.id === playerId);
+    const customStats = [...(player.customStats || [])];
+    customStats[index] = { ...customStats[index], [field]: value };
+    updatePlayer(playerId, { customStats });
+  };
+
+  const handleRemoveCustomStat = (playerId, index) => {
+    const player = players.find(p => p.id === playerId);
+    const customStats = (player.customStats || []).filter((_, i) => i !== index);
+    updatePlayer(playerId, { customStats });
+  };
+
+  const handleAddPartyMember = (playerId, mobId) => {
+    const player = players.find(p => p.id === playerId);
+    const partySlots = player.partySlots || 0;
+    if ((player.party || []).length >= partySlots) {
+      alert(`Party full (max ${partySlots} members)`);
+      return;
+    }
+    const party = [...(player.party || []), mobId];
+    updatePlayer(playerId, { party });
+  };
+
+  const handleRemovePartyMember = (playerId, index) => {
+    const player = players.find(p => p.id === playerId);
+    const party = (player.party || []).filter((_, i) => i !== index);
+    updatePlayer(playerId, { party });
+  };
+
+  const handleAddStatusEffect = (playerId) => {
+    const player = players.find(p => p.id === playerId);
+    const statusEffects = [...(player.statusEffects || []), 'New Effect'];
+    updatePlayer(playerId, { statusEffects });
+  };
+
+  const handleUpdateStatusEffect = (playerId, index, value) => {
+    const player = players.find(p => p.id === playerId);
+    const statusEffects = [...(player.statusEffects || [])];
+    statusEffects[index] = value;
+    updatePlayer(playerId, { statusEffects });
+  };
+
+  const handleRemoveStatusEffect = (playerId, index) => {
+    const player = players.find(p => p.id === playerId);
+    const statusEffects = (player.statusEffects || []).filter((_, i) => i !== index);
+    updatePlayer(playerId, { statusEffects });
   };
 
   const handleIconUpload = async (playerId, file) => {
@@ -252,7 +322,7 @@ function PlayerManager({ onClose }) {
                   </div>
 
                   <div className="player-inventory">
-                    <label>Inventory ({player.inventory.length}/4)</label>
+                    <label>Inventory ({player.inventory.length}/{player.inventorySlots || 4})</label>
                     <div className="inventory-items">
                       {player.inventory.map((itemId, index) => {
                         const item = items.find(i => i.id === itemId);
@@ -268,7 +338,7 @@ function PlayerManager({ onClose }) {
                           </div>
                         ) : null;
                       })}
-                      {player.inventory.length < 4 && (
+                      {player.inventory.length < (player.inventorySlots || 4) && (
                         <select
                           value=""
                           onChange={(e) => {
@@ -356,6 +426,156 @@ function PlayerManager({ onClose }) {
                         Position Attached Mobs
                       </button>
                     )}
+                  </div>
+
+                  {/* Player Configuration Section */}
+                  <div className="player-config-section" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #444' }}>
+                    <h4 style={{ color: '#d4af37', marginBottom: '0.75rem' }}>Player Configuration</h4>
+
+                    {/* Inventory Slots */}
+                    <div className="config-row">
+                      <label>Inventory Slots</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="8"
+                        value={player.inventorySlots || 4}
+                        onChange={(e) => updatePlayer(player.id, { inventorySlots: parseInt(e.target.value) || 4 })}
+                        style={{ width: '80px' }}
+                      />
+                    </div>
+
+                    {/* Party Slots */}
+                    <div className="config-row">
+                      <label>Party Slots</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="4"
+                        value={player.partySlots || 0}
+                        onChange={(e) => updatePlayer(player.id, { partySlots: parseInt(e.target.value) || 0 })}
+                        style={{ width: '80px' }}
+                      />
+                    </div>
+
+                    {/* Custom Stats */}
+                    <div className="custom-stats-section">
+                      <label>Custom Stats ({(player.customStats || []).length}/4)</label>
+                      {(player.customStats || []).map((stat, index) => (
+                        <div key={index} className="custom-stat-row" style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                          <input
+                            type="text"
+                            placeholder="Stat Name"
+                            value={stat.name}
+                            onChange={(e) => handleUpdateCustomStat(player.id, index, 'name', e.target.value)}
+                            style={{ flex: 1 }}
+                          />
+                          <input
+                            type="number"
+                            value={stat.value}
+                            onChange={(e) => handleUpdateCustomStat(player.id, index, 'value', parseInt(e.target.value) || 0)}
+                            style={{ width: '80px' }}
+                          />
+                          <button
+                            className="danger"
+                            onClick={() => handleRemoveCustomStat(player.id, index)}
+                            style={{ padding: '0.25rem 0.5rem' }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                      {(player.customStats || []).length < 4 && (
+                        <button
+                          onClick={() => handleAddCustomStat(player.id)}
+                          style={{ marginTop: '0.5rem', width: '100%' }}
+                        >
+                          + Add Custom Stat
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Party Members */}
+                    {(player.partySlots || 0) > 0 && (
+                      <div className="player-inventory" style={{ marginTop: '0.75rem' }}>
+                        <label>Party ({(player.party || []).length}/{player.partySlots || 0})</label>
+                        <div className="inventory-items">
+                          {(player.party || []).map((mobId, index) => {
+                            const mob = bonuses.find(b => b.id === mobId);
+                            return mob ? (
+                              <div key={index} className="inventory-item">
+                                {mob.imageUrl && (
+                                  <img
+                                    src={mob.imageUrl}
+                                    alt={mob.name}
+                                    style={{
+                                      width: '24px',
+                                      height: '24px',
+                                      objectFit: 'contain',
+                                      marginRight: '8px'
+                                    }}
+                                  />
+                                )}
+                                <span>{mob.name}</span>
+                                <button
+                                  className="remove-item"
+                                  onClick={() => handleRemovePartyMember(player.id, index)}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ) : null;
+                          })}
+                          {(player.party || []).length < (player.partySlots || 0) && (
+                            <select
+                              value=""
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleAddPartyMember(player.id, e.target.value);
+                                  e.target.value = '';
+                                }
+                              }}
+                            >
+                              <option value="">+ Add Party Member</option>
+                              {bonuses.map(mob => (
+                                <option key={mob.id} value={mob.id}>
+                                  {mob.name}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Status Effects */}
+                    <div className="status-effects-section" style={{ marginTop: '0.75rem' }}>
+                      <label>Status Effects</label>
+                      {(player.statusEffects || []).map((effect, index) => (
+                        <div key={index} style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                          <input
+                            type="text"
+                            placeholder="Effect name"
+                            value={effect}
+                            onChange={(e) => handleUpdateStatusEffect(player.id, index, e.target.value)}
+                            style={{ flex: 1 }}
+                          />
+                          <button
+                            className="danger"
+                            onClick={() => handleRemoveStatusEffect(player.id, index)}
+                            style={{ padding: '0.25rem 0.5rem' }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => handleAddStatusEffect(player.id)}
+                        style={{ marginTop: '0.5rem', width: '100%' }}
+                      >
+                        + Add Status Effect
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
