@@ -52,6 +52,9 @@ export const GameProvider = ({ children }) => {
   // Real-time listener unsubscribe functions
   const sessionUnsubscribe = useRef(null);
 
+  // Flag to prevent auto-save loop when receiving updates from Firestore
+  const isUpdatingFromFirestore = useRef(false);
+
   // Load all persistent data
   useEffect(() => {
     loadMaps();
@@ -114,6 +117,9 @@ export const GameProvider = ({ children }) => {
       const docRef = doc(db, 'sessions', sessionId);
       const unsubscribe = onSnapshot(docRef, (docSnap) => {
         if (docSnap.exists()) {
+          // Set flag to prevent auto-save loop
+          isUpdatingFromFirestore.current = true;
+
           const session = { id: docSnap.id, ...docSnap.data() };
           setCurrentSession(session);
           setPlayers(session.players || []);
@@ -124,6 +130,11 @@ export const GameProvider = ({ children }) => {
           setPlayerPositions(session.currentMapState?.playerPositions || {});
           setMapBackground(session.currentMapState?.background);
           setPlacedBonuses(session.currentMapState?.placedBonuses || []);
+
+          // Reset flag after state updates are queued
+          setTimeout(() => {
+            isUpdatingFromFirestore.current = false;
+          }, 0);
         } else {
           console.warn('Session no longer exists');
           setCurrentSession(null);
@@ -181,7 +192,7 @@ export const GameProvider = ({ children }) => {
 
   // Auto-save session when state changes (with short debounce for batching)
   useEffect(() => {
-    if (currentSession) {
+    if (currentSession && !isUpdatingFromFirestore.current) {
       const timer = setTimeout(() => {
         saveSession();
       }, 100); // Reduced from 1000ms to 100ms for near-instant sync
