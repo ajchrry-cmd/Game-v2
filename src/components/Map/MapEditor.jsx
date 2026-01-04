@@ -108,6 +108,14 @@ function MapEditor({ map, onClose }) {
     }
   };
 
+  // Helper function to get max layer index
+  const getMaxLayerIndex = (mapData) => {
+    const squareIndices = (mapData.squares || []).map(s => s.layerIndex || 0);
+    const mobIndices = (mapData.placedMobs || []).map(m => m.layerIndex || 0);
+    const allIndices = [...squareIndices, ...mobIndices];
+    return allIndices.length > 0 ? Math.max(...allIndices) : 0;
+  };
+
   const handleAddSquare = () => {
     const square = {
       id: uuidv4(),
@@ -119,7 +127,8 @@ function MapEditor({ map, onClose }) {
       color: newSquare.color,
       text: newSquare.shape === 'line' ? '' : newSquare.text,
       rotation: 0,
-      lineThickness: newSquare.shape === 'line' ? newSquare.lineThickness : undefined
+      lineThickness: newSquare.shape === 'line' ? newSquare.lineThickness : undefined,
+      layerIndex: getMaxLayerIndex(mapData) + 1
     };
     setMapData(prevMapData => ({
       ...prevMapData,
@@ -146,29 +155,54 @@ function MapEditor({ map, onClose }) {
     }
   };
 
-  const bringToFront = (squareId) => {
+  // Unified layer control functions
+  const bringToFront = (itemId) => {
     setMapData(prevMapData => {
-      const index = prevMapData.squares.findIndex(s => s.id === squareId);
-      if (index === -1 || index === prevMapData.squares.length - 1) return prevMapData;
+      const maxIndex = getMaxLayerIndex(prevMapData);
 
-      const newSquares = [...prevMapData.squares];
-      const [square] = newSquares.splice(index, 1);
-      newSquares.push(square);
+      // Check if it's a square
+      const squareIndex = prevMapData.squares.findIndex(s => s.id === itemId);
+      if (squareIndex !== -1) {
+        const newSquares = prevMapData.squares.map(s =>
+          s.id === itemId ? { ...s, layerIndex: maxIndex + 1 } : s
+        );
+        return { ...prevMapData, squares: newSquares };
+      }
 
-      return { ...prevMapData, squares: newSquares };
+      // Check if it's a mob
+      const mobIndex = (prevMapData.placedMobs || []).findIndex(m => m.id === itemId);
+      if (mobIndex !== -1) {
+        const newMobs = prevMapData.placedMobs.map(m =>
+          m.id === itemId ? { ...m, layerIndex: maxIndex + 1 } : m
+        );
+        return { ...prevMapData, placedMobs: newMobs };
+      }
+
+      return prevMapData;
     });
   };
 
-  const sendToBack = (squareId) => {
+  const sendToBack = (itemId) => {
     setMapData(prevMapData => {
-      const index = prevMapData.squares.findIndex(s => s.id === squareId);
-      if (index === -1 || index === 0) return prevMapData;
+      // Check if it's a square
+      const squareIndex = prevMapData.squares.findIndex(s => s.id === itemId);
+      if (squareIndex !== -1) {
+        const newSquares = prevMapData.squares.map(s =>
+          s.id === itemId ? { ...s, layerIndex: 0 } : s
+        );
+        return { ...prevMapData, squares: newSquares };
+      }
 
-      const newSquares = [...prevMapData.squares];
-      const [square] = newSquares.splice(index, 1);
-      newSquares.unshift(square);
+      // Check if it's a mob
+      const mobIndex = (prevMapData.placedMobs || []).findIndex(m => m.id === itemId);
+      if (mobIndex !== -1) {
+        const newMobs = prevMapData.placedMobs.map(m =>
+          m.id === itemId ? { ...m, layerIndex: 0 } : m
+        );
+        return { ...prevMapData, placedMobs: newMobs };
+      }
 
-      return { ...prevMapData, squares: newSquares };
+      return prevMapData;
     });
   };
 
@@ -184,7 +218,8 @@ function MapEditor({ map, onClose }) {
       name: mob.name,
       imageUrl: mob.imageUrl,
       position: { x: 400, y: 300 },
-      size: 80
+      size: 80,
+      layerIndex: getMaxLayerIndex(mapData) + 1
     };
 
     setMapData(prevMapData => ({
@@ -244,78 +279,63 @@ function MapEditor({ map, onClose }) {
     setResizingMob(null);
   };
 
-  const bringForward = (squareId) => {
+  const bringForward = (itemId) => {
     setMapData(prevMapData => {
-      const index = prevMapData.squares.findIndex(s => s.id === squareId);
-      if (index === -1 || index === prevMapData.squares.length - 1) return prevMapData;
+      // Get all items with their layer indices
+      const allItems = [
+        ...prevMapData.squares.map(s => ({ id: s.id, layerIndex: s.layerIndex || 0, type: 'square' })),
+        ...(prevMapData.placedMobs || []).map(m => ({ id: m.id, layerIndex: m.layerIndex || 0, type: 'mob' }))
+      ].sort((a, b) => a.layerIndex - b.layerIndex);
 
-      const newSquares = [...prevMapData.squares];
-      [newSquares[index], newSquares[index + 1]] = [newSquares[index + 1], newSquares[index]];
+      const currentIndex = allItems.findIndex(item => item.id === itemId);
+      if (currentIndex === -1 || currentIndex === allItems.length - 1) return prevMapData;
 
-      return { ...prevMapData, squares: newSquares };
+      const currentItem = allItems[currentIndex];
+      const nextItem = allItems[currentIndex + 1];
+      const newLayerIndex = nextItem.layerIndex + 0.5;
+
+      // Update the appropriate array
+      if (currentItem.type === 'square') {
+        const newSquares = prevMapData.squares.map(s =>
+          s.id === itemId ? { ...s, layerIndex: newLayerIndex } : s
+        );
+        return { ...prevMapData, squares: newSquares };
+      } else {
+        const newMobs = prevMapData.placedMobs.map(m =>
+          m.id === itemId ? { ...m, layerIndex: newLayerIndex } : m
+        );
+        return { ...prevMapData, placedMobs: newMobs };
+      }
     });
   };
 
-  const sendBackward = (squareId) => {
+  const sendBackward = (itemId) => {
     setMapData(prevMapData => {
-      const index = prevMapData.squares.findIndex(s => s.id === squareId);
-      if (index === -1 || index === 0) return prevMapData;
+      // Get all items with their layer indices
+      const allItems = [
+        ...prevMapData.squares.map(s => ({ id: s.id, layerIndex: s.layerIndex || 0, type: 'square' })),
+        ...(prevMapData.placedMobs || []).map(m => ({ id: m.id, layerIndex: m.layerIndex || 0, type: 'mob' }))
+      ].sort((a, b) => a.layerIndex - b.layerIndex);
 
-      const newSquares = [...prevMapData.squares];
-      [newSquares[index], newSquares[index - 1]] = [newSquares[index - 1], newSquares[index]];
+      const currentIndex = allItems.findIndex(item => item.id === itemId);
+      if (currentIndex === -1 || currentIndex === 0) return prevMapData;
 
-      return { ...prevMapData, squares: newSquares };
-    });
-  };
+      const currentItem = allItems[currentIndex];
+      const prevItem = allItems[currentIndex - 1];
+      const newLayerIndex = prevItem.layerIndex - 0.5;
 
-  // Mob layer control functions
-  const bringMobToFront = (mobId) => {
-    setMapData(prevMapData => {
-      const index = (prevMapData.placedMobs || []).findIndex(m => m.id === mobId);
-      if (index === -1 || index === prevMapData.placedMobs.length - 1) return prevMapData;
-
-      const newMobs = [...prevMapData.placedMobs];
-      const [mob] = newMobs.splice(index, 1);
-      newMobs.push(mob);
-
-      return { ...prevMapData, placedMobs: newMobs };
-    });
-  };
-
-  const sendMobToBack = (mobId) => {
-    setMapData(prevMapData => {
-      const index = (prevMapData.placedMobs || []).findIndex(m => m.id === mobId);
-      if (index === -1 || index === 0) return prevMapData;
-
-      const newMobs = [...prevMapData.placedMobs];
-      const [mob] = newMobs.splice(index, 1);
-      newMobs.unshift(mob);
-
-      return { ...prevMapData, placedMobs: newMobs };
-    });
-  };
-
-  const bringMobForward = (mobId) => {
-    setMapData(prevMapData => {
-      const index = (prevMapData.placedMobs || []).findIndex(m => m.id === mobId);
-      if (index === -1 || index === prevMapData.placedMobs.length - 1) return prevMapData;
-
-      const newMobs = [...prevMapData.placedMobs];
-      [newMobs[index], newMobs[index + 1]] = [newMobs[index + 1], newMobs[index]];
-
-      return { ...prevMapData, placedMobs: newMobs };
-    });
-  };
-
-  const sendMobBackward = (mobId) => {
-    setMapData(prevMapData => {
-      const index = (prevMapData.placedMobs || []).findIndex(m => m.id === mobId);
-      if (index === -1 || index === 0) return prevMapData;
-
-      const newMobs = [...prevMapData.placedMobs];
-      [newMobs[index], newMobs[index - 1]] = [newMobs[index - 1], newMobs[index]];
-
-      return { ...prevMapData, placedMobs: newMobs };
+      // Update the appropriate array
+      if (currentItem.type === 'square') {
+        const newSquares = prevMapData.squares.map(s =>
+          s.id === itemId ? { ...s, layerIndex: newLayerIndex } : s
+        );
+        return { ...prevMapData, squares: newSquares };
+      } else {
+        const newMobs = prevMapData.placedMobs.map(m =>
+          m.id === itemId ? { ...m, layerIndex: newLayerIndex } : m
+        );
+        return { ...prevMapData, placedMobs: newMobs };
+      }
     });
   };
 
@@ -926,16 +946,16 @@ function MapEditor({ map, onClose }) {
                     <div className="form-group">
                       <label>Layer Order</label>
                       <div className="layer-controls">
-                        <button onClick={() => bringMobToFront(selectedPlacedMob)} title="Bring to Front">
+                        <button onClick={() => bringToFront(selectedPlacedMob)} title="Bring to Front">
                           ⬆⬆
                         </button>
-                        <button onClick={() => bringMobForward(selectedPlacedMob)} title="Bring Forward">
+                        <button onClick={() => bringForward(selectedPlacedMob)} title="Bring Forward">
                           ⬆
                         </button>
-                        <button onClick={() => sendMobBackward(selectedPlacedMob)} title="Send Backward">
+                        <button onClick={() => sendBackward(selectedPlacedMob)} title="Send Backward">
                           ⬇
                         </button>
-                        <button onClick={() => sendMobToBack(selectedPlacedMob)} title="Send to Back">
+                        <button onClick={() => sendToBack(selectedPlacedMob)} title="Send to Back">
                           ⬇⬇
                         </button>
                       </div>
@@ -986,177 +1006,187 @@ function MapEditor({ map, onClose }) {
                 }}
               />
 
-              {/* Shapes layer */}
-              {mapData.squares.map(square => {
-                const isSelected = selectedSquare?.id === square.id;
-                return (
-                  <Draggable
-                    key={square.id}
-                    position={square.position}
-                    onDrag={(e, data) => handleDrag(square.id, e, data)}
-                    disabled={mode === 'draw' || resizing !== null || rotating !== null}
-                  >
-                    <div
-                      className={`editor-square ${isSelected ? 'selected' : ''} ${square.shape === 'line' ? 'editor-line' : ''}`}
-                      onClick={() => mode === 'shapes' && setSelectedSquare(square)}
-                      style={{
-                        width: square.size.width,
-                        height: square.size.height,
-                        pointerEvents: mode === 'draw' ? 'none' : 'auto',
-                        zIndex: 5
-                      }}
-                    >
-                      {/* Inner wrapper for rotation */}
-                      <div
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          backgroundColor: square.color,
-                          borderRadius: square.shape === 'circle' ? '50%' : square.shape === 'hexagon' ? '10%' : '0',
-                          transform: `rotate(${square.rotation || 0}deg)`,
-                          transformOrigin: square.shape === 'line' ? '0 50%' : 'center',
-                          clipPath: square.shape === 'hexagon'
-                            ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-                            : square.shape === 'triangle'
-                            ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
-                            : 'none',
-                          border: square.shape === 'line' ? 'none' : '2px solid rgba(255, 255, 255, 0.3)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        {square.text && square.shape !== 'line' && (
-                          <span style={{
-                            fontSize: `${square.textSize || 16}px`,
-                            color: square.textColor || '#ffffff',
-                            fontWeight: 'bold',
-                            textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
-                          }}>
-                            {square.text}
-                          </span>
-                        )}
-                      </div>
-                      {isSelected && mode === 'shapes' && (
-                        <>
-                          {/* Resize handle */}
-                          <div
-                            className="shape-resize-handle"
-                            onMouseDown={(e) => handleResizeStart(e, square.id, square.size.width, square.size.height)}
-                            style={{
-                              position: 'absolute',
-                              bottom: square.shape === 'line' ? '50%' : '-8px',
-                              right: '-8px',
-                              width: '20px',
-                              height: '20px',
-                              background: '#d4af37',
-                              border: '2px solid #fff',
-                              borderRadius: '50%',
-                              cursor: 'nwse-resize',
-                              zIndex: 10,
-                              transform: square.shape === 'line' ? 'translateY(50%)' : 'none'
-                            }}
-                          />
-                          {/* Rotation handle */}
-                          <div
-                            className="shape-rotate-handle"
-                            onMouseDown={(e) => handleRotateStart(e, square.id, square.position, square.size, square.rotation)}
-                            style={{
-                              position: 'absolute',
-                              top: '-8px',
-                              left: '50%',
-                              width: '20px',
-                              height: '20px',
-                              background: '#47d4af',
-                              border: '2px solid #fff',
-                              borderRadius: '50%',
-                              cursor: 'grab',
-                              zIndex: 10,
-                              transform: 'translateX(-50%)'
-                            }}
-                          />
-                        </>
-                      )}
-                    </div>
-                  </Draggable>
-                );
-              })}
+              {/* Combined Shapes and Mobs layer - sorted by layerIndex */}
+              {(() => {
+                // Combine squares and mobs with type markers
+                const combinedItems = [
+                  ...mapData.squares.map(square => ({ ...square, itemType: 'square' })),
+                  ...(mapData.placedMobs || []).map(mob => ({ ...mob, itemType: 'mob' }))
+                ].sort((a, b) => (a.layerIndex || 0) - (b.layerIndex || 0));
 
-              {/* Placed Mobs layer */}
-              {(mapData.placedMobs || []).map(mob => {
-                const isSelected = selectedPlacedMob === mob.id;
-                return (
-                  <Draggable
-                    key={mob.id}
-                    position={mob.position}
-                    onDrag={(e, data) => handleDragMob(mob.id, e, data)}
-                    disabled={mode === 'draw' || resizingMob !== null}
-                  >
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedPlacedMob(mob.id);
-                        setSelectedSquare(null);
-                      }}
-                      style={{
-                        width: `${mob.size}px`,
-                        height: `${mob.size}px`,
-                        position: 'absolute',
-                        cursor: mode === 'draw' ? 'default' : 'move',
-                        pointerEvents: mode === 'draw' ? 'none' : 'auto',
-                        zIndex: 6
-                      }}
-                    >
-                      {mob.imageUrl && (
-                        <img
-                          src={mob.imageUrl}
-                          alt={mob.name}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain',
-                            border: isSelected ? '3px solid #d4af37' : '2px solid rgba(212, 175, 55, 0.5)',
-                            borderRadius: '4px',
-                            background: 'rgba(0, 0, 0, 0.3)'
-                          }}
-                        />
-                      )}
-                      <div style={{
-                        position: 'absolute',
-                        bottom: '-20px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        fontSize: '0.7rem',
-                        color: '#d4af37',
-                        background: 'rgba(0, 0, 0, 0.8)',
-                        padding: '2px 6px',
-                        borderRadius: '3px',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        {mob.name}
-                      </div>
-                      {/* Resize handle - only show when selected */}
-                      {isSelected && (
+                return combinedItems.map(item => {
+                  if (item.itemType === 'square') {
+                    const square = item;
+                    const isSelected = selectedSquare?.id === square.id;
+                    return (
+                      <Draggable
+                        key={square.id}
+                        position={square.position}
+                        onDrag={(e, data) => handleDrag(square.id, e, data)}
+                        disabled={mode === 'draw' || resizing !== null || rotating !== null}
+                      >
                         <div
-                          onMouseDown={(e) => handleMobResizeStart(e, mob.id, mob.size)}
+                          className={`editor-square ${isSelected ? 'selected' : ''} ${square.shape === 'line' ? 'editor-line' : ''}`}
+                          onClick={() => mode === 'shapes' && setSelectedSquare(square)}
                           style={{
-                            position: 'absolute',
-                            bottom: '-8px',
-                            right: '-8px',
-                            width: '20px',
-                            height: '20px',
-                            background: '#d4af37',
-                            border: '2px solid #fff',
-                            borderRadius: '50%',
-                            cursor: 'nwse-resize',
-                            zIndex: 10
+                            width: square.size.width,
+                            height: square.size.height,
+                            pointerEvents: mode === 'draw' ? 'none' : 'auto',
+                            zIndex: square.layerIndex || 0
                           }}
-                        />
-                      )}
-                    </div>
-                  </Draggable>
-                );
-              })}
+                        >
+                          {/* Inner wrapper for rotation */}
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              backgroundColor: square.color,
+                              borderRadius: square.shape === 'circle' ? '50%' : square.shape === 'hexagon' ? '10%' : '0',
+                              transform: `rotate(${square.rotation || 0}deg)`,
+                              transformOrigin: square.shape === 'line' ? '0 50%' : 'center',
+                              clipPath: square.shape === 'hexagon'
+                                ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                                : square.shape === 'triangle'
+                                ? 'polygon(50% 0%, 0% 100%, 100% 100%)'
+                                : 'none',
+                              border: square.shape === 'line' ? 'none' : '2px solid rgba(255, 255, 255, 0.3)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            {square.text && square.shape !== 'line' && (
+                              <span style={{
+                                fontSize: `${square.textSize || 16}px`,
+                                color: square.textColor || '#ffffff',
+                                fontWeight: 'bold',
+                                textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
+                              }}>
+                                {square.text}
+                              </span>
+                            )}
+                          </div>
+                          {isSelected && mode === 'shapes' && (
+                            <>
+                              {/* Resize handle */}
+                              <div
+                                className="shape-resize-handle"
+                                onMouseDown={(e) => handleResizeStart(e, square.id, square.size.width, square.size.height)}
+                                style={{
+                                  position: 'absolute',
+                                  bottom: square.shape === 'line' ? '50%' : '-8px',
+                                  right: '-8px',
+                                  width: '20px',
+                                  height: '20px',
+                                  background: '#d4af37',
+                                  border: '2px solid #fff',
+                                  borderRadius: '50%',
+                                  cursor: 'nwse-resize',
+                                  zIndex: 10,
+                                  transform: square.shape === 'line' ? 'translateY(50%)' : 'none'
+                                }}
+                              />
+                              {/* Rotation handle */}
+                              <div
+                                className="shape-rotate-handle"
+                                onMouseDown={(e) => handleRotateStart(e, square.id, square.position, square.size, square.rotation)}
+                                style={{
+                                  position: 'absolute',
+                                  top: '-8px',
+                                  left: '50%',
+                                  width: '20px',
+                                  height: '20px',
+                                  background: '#47d4af',
+                                  border: '2px solid #fff',
+                                  borderRadius: '50%',
+                                  cursor: 'grab',
+                                  zIndex: 10,
+                                  transform: 'translateX(-50%)'
+                                }}
+                              />
+                            </>
+                          )}
+                        </div>
+                      </Draggable>
+                    );
+                  } else {
+                    // Render mob
+                    const mob = item;
+                    const isSelected = selectedPlacedMob === mob.id;
+                    return (
+                      <Draggable
+                        key={mob.id}
+                        position={mob.position}
+                        onDrag={(e, data) => handleDragMob(mob.id, e, data)}
+                        disabled={mode === 'draw' || resizingMob !== null}
+                      >
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedPlacedMob(mob.id);
+                            setSelectedSquare(null);
+                          }}
+                          style={{
+                            width: `${mob.size}px`,
+                            height: `${mob.size}px`,
+                            position: 'absolute',
+                            cursor: mode === 'draw' ? 'default' : 'move',
+                            pointerEvents: mode === 'draw' ? 'none' : 'auto',
+                            zIndex: mob.layerIndex || 0
+                          }}
+                        >
+                          {mob.imageUrl && (
+                            <img
+                              src={mob.imageUrl}
+                              alt={mob.name}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                border: isSelected ? '3px solid #d4af37' : '2px solid rgba(212, 175, 55, 0.5)',
+                                borderRadius: '4px',
+                                background: 'rgba(0, 0, 0, 0.3)'
+                              }}
+                            />
+                          )}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '-20px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            fontSize: '0.7rem',
+                            color: '#d4af37',
+                            background: 'rgba(0, 0, 0, 0.8)',
+                            padding: '2px 6px',
+                            borderRadius: '3px',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {mob.name}
+                          </div>
+                          {/* Resize handle - only show when selected */}
+                          {isSelected && (
+                            <div
+                              onMouseDown={(e) => handleMobResizeStart(e, mob.id, mob.size)}
+                              style={{
+                                position: 'absolute',
+                                bottom: '-8px',
+                                right: '-8px',
+                                width: '20px',
+                                height: '20px',
+                                background: '#d4af37',
+                                border: '2px solid #fff',
+                                borderRadius: '50%',
+                                cursor: 'nwse-resize',
+                                zIndex: 10
+                              }}
+                            />
+                          )}
+                        </div>
+                      </Draggable>
+                    );
+                  }
+                });
+              })()}
             </div>
           </div>
         </div>
