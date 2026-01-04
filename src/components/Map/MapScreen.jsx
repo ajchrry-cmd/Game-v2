@@ -264,7 +264,10 @@ function MapScreen() {
           onTouchEnd={handleTouchEnd}
           onMouseDown={handleMouseDown}
           onWheel={handleWheel}
-          style={{ cursor: isPanning ? 'grabbing' : 'default' }}
+          style={{
+            cursor: isPanning ? 'grabbing' : 'default',
+            backgroundColor: currentMap.backgroundColor || '#1a1a1a'
+          }}
         >
           <div
             className="map-content"
