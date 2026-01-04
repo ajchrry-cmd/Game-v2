@@ -8,6 +8,7 @@ import WheelManager from './WheelManager';
 import SceneManager from './SceneManager';
 import BonusManager from './BonusManager';
 import MobPlacer from './MobPlacer';
+import DiceRoller from './DiceRoller';
 import './MasterMenu.css';
 
 function MasterMenu() {
@@ -104,6 +105,10 @@ function MasterMenu() {
                 Add Mobs
               </button>
 
+              <button onClick={() => openManager('diceRoller')}>
+                🎲 Dice Roller
+              </button>
+
               <button
                 className={currentScene === 'shop' ? 'active' : ''}
                 onClick={() => { setCurrentScene('shop'); setMenuOpen(false); }}
@@ -134,6 +139,7 @@ function MasterMenu() {
       {activeManager === 'wheels' && <WheelManager onClose={closeManager} />}
       {activeManager === 'scenes' && <SceneManager onClose={closeManager} />}
       {activeManager === 'mobPlacer' && <MobPlacer onClose={closeManager} />}
+      {activeManager === 'diceRoller' && <DiceRoller onClose={closeManager} />}
     </>
   );
 }
