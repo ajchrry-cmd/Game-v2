@@ -268,6 +268,57 @@ function MapEditor({ map, onClose }) {
     });
   };
 
+  // Mob layer control functions
+  const bringMobToFront = (mobId) => {
+    setMapData(prevMapData => {
+      const index = (prevMapData.placedMobs || []).findIndex(m => m.id === mobId);
+      if (index === -1 || index === prevMapData.placedMobs.length - 1) return prevMapData;
+
+      const newMobs = [...prevMapData.placedMobs];
+      const [mob] = newMobs.splice(index, 1);
+      newMobs.push(mob);
+
+      return { ...prevMapData, placedMobs: newMobs };
+    });
+  };
+
+  const sendMobToBack = (mobId) => {
+    setMapData(prevMapData => {
+      const index = (prevMapData.placedMobs || []).findIndex(m => m.id === mobId);
+      if (index === -1 || index === 0) return prevMapData;
+
+      const newMobs = [...prevMapData.placedMobs];
+      const [mob] = newMobs.splice(index, 1);
+      newMobs.unshift(mob);
+
+      return { ...prevMapData, placedMobs: newMobs };
+    });
+  };
+
+  const bringMobForward = (mobId) => {
+    setMapData(prevMapData => {
+      const index = (prevMapData.placedMobs || []).findIndex(m => m.id === mobId);
+      if (index === -1 || index === prevMapData.placedMobs.length - 1) return prevMapData;
+
+      const newMobs = [...prevMapData.placedMobs];
+      [newMobs[index], newMobs[index + 1]] = [newMobs[index + 1], newMobs[index]];
+
+      return { ...prevMapData, placedMobs: newMobs };
+    });
+  };
+
+  const sendMobBackward = (mobId) => {
+    setMapData(prevMapData => {
+      const index = (prevMapData.placedMobs || []).findIndex(m => m.id === mobId);
+      if (index === -1 || index === 0) return prevMapData;
+
+      const newMobs = [...prevMapData.placedMobs];
+      [newMobs[index], newMobs[index - 1]] = [newMobs[index - 1], newMobs[index]];
+
+      return { ...prevMapData, placedMobs: newMobs };
+    });
+  };
+
   const handleDrag = (squareId, e, data) => {
     handleUpdateSquare(squareId, {
       position: { x: data.x, y: data.y }
@@ -839,14 +890,26 @@ function MapEditor({ map, onClose }) {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           padding: '0.5rem',
-                          background: '#2a2a2a',
+                          background: selectedPlacedMob === mob.id ? '#3a3a3a' : '#2a2a2a',
                           marginBottom: '0.5rem',
-                          borderRadius: '4px'
+                          borderRadius: '4px',
+                          border: selectedPlacedMob === mob.id ? '2px solid #d4af37' : '2px solid transparent',
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => {
+                          setSelectedPlacedMob(mob.id);
+                          setSelectedSquare(null);
                         }}>
                           <span>{mob.name}</span>
                           <button
                             className="danger"
-                            onClick={() => handleRemoveMob(mob.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveMob(mob.id);
+                              if (selectedPlacedMob === mob.id) {
+                                setSelectedPlacedMob(null);
+                              }
+                            }}
                             style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
                           >
                             Remove
@@ -854,6 +917,38 @@ function MapEditor({ map, onClose }) {
                         </div>
                       ))}
                     </div>
+                  </>
+                )}
+
+                {selectedPlacedMob && (
+                  <>
+                    <h3>Edit Selected Mob</h3>
+                    <div className="form-group">
+                      <label>Layer Order</label>
+                      <div className="layer-controls">
+                        <button onClick={() => bringMobToFront(selectedPlacedMob)} title="Bring to Front">
+                          ⬆⬆
+                        </button>
+                        <button onClick={() => bringMobForward(selectedPlacedMob)} title="Bring Forward">
+                          ⬆
+                        </button>
+                        <button onClick={() => sendMobBackward(selectedPlacedMob)} title="Send Backward">
+                          ⬇
+                        </button>
+                        <button onClick={() => sendMobToBack(selectedPlacedMob)} title="Send to Back">
+                          ⬇⬇
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      className="danger"
+                      onClick={() => {
+                        handleRemoveMob(selectedPlacedMob);
+                        setSelectedPlacedMob(null);
+                      }}
+                    >
+                      Delete Mob
+                    </button>
                   </>
                 )}
               </>
