@@ -236,11 +236,17 @@ function AttachedMobEditor({ player, onClose, onSave }) {
                 onChange={(e) => handleLayerChange(selectedMobIndex, e.target.value)}
                 style={{ flex: 1, padding: '0.5rem', borderRadius: '4px' }}
               >
-                <option value="below">Below Player</option>
-                <option value="above">Above Player</option>
+                <option value="back">Far Back (Layer 1)</option>
+                <option value="below">Behind Player (Layer 2)</option>
+                <option value="same">Same as Player (Layer 3)</option>
+                <option value="above">In Front of Player (Layer 4)</option>
+                <option value="front">Far Front (Layer 5)</option>
               </select>
               <span style={{ color: '#999', minWidth: '50px', fontSize: '0.85rem' }}>
-                {attachedMobs[selectedMobIndex]?.layer === 'below' ? 'Back' : 'Front'}
+                {attachedMobs[selectedMobIndex]?.layer === 'back' ? 'L1' :
+                 attachedMobs[selectedMobIndex]?.layer === 'below' ? 'L2' :
+                 attachedMobs[selectedMobIndex]?.layer === 'same' ? 'L3' :
+                 attachedMobs[selectedMobIndex]?.layer === 'front' ? 'L5' : 'L4'}
               </span>
             </div>
           </div>

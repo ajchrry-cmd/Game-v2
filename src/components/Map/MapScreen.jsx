@@ -431,7 +431,15 @@ function MapScreen() {
                     if (!mob) return null;
 
                     const mobSize = tokenSize * size;
-                    const zIndex = layer === 'below' ? 5 : 15; // Below=5, Above=15
+                    // Map layer to zIndex: back=3, below=7, same=10, above=13, front=17
+                    const layerToZIndex = {
+                      'back': 3,
+                      'below': 7,
+                      'same': 10,
+                      'above': 13,
+                      'front': 17
+                    };
+                    const zIndex = layerToZIndex[layer] || 13; // Default to 13 (above player)
 
                     return (
                       <div
