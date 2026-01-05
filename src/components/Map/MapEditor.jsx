@@ -219,6 +219,7 @@ function MapEditor({ map, onClose }) {
       imageUrl: mob.imageUrl,
       position: { x: 400, y: 300 },
       size: 80,
+      rotation: 0,
       layerIndex: getMaxLayerIndex(mapData) + 1
     };
 
@@ -447,18 +448,21 @@ function MapEditor({ map, onClose }) {
     }
   }, [resizing, handleResizeMove, handleResizeEnd]);
 
-  // Rotation functions
-  const handleRotateStart = (e, squareId, position, size, currentRotation) => {
+  // Rotation functions - work for both squares and mobs
+  const handleRotateStart = (e, itemId, position, size, currentRotation) => {
     e.stopPropagation();
-    setRotating(squareId);
+    setRotating(itemId);
 
     // Get canvas container position
     const canvas = document.querySelector('.editor-canvas');
     const rect = canvas.getBoundingClientRect();
 
-    // Calculate center of the shape relative to viewport
-    const centerX = rect.left + position.x + size.width / 2;
-    const centerY = rect.top + position.y + size.height / 2;
+    // Calculate center of the item relative to viewport
+    // For mobs, size is a number; for squares, it's {width, height}
+    const width = typeof size === 'number' ? size : size.width;
+    const height = typeof size === 'number' ? size : size.height;
+    const centerX = rect.left + position.x + width / 2;
+    const centerY = rect.top + position.y + height / 2;
 
     setRotateStart({
       angle: currentRotation || 0,
@@ -478,12 +482,26 @@ function MapEditor({ map, onClose }) {
     // Normalize angle to 0-360
     angle = (angle + 90 + 360) % 360;
 
-    setMapData(prevMapData => ({
-      ...prevMapData,
-      squares: prevMapData.squares.map(s =>
-        s.id === rotating ? { ...s, rotation: Math.round(angle) } : s
-      )
-    }));
+    setMapData(prevMapData => {
+      // Check if it's a square
+      const isSquare = prevMapData.squares.some(s => s.id === rotating);
+      if (isSquare) {
+        return {
+          ...prevMapData,
+          squares: prevMapData.squares.map(s =>
+            s.id === rotating ? { ...s, rotation: Math.round(angle) } : s
+          )
+        };
+      }
+
+      // Otherwise, it's a mob
+      return {
+        ...prevMapData,
+        placedMobs: (prevMapData.placedMobs || []).map(m =>
+          m.id === rotating ? { ...m, rotation: Math.round(angle) } : m
+        )
+      };
+    });
 
     // Update selectedSquare if it's the one being rotated
     setSelectedSquare(prevSelected => {
@@ -940,37 +958,62 @@ function MapEditor({ map, onClose }) {
                   </>
                 )}
 
-                {selectedPlacedMob && (
-                  <>
-                    <h3>Edit Selected Mob</h3>
-                    <div className="form-group">
-                      <label>Layer Order</label>
-                      <div className="layer-controls">
-                        <button onClick={() => bringToFront(selectedPlacedMob)} title="Bring to Front">
-                          ⬆⬆
-                        </button>
-                        <button onClick={() => bringForward(selectedPlacedMob)} title="Bring Forward">
-                          ⬆
-                        </button>
-                        <button onClick={() => sendBackward(selectedPlacedMob)} title="Send Backward">
-                          ⬇
-                        </button>
-                        <button onClick={() => sendToBack(selectedPlacedMob)} title="Send to Back">
-                          ⬇⬇
-                        </button>
+                {selectedPlacedMob && (() => {
+                  const selectedMob = mapData.placedMobs?.find(m => m.id === selectedPlacedMob);
+                  if (!selectedMob) return null;
+
+                  return (
+                    <>
+                      <h3>Edit Selected Mob</h3>
+                      <div className="form-group">
+                        <label>Rotation</label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="360"
+                          value={selectedMob.rotation || 0}
+                          onChange={(e) => {
+                            setMapData(prevMapData => ({
+                              ...prevMapData,
+                              placedMobs: (prevMapData.placedMobs || []).map(m =>
+                                m.id === selectedPlacedMob
+                                  ? { ...m, rotation: parseInt(e.target.value) }
+                                  : m
+                              )
+                            }));
+                          }}
+                        />
+                        <span>{selectedMob.rotation || 0}°</span>
                       </div>
-                    </div>
-                    <button
-                      className="danger"
-                      onClick={() => {
-                        handleRemoveMob(selectedPlacedMob);
-                        setSelectedPlacedMob(null);
-                      }}
-                    >
-                      Delete Mob
-                    </button>
-                  </>
-                )}
+                      <div className="form-group">
+                        <label>Layer Order</label>
+                        <div className="layer-controls">
+                          <button onClick={() => bringToFront(selectedPlacedMob)} title="Bring to Front">
+                            ⬆⬆
+                          </button>
+                          <button onClick={() => bringForward(selectedPlacedMob)} title="Bring Forward">
+                            ⬆
+                          </button>
+                          <button onClick={() => sendBackward(selectedPlacedMob)} title="Send Backward">
+                            ⬇
+                          </button>
+                          <button onClick={() => sendToBack(selectedPlacedMob)} title="Send to Back">
+                            ⬇⬇
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        className="danger"
+                        onClick={() => {
+                          handleRemoveMob(selectedPlacedMob);
+                          setSelectedPlacedMob(null);
+                        }}
+                      >
+                        Delete Mob
+                      </button>
+                    </>
+                  );
+                })()}
               </>
             )}
           </div>
@@ -1118,7 +1161,7 @@ function MapEditor({ map, onClose }) {
                         key={mob.id}
                         position={mob.position}
                         onDrag={(e, data) => handleDragMob(mob.id, e, data)}
-                        disabled={mode === 'draw' || resizingMob !== null}
+                        disabled={mode === 'draw' || resizingMob !== null || rotating !== null}
                       >
                         <div
                           onClick={(e) => {
@@ -1135,20 +1178,28 @@ function MapEditor({ map, onClose }) {
                             zIndex: mob.layerIndex || 0
                           }}
                         >
-                          {mob.imageUrl && (
-                            <img
-                              src={mob.imageUrl}
-                              alt={mob.name}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain',
-                                border: isSelected ? '3px solid #d4af37' : '2px solid rgba(212, 175, 55, 0.5)',
-                                borderRadius: '4px',
-                                background: 'rgba(0, 0, 0, 0.3)'
-                              }}
-                            />
-                          )}
+                          {/* Inner wrapper for rotation */}
+                          <div style={{
+                            width: '100%',
+                            height: '100%',
+                            transform: `rotate(${mob.rotation || 0}deg)`,
+                            transformOrigin: 'center'
+                          }}>
+                            {mob.imageUrl && (
+                              <img
+                                src={mob.imageUrl}
+                                alt={mob.name}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'contain',
+                                  border: isSelected ? '3px solid #d4af37' : '2px solid rgba(212, 175, 55, 0.5)',
+                                  borderRadius: '4px',
+                                  background: 'rgba(0, 0, 0, 0.3)'
+                                }}
+                              />
+                            )}
+                          </div>
                           <div style={{
                             position: 'absolute',
                             bottom: '-20px',
@@ -1163,23 +1214,43 @@ function MapEditor({ map, onClose }) {
                           }}>
                             {mob.name}
                           </div>
-                          {/* Resize handle - only show when selected */}
+                          {/* Handles - only show when selected */}
                           {isSelected && (
-                            <div
-                              onMouseDown={(e) => handleMobResizeStart(e, mob.id, mob.size)}
-                              style={{
-                                position: 'absolute',
-                                bottom: '-8px',
-                                right: '-8px',
-                                width: '20px',
-                                height: '20px',
-                                background: '#d4af37',
-                                border: '2px solid #fff',
-                                borderRadius: '50%',
-                                cursor: 'nwse-resize',
-                                zIndex: 10
-                              }}
-                            />
+                            <>
+                              {/* Resize handle */}
+                              <div
+                                onMouseDown={(e) => handleMobResizeStart(e, mob.id, mob.size)}
+                                style={{
+                                  position: 'absolute',
+                                  bottom: '-8px',
+                                  right: '-8px',
+                                  width: '20px',
+                                  height: '20px',
+                                  background: '#d4af37',
+                                  border: '2px solid #fff',
+                                  borderRadius: '50%',
+                                  cursor: 'nwse-resize',
+                                  zIndex: 10
+                                }}
+                              />
+                              {/* Rotation handle */}
+                              <div
+                                onMouseDown={(e) => handleRotateStart(e, mob.id, mob.position, mob.size, mob.rotation)}
+                                style={{
+                                  position: 'absolute',
+                                  top: '-8px',
+                                  left: '50%',
+                                  width: '20px',
+                                  height: '20px',
+                                  background: '#47d4af',
+                                  border: '2px solid #fff',
+                                  borderRadius: '50%',
+                                  cursor: 'grab',
+                                  zIndex: 10,
+                                  transform: 'translateX(-50%)'
+                                }}
+                              />
+                            </>
                           )}
                         </div>
                       </Draggable>

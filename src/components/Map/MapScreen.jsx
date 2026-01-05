@@ -351,17 +351,24 @@ function MapScreen() {
                       zIndex: mob.layerIndex || 0
                     }}
                   >
-                    {mob.imageUrl && (
-                      <img
-                        src={mob.imageUrl}
-                        alt={mob.name}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain'
-                        }}
-                      />
-                    )}
+                    <div style={{
+                      width: '100%',
+                      height: '100%',
+                      transform: `rotate(${mob.rotation || 0}deg)`,
+                      transformOrigin: 'center'
+                    }}>
+                      {mob.imageUrl && (
+                        <img
+                          src={mob.imageUrl}
+                          alt={mob.name}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain'
+                          }}
+                        />
+                      )}
+                    </div>
                   </div>
                 );
               }
