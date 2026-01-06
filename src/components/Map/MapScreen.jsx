@@ -18,7 +18,12 @@ function MapScreen() {
     placeBonus,
     updateBonusPosition,
     updateBonusSize,
-    removeBonus
+    removeBonus,
+    currentScene,
+    setCurrentScene,
+    setCurrentSceneId,
+    wheels,
+    scenes
   } = useGame();
 
   const [resizing, setResizing] = useState(null);
@@ -31,6 +36,7 @@ function MapScreen() {
     const saved = localStorage.getItem('playerTokenSize');
     return saved ? parseInt(saved) : 50;
   });
+  const [openDropdown, setOpenDropdown] = useState(null);
 
   const currentMap = maps.find(m => m.id === currentMapId);
 
@@ -239,6 +245,40 @@ function MapScreen() {
     setMapTransform({ scale: 1, x: 0, y: 0 });
   };
 
+  // Quick access button handlers
+  const handleGoHome = () => {
+    setCurrentScene('map');
+    setCurrentSceneId(null);
+    setOpenDropdown(null);
+  };
+
+  const handleSelectWheel = (wheelId) => {
+    setCurrentScene('wheel');
+    setCurrentSceneId(wheelId);
+    setOpenDropdown(null);
+  };
+
+  const handleSelectScene = (sceneId) => {
+    setCurrentScene('scene');
+    setCurrentSceneId(sceneId);
+    setOpenDropdown(null);
+  };
+
+  const handleSelectMob = (bonusId) => {
+    handlePlaceBonus(bonusId);
+    setOpenDropdown(null);
+  };
+
+  const handleOpenShop = () => {
+    setCurrentScene('shop');
+    setCurrentSceneId(null);
+    setOpenDropdown(null);
+  };
+
+  const toggleDropdown = (dropdownName) => {
+    setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
+  };
+
   return (
     <div className="map-screen">
       <div className="map-container">
@@ -256,9 +296,100 @@ function MapScreen() {
           <button onClick={handleTokenSizeIncrease} title="Increase Token Size">+</button>
         </div>
 
+        {/* Quick access buttons */}
+        <div className="quick-access-controls">
+          {/* Home button */}
+          <button onClick={handleGoHome} title="Go to Map" className="quick-access-btn">
+            🏠
+          </button>
+
+          {/* Wheels dropdown */}
+          <div className="quick-access-dropdown">
+            <button
+              onClick={() => toggleDropdown('wheels')}
+              title="Select Wheel"
+              className="quick-access-btn"
+            >
+              🎡
+            </button>
+            {openDropdown === 'wheels' && wheels.length > 0 && (
+              <div className="dropdown-menu">
+                {wheels.map(wheel => (
+                  <div
+                    key={wheel.id}
+                    className="dropdown-item"
+                    onClick={() => handleSelectWheel(wheel.id)}
+                  >
+                    {wheel.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Scenes dropdown */}
+          <div className="quick-access-dropdown">
+            <button
+              onClick={() => toggleDropdown('scenes')}
+              title="Select Scene"
+              className="quick-access-btn"
+            >
+              🎬
+            </button>
+            {openDropdown === 'scenes' && scenes.length > 0 && (
+              <div className="dropdown-menu">
+                {scenes.map(scene => (
+                  <div
+                    key={scene.id}
+                    className="dropdown-item"
+                    onClick={() => handleSelectScene(scene.id)}
+                  >
+                    {scene.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Add Mobs dropdown */}
+          <div className="quick-access-dropdown">
+            <button
+              onClick={() => toggleDropdown('mobs')}
+              title="Add Mob to Map"
+              className="quick-access-btn"
+            >
+              👾
+            </button>
+            {openDropdown === 'mobs' && bonuses.length > 0 && (
+              <div className="dropdown-menu">
+                {bonuses.map(bonus => (
+                  <div
+                    key={bonus.id}
+                    className="dropdown-item"
+                    onClick={() => handleSelectMob(bonus.id)}
+                  >
+                    {bonus.imageUrl && (
+                      <img src={bonus.imageUrl} alt={bonus.name} style={{ width: '20px', height: '20px', marginRight: '8px' }} />
+                    )}
+                    {bonus.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Shop button */}
+          <button onClick={handleOpenShop} title="Open Shop" className="quick-access-btn">
+            🛒
+          </button>
+        </div>
+
         <div
           className="map-canvas"
-          onClick={() => setSelectedBonusId(null)}
+          onClick={() => {
+            setSelectedBonusId(null);
+            setOpenDropdown(null);
+          }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}

@@ -98,6 +98,82 @@
   transform: scale(0.95);
 }
 
+.quick-access-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 320px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quick-access-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(42, 42, 42, 0.95);
+  color: #fff;
+  border: 2px solid #d4af37;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.quick-access-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  transform: scale(1.05);
+}
+
+.quick-access-btn:active {
+  transform: scale(0.95);
+}
+
+.quick-access-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  bottom: 55px;
+  left: 0;
+  background: rgba(42, 42, 42, 0.98);
+  border: 2px solid #d4af37;
+  border-radius: 8px;
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.dropdown-item {
+  padding: 10px 15px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #444;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: rgba(212, 175, 55, 0.2);
+}
+
+.dropdown-item img {
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .map-canvas {
   position: absolute;
   top: 0;
