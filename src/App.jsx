@@ -17,6 +17,7 @@ function App() {
     currentSession,
     setCurrentScene,
     setCurrentSceneId,
+    setCurrentWheelId,
     wheels,
     scenes,
     bonuses,
@@ -34,12 +35,13 @@ function App() {
   const handleGoHome = () => {
     setCurrentScene('map');
     setCurrentSceneId(null);
+    setCurrentWheelId(null);
     setOpenDropdown(null);
   };
 
   const handleSelectWheel = (wheelId) => {
     setCurrentScene('wheel');
-    setCurrentSceneId(wheelId);
+    setCurrentWheelId(wheelId);
     setOpenDropdown(null);
   };
 
