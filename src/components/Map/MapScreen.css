@@ -238,7 +238,7 @@
 
 .player-name {
   margin-top: 4px;
-  color: #fff;
+  color: var(--text-primary-color, #fff);
   font-size: 0.85rem;
   font-weight: bold;
   background: rgba(0, 0, 0, 0.7);
@@ -263,26 +263,26 @@
 }
 
 .player-info {
-  background: #1a1a1a;
+  background: var(--card-background-color, #1a1a1a);
   padding: var(--player-info-padding, 0.85rem);
-  border-radius: 8px;
+  border-radius: var(--player-card-border-radius, 8px);
   margin-bottom: var(--player-card-spacing, 0.75rem);
-  border: 2px solid var(--primary-color, #d4af37);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+  border: var(--player-card-border-width, 2px) solid var(--primary-color, #d4af37);
+  box-shadow: 0 var(--player-card-shadow-blur, 12px) var(--player-card-shadow-blur, 12px) rgba(212, 175, 55, var(--player-card-shadow-opacity, 0.2));
   transition: all 0.2s;
   font-size: var(--player-card-font-size, 0.9rem);
 }
 
 .player-info:hover {
-  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
-  transform: translateY(-2px);
+  box-shadow: 0 var(--card-hover-shadow-blur, 16px) var(--card-hover-shadow-blur, 16px) rgba(212, 175, 55, var(--card-hover-shadow-opacity, 0.3));
+  transform: translateY(var(--card-hover-translate-y, -2px));
 }
 
 .player-info h3 {
   color: var(--primary-color, #d4af37);
   margin-bottom: 0.5rem;
-  font-size: calc(var(--player-card-font-size, 1rem) * 1.5);
-  font-weight: bold;
+  font-size: var(--player-name-font-size, 1.3rem);
+  font-weight: var(--player-name-font-weight, bold);
   text-align: center;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -290,45 +290,45 @@
 .player-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+  gap: var(--stat-gap, 0.5rem);
   margin-bottom: 0.5rem;
 }
 
 .stat {
-  background: #2a2a2a;
-  padding: calc(0.5rem * var(--stat-size, 1));
-  border-radius: 6px;
+  background: var(--stat-background-color, #2a2a2a);
+  padding: var(--stat-padding, 0.5rem);
+  border-radius: var(--stat-border-radius, 6px);
   text-align: center;
-  border: 1px solid #444;
+  border: 1px solid var(--stat-border-color, #444);
 }
 
 .stat-label {
   display: block;
-  font-size: calc(var(--player-card-font-size, 1rem) * 0.85 * var(--stat-size, 1));
+  font-size: var(--stat-label-font-size, 0.85rem);
   color: var(--primary-color, #d4af37);
-  margin-bottom: calc(0.25rem * var(--stat-size, 1));
-  font-weight: bold;
+  margin-bottom: 0.25rem;
+  font-weight: var(--stat-label-font-weight, bold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--stat-label-letter-spacing, 0.5px);
 }
 
 .stat-value {
   display: block;
-  font-size: calc(1.3rem * var(--stat-size, 1));
-  font-weight: bold;
-  color: #fff;
+  font-size: var(--stat-value-font-size, 1.3rem);
+  font-weight: var(--stat-value-font-weight, bold);
+  color: var(--text-primary-color, #fff);
 }
 
 .stat-input {
   display: block;
   width: 100%;
-  font-size: calc(1.3rem * var(--stat-size, 1));
-  font-weight: bold;
-  color: #fff;
-  background: #1a1a1a;
-  border: 2px solid #444;
+  font-size: var(--stat-value-font-size, 1.3rem);
+  font-weight: var(--stat-value-font-weight, bold);
+  color: var(--text-primary-color, #fff);
+  background: var(--card-background-color, #1a1a1a);
+  border: 2px solid var(--stat-border-color, #444);
   border-radius: 4px;
-  padding: calc(0.2rem * var(--stat-size, 1));
+  padding: 0.2rem;
   text-align: center;
   transition: all 0.2s;
 }
@@ -351,7 +351,7 @@
 
 .inventory-label {
   display: block;
-  font-size: calc(var(--player-card-font-size, 1rem) * 0.85);
+  font-size: var(--inventory-label-font-size, 0.85rem);
   color: var(--primary-color, #d4af37);
   margin-bottom: 0.4rem;
   font-weight: bold;
@@ -362,27 +362,27 @@
 .inventory-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
+  gap: var(--inventory-grid-gap, 0.5rem);
 }
 
 .inventory-slot {
   aspect-ratio: 1;
   background: var(--secondary-color, #2a2a2a);
-  border: 3px solid #555;
-  border-radius: 8px;
+  border: var(--inventory-slot-border-width, 3px) solid var(--inventory-slot-border-color, #555);
+  border-radius: var(--inventory-slot-border-radius, 8px);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
   transition: all 0.2s;
-  min-height: var(--inventory-slot-size, 70px);
+  min-height: var(--inventory-slot-size, 60px);
 }
 
 .inventory-slot:hover {
   border-color: var(--primary-color, #d4af37);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  transform: scale(var(--inventory-slot-hover-scale, 1.05));
+  box-shadow: 0 var(--inventory-slot-hover-shadow-blur, 12px) var(--inventory-slot-hover-shadow-blur, 12px) rgba(212, 175, 55, var(--inventory-slot-hover-shadow-opacity, 0.3));
 }
 
 .inventory-slot img {
@@ -401,21 +401,21 @@
 .party-slot {
   aspect-ratio: 1;
   background: var(--secondary-color, #2a2a2a);
-  border: 3px solid #555;
-  border-radius: 8px;
+  border: var(--party-slot-border-width, 3px) solid var(--inventory-slot-border-color, #555);
+  border-radius: var(--party-slot-border-radius, 8px);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
   transition: all 0.2s;
-  min-height: var(--party-slot-size, 60px);
+  min-height: var(--party-slot-size, 55px);
 }
 
 .party-slot:hover {
   border-color: var(--primary-color, #d4af37);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  transform: scale(var(--inventory-slot-hover-scale, 1.05));
+  box-shadow: 0 var(--inventory-slot-hover-shadow-blur, 12px) var(--inventory-slot-hover-shadow-blur, 12px) rgba(212, 175, 55, var(--inventory-slot-hover-shadow-opacity, 0.3));
 }
 
 .party-slot img {
@@ -520,7 +520,7 @@
 
 .bonus-name {
   margin-top: 4px;
-  color: #fff;
+  color: var(--text-primary-color, #fff);
   font-size: 0.75rem;
   font-weight: bold;
   background: rgba(212, 175, 55, 0.9);
@@ -600,7 +600,7 @@
 }
 
 .bonus-label {
-  color: #fff;
+  color: var(--text-primary-color, #fff);
   font-size: 0.85rem;
   text-align: center;
   font-weight: 500;
