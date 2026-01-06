@@ -51,6 +51,13 @@ function MapEditor({ map, onClose }) {
   const [selectedPlacedMob, setSelectedPlacedMob] = useState(null);
   const [resizingMob, setResizingMob] = useState(null);
 
+  // Pan and zoom state
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const editorCanvasRef = useRef(null);
+
   // Initialize canvas
   useEffect(() => {
     if (canvasRef.current) {
@@ -58,9 +65,9 @@ function MapEditor({ map, onClose }) {
       const ctx = canvas.getContext('2d');
       setContext(ctx);
 
-      // Set canvas size to match container
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      // Set canvas size to match larger editor canvas
+      canvas.width = 2000;
+      canvas.height = 2000;
 
       // Load existing drawing if available
       if (mapData.drawingData) {
@@ -454,15 +461,15 @@ function MapEditor({ map, onClose }) {
     setRotating(itemId);
 
     // Get canvas container position
-    const canvas = document.querySelector('.editor-canvas');
+    const canvas = editorCanvasRef.current;
     const rect = canvas.getBoundingClientRect();
 
-    // Calculate center of the item relative to viewport
+    // Calculate center of the item relative to viewport, accounting for zoom and pan
     // For mobs, size is a number; for squares, it's {width, height}
     const width = typeof size === 'number' ? size : size.width;
     const height = typeof size === 'number' ? size : size.height;
-    const centerX = rect.left + position.x + width / 2;
-    const centerY = rect.top + position.y + height / 2;
+    const centerX = rect.left + (position.x + width / 2) * zoom;
+    const centerY = rect.top + (position.y + height / 2) * zoom;
 
     setRotateStart({
       angle: currentRotation || 0,
@@ -540,6 +547,48 @@ function MapEditor({ map, onClose }) {
     }
   }, [resizingMob]);
 
+  // Pan and zoom functions
+  const handleCanvasMouseDown = (e) => {
+    // Only pan with middle mouse button or space + left click
+    if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+      e.preventDefault();
+      setIsPanning(true);
+      setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+    }
+  };
+
+  const handleCanvasMouseMove = useCallback((e) => {
+    if (isPanning) {
+      setPanOffset({
+        x: e.clientX - panStart.x,
+        y: e.clientY - panStart.y
+      });
+    }
+  }, [isPanning, panStart]);
+
+  const handleCanvasMouseUp = useCallback(() => {
+    setIsPanning(false);
+  }, []);
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY * -0.001;
+    const newZoom = Math.min(Math.max(0.1, zoom + delta), 3);
+    setZoom(newZoom);
+  };
+
+  // Add global mouse event listeners for panning
+  useEffect(() => {
+    if (isPanning) {
+      window.addEventListener('mousemove', handleCanvasMouseMove);
+      window.addEventListener('mouseup', handleCanvasMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleCanvasMouseMove);
+        window.removeEventListener('mouseup', handleCanvasMouseUp);
+      };
+    }
+  }, [isPanning, handleCanvasMouseMove, handleCanvasMouseUp]);
+
   return (
     <div className="modal-overlay">
       <div className="map-editor" onClick={(e) => e.stopPropagation()}>
@@ -574,6 +623,30 @@ function MapEditor({ map, onClose }) {
               >
                 Draw
               </button>
+            </div>
+
+            <h3>View Controls</h3>
+            <div className="form-group">
+              <label>Zoom: {Math.round(zoom * 100)}%</label>
+              <input
+                type="range"
+                min="0.1"
+                max="3"
+                step="0.1"
+                value={zoom}
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
+              />
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <button onClick={() => setZoom(1)} style={{ flex: 1 }}>
+                  Reset Zoom
+                </button>
+                <button onClick={() => setPanOffset({ x: 0, y: 0 })} style={{ flex: 1 }}>
+                  Reset Pan
+                </button>
+              </div>
+              <p style={{ color: '#999', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                Tip: Shift+Click or Middle-click to pan, Mouse wheel to zoom
+              </p>
             </div>
 
             {mode === 'draw' && (
@@ -1018,15 +1091,31 @@ function MapEditor({ map, onClose }) {
             )}
           </div>
 
-          <div className="editor-canvas-container">
+          <div
+            className="editor-canvas-container"
+            onMouseDown={handleCanvasMouseDown}
+            onWheel={handleWheel}
+            style={{
+              overflow: 'hidden',
+              position: 'relative',
+              cursor: isPanning ? 'grabbing' : (mode === 'shapes' ? 'default' : 'crosshair')
+            }}
+          >
             <div
               className="editor-canvas"
+              ref={editorCanvasRef}
               style={{
                 backgroundColor: mapData.backgroundColor,
                 backgroundImage: mapData.backgroundImage ? `url(${mapData.backgroundImage})` : 'none',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                pointerEvents: mode === 'draw' ? 'none' : 'auto'
+                pointerEvents: mode === 'draw' ? 'none' : 'auto',
+                position: 'relative',
+                width: '2000px',
+                height: '2000px',
+                transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`,
+                transformOrigin: '0 0',
+                transition: isPanning ? 'none' : 'transform 0.1s ease-out'
               }}
             >
               {/* Drawing canvas */}
