@@ -46,7 +46,7 @@
 .token-size-controls {
   position: absolute;
   bottom: 20px;
-  left: 20px;
+  left: 100px;
   z-index: 100;
   display: flex;
   align-items: center;
