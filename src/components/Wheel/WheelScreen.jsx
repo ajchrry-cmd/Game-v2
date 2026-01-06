@@ -186,14 +186,21 @@ function WheelScreen() {
       return;
     }
 
-    // Calculate spin parameters
-    const spins = 5 + Math.random() * 5; // 5-10 full rotations
+    // Calculate spin parameters based on suspense level
+    const suspense = currentWheel.suspense || 5; // Default to 5 if not set
+    // Suspense affects both duration and number of spins
+    // suspense 0: 2 seconds, 3-5 spins
+    // suspense 5: 5 seconds, 5-8 spins
+    // suspense 10: 8 seconds, 7-12 spins
+    const baseDuration = 2000 + (suspense * 600); // 2-8 seconds
+    const baseSpins = 3 + (suspense * 0.7); // 3-10 base spins
+    const spins = baseSpins + Math.random() * (2 + suspense * 0.2); // Add random variation
     const extraDegrees = Math.random() * 360;
     const totalRotation = spins * 360 + extraDegrees;
-    const duration = 4000; // 4 seconds
+    const duration = baseDuration;
     const targetRotation = wheelRotation + totalRotation;
 
-    console.log('Setting spin parameters - duration:', duration, 'targetRotation:', targetRotation);
+    console.log('Setting spin parameters - suspense:', suspense, 'duration:', duration, 'spins:', spins.toFixed(1), 'targetRotation:', targetRotation);
 
     // Set spin state (this will sync to all users and trigger animations)
     setWheelSpinActive(true);

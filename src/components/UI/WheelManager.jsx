@@ -9,6 +9,7 @@ function WheelManager({ onClose }) {
   const [newWheel, setNewWheel] = useState({
     name: '',
     type: 'regular',
+    suspense: 5,
     segments: [
       { text: 'Option 1', color: '#FF6B6B', weight: 1 },
       { text: 'Option 2', color: '#4ECDC4', weight: 1 },
@@ -27,6 +28,7 @@ function WheelManager({ onClose }) {
     setNewWheel({
       name: '',
       type: 'regular',
+      suspense: 5,
       segments: [
         { text: 'Option 1', color: '#FF6B6B', weight: 1 },
         { text: 'Option 2', color: '#4ECDC4', weight: 1 },
@@ -146,6 +148,23 @@ function WheelManager({ onClose }) {
               </div>
 
               <div className="form-group">
+                <label>Suspense Level: {newWheel.suspense || 5}</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  value={newWheel.suspense || 5}
+                  onChange={(e) => setNewWheel({ ...newWheel, suspense: parseInt(e.target.value) })}
+                  style={{ width: '100%' }}
+                />
+                <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>
+                  {(newWheel.suspense || 5) <= 3 ? 'Quick spin (low drama)' :
+                   (newWheel.suspense || 5) <= 7 ? 'Normal spin (medium drama)' :
+                   'Long spin (high drama)'}
+                </p>
+              </div>
+
+              <div className="form-group">
                 <label>Segments (with weight/percentage)</label>
                 {newWheel.segments.map((segment, index) => (
                   <div key={index} className="segment-row-extended">
@@ -212,6 +231,23 @@ function WheelManager({ onClose }) {
                   <option value="battle">Battle Wheel (editable on screen)</option>
                   <option value="janky">Janky Wheel (bumpy/jagged)</option>
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label>Suspense Level: {editingWheel.suspense || 5}</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  value={editingWheel.suspense || 5}
+                  onChange={(e) => setEditingWheel({ ...editingWheel, suspense: parseInt(e.target.value) })}
+                  style={{ width: '100%' }}
+                />
+                <p style={{ color: '#999', fontSize: '0.85rem', margin: '5px 0' }}>
+                  {(editingWheel.suspense || 5) <= 3 ? 'Quick spin (low drama)' :
+                   (editingWheel.suspense || 5) <= 7 ? 'Normal spin (medium drama)' :
+                   'Long spin (high drama)'}
+                </p>
               </div>
 
               <div className="form-group">
