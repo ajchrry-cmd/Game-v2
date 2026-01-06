@@ -99,10 +99,10 @@
 }
 
 .quick-access-controls {
-  position: absolute;
+  position: fixed;
   bottom: 20px;
-  left: 320px;
-  z-index: 100;
+  left: 350px;
+  z-index: 1000;
   display: flex;
   align-items: center;
   gap: 8px;
