@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import './Manager.css';
 import './RoomCodeDisplay.css';
@@ -6,6 +6,27 @@ import './RoomCodeDisplay.css';
 function RoomCodeDisplay({ onClose }) {
   const { currentSession } = useGame();
   const [copied, setCopied] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+
+  useEffect(() => {
+    if (currentSession) {
+      const { origin, pathname } = window.location;
+      const cleanPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
+      const playerUrl = `${origin}${cleanPath}#/join`;
+
+      // Generate QR code using Google Charts API
+      const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(playerUrl)}`;
+      setQrCodeUrl(qrUrl);
+
+      // Debug logging
+      console.log('Player URL components:', {
+        origin,
+        pathname,
+        cleanPath,
+        finalUrl: playerUrl
+      });
+    }
+  }, [currentSession]);
 
   if (!currentSession) {
     return (
@@ -77,6 +98,17 @@ function RoomCodeDisplay({ onClose }) {
               </button>
             </div>
             <p className="help-text">Players visit this URL and enter the room code</p>
+          </div>
+
+          {/* QR Code */}
+          <div className="qr-section">
+            <h3>Scan to Join</h3>
+            {qrCodeUrl && (
+              <div className="qr-code-container">
+                <img src={qrCodeUrl} alt="QR Code to join game" className="qr-code-image" />
+              </div>
+            )}
+            <p className="help-text">Players can scan this QR code with their phone camera</p>
           </div>
 
           {/* Instructions */}
