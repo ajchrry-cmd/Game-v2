@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase/config';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, collection, onSnapshot, getDocs } from 'firebase/firestore';
 import PlayerCharacter from './PlayerCharacter';
 import CharacterSelect from './CharacterSelect';
 import './PlayerView.css';
@@ -11,6 +11,8 @@ function PlayerView() {
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [players, setPlayers] = useState([]);
+  const [items, setItems] = useState([]);
+  const [bonuses, setBonuses] = useState([]);
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,6 +22,29 @@ function PlayerView() {
       navigate('/join');
       return;
     }
+
+    // Load items and bonuses
+    const loadItemsAndBonuses = async () => {
+      try {
+        const itemsSnapshot = await getDocs(collection(db, 'items'));
+        const loadedItems = [];
+        itemsSnapshot.forEach((doc) => {
+          loadedItems.push({ id: doc.id, ...doc.data() });
+        });
+        setItems(loadedItems);
+
+        const bonusesSnapshot = await getDocs(collection(db, 'bonuses'));
+        const loadedBonuses = [];
+        bonusesSnapshot.forEach((doc) => {
+          loadedBonuses.push({ id: doc.id, ...doc.data() });
+        });
+        setBonuses(loadedBonuses);
+      } catch (err) {
+        console.error('Error loading items/bonuses:', err);
+      }
+    };
+
+    loadItemsAndBonuses();
 
     // Real-time listener for session data
     const sessionRef = doc(db, 'sessions', sessionId);
@@ -94,6 +119,8 @@ function PlayerView() {
       ) : (
         <PlayerCharacter
           player={selectedPlayer}
+          items={items}
+          bonuses={bonuses}
           sessionName={session?.name}
           onChangeCharacter={handleChangeCharacter}
         />

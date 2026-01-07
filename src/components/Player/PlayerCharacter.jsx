@@ -1,7 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { loadUISettings } from '../../utils/uiSettings';
+import '../Map/MapScreen.css';
 import './PlayerView.css';
 
-function PlayerCharacter({ player, sessionName, onChangeCharacter }) {
+function PlayerCharacter({ player, items, bonuses, sessionName, onChangeCharacter }) {
+  // Load UI customization settings
+  useEffect(() => {
+    loadUISettings();
+  }, []);
+
+  const inventorySlots = player.inventorySlots || 4;
+  const customStats = player.customStats || [];
+  const partySlots = player.partySlots || 0;
+  const party = player.party || [];
+  const statusEffects = player.statusEffects || [];
+
   return (
     <div className="player-character">
       {/* Header */}
@@ -14,86 +27,117 @@ function PlayerCharacter({ player, sessionName, onChangeCharacter }) {
         </div>
       </div>
 
-      {/* Character Info */}
-      <div className="character-info">
-        {player.imageUrl && (
-          <div className="character-avatar-large">
-            <img src={player.imageUrl} alt={player.name} />
-          </div>
-        )}
+      {/* Player Panel - matching GM view exactly */}
+      <div className="player-panel" style={{ width: '100%', maxWidth: 'var(--player-panel-width, 380px)', margin: '0 auto', border: 'none' }}>
+        <div className="player-info">
+          <h3>{player.name}</h3>
 
-        <h1 className="character-name">{player.name}</h1>
-
-        {/* Main Stats */}
-        <div className="stats-grid">
-          <div className="stat-card hp">
-            <div className="stat-icon">❤️</div>
-            <div className="stat-info">
-              <span className="stat-label">Health</span>
-              <span className="stat-value">{player.hp || 0}</span>
+          {/* Base Stats */}
+          <div className="player-stats">
+            <div className="stat">
+              <span className="stat-label">Power</span>
+              <span className="stat-value">{player.power || 0}</span>
+            </div>
+            <div className="stat">
+              <span className="stat-label">Money</span>
+              <span className="stat-value">{player.money || 0}</span>
             </div>
           </div>
 
-          <div className="stat-card mana">
-            <div className="stat-icon">✨</div>
-            <div className="stat-info">
-              <span className="stat-label">Mana</span>
-              <span className="stat-value">{player.mana || 0}</span>
-            </div>
-          </div>
-
-          <div className="stat-card xp">
-            <div className="stat-icon">⭐</div>
-            <div className="stat-info">
-              <span className="stat-label">XP</span>
-              <span className="stat-value">{player.xp || 0}</span>
-            </div>
-          </div>
-
-          <div className="stat-card gold">
-            <div className="stat-icon">💰</div>
-            <div className="stat-info">
-              <span className="stat-label">Gold</span>
-              <span className="stat-value">{player.gold || 0}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Inventory */}
-        <div className="inventory-section">
-          <h3>🎒 Inventory</h3>
-          {player.inventory && player.inventory.length > 0 ? (
-            <div className="inventory-grid">
-              {player.inventory.map((item, index) => (
-                <div key={index} className="inventory-item">
-                  {item.imageUrl && (
-                    <img src={item.imageUrl} alt={item.name} />
-                  )}
-                  <div className="item-name">{item.name}</div>
+          {/* Custom Stats */}
+          {customStats.length > 0 && (
+            <div className="player-stats" style={{ marginTop: '0.5rem' }}>
+              {customStats.map((stat, index) => (
+                <div key={index} className="stat">
+                  <span className="stat-label">{stat.name}</span>
+                  <span className="stat-value">{stat.value || 0}</span>
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="empty-text">No items yet</p>
+          )}
+
+          {/* Dynamic Inventory */}
+          <div className="player-inventory">
+            <span className="inventory-label">Inventory</span>
+            <div className="inventory-grid" style={{
+              gridTemplateColumns: `repeat(${Math.min(inventorySlots, 4)}, 1fr)`
+            }}>
+              {Array.from({ length: inventorySlots }).map((_, index) => {
+                const itemId = player.inventory[index];
+                const item = itemId ? items.find(i => i.id === itemId) : null;
+                return (
+                  <div key={index} className="inventory-slot">
+                    {item ? (
+                      <>
+                        {item.imageUrl && <img src={item.imageUrl} alt={item.name} />}
+                        <span className="item-tooltip">{item.name}</span>
+                      </>
+                    ) : (
+                      <span className="empty-slot">—</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Party */}
+          {partySlots > 0 && (
+            <div className="player-inventory">
+              <span className="inventory-label">Party</span>
+              <div className="inventory-grid" style={{
+                gridTemplateColumns: `repeat(${Math.min(partySlots, 4)}, 1fr)`
+              }}>
+                {Array.from({ length: partySlots }).map((_, index) => {
+                  const mobId = party[index];
+                  const mob = mobId ? bonuses.find(b => b.id === mobId) : null;
+                  return (
+                    <div key={index} className="party-slot">
+                      {mob ? (
+                        <>
+                          {mob.imageUrl && <img src={mob.imageUrl} alt={mob.name} />}
+                          <span className="item-tooltip">{mob.name}</span>
+                        </>
+                      ) : (
+                        <span className="empty-slot">—</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Status Effects */}
+          {statusEffects.length > 0 && (
+            <div className="player-inventory">
+              <span className="inventory-label">Status Effects</span>
+              <div className="status-effects-list" style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '0.25rem',
+                marginTop: '0.5rem'
+              }}>
+                {statusEffects.map((effect, index) => (
+                  <span
+                    key={index}
+                    className="status-effect-badge"
+                    style={{
+                      background: '#d4af37',
+                      color: '#000',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {effect}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
         </div>
-
-        {/* Party */}
-        {player.party && player.party.length > 0 && (
-          <div className="party-section">
-            <h3>👥 Party</h3>
-            <div className="party-grid">
-              {player.party.map((member, index) => (
-                <div key={index} className="party-member">
-                  {member.imageUrl && (
-                    <img src={member.imageUrl} alt={member.name} />
-                  )}
-                  <div className="member-name">{member.name}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
