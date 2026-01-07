@@ -158,7 +158,7 @@ function UICustomization({ onClose }) {
             <SectionHeader title="Panel Settings" sectionKey="panel" />
             {expandedSections.panel && (
               <>
-                {renderSlider('Panel Width', 'playerPanelWidth', 300, 600, 10, 'px', 'Width of the player info panel')}
+                {renderSlider('Panel Width', 'playerPanelWidth', 250, 600, 10, 'px', 'Width of the player info panel')}
               </>
             )}
           </div>
@@ -168,12 +168,12 @@ function UICustomization({ onClose }) {
             <SectionHeader title="Card General" sectionKey="cardGeneral" />
             {expandedSections.cardGeneral && (
               <>
-                {renderSlider('Card Spacing', 'playerCardSpacing', 0.5, 2, 0.25, 'rem', 'Space between player cards')}
-                {renderSlider('Card Padding', 'playerInfoPadding', 0.5, 2, 0.25, 'rem', 'Padding inside cards')}
-                {renderSlider('Border Width', 'playerCardBorderWidth', 1, 8, 1, 'px')}
+                {renderSlider('Card Spacing', 'playerCardSpacing', 0.1, 2, 0.1, 'rem', 'Space between player cards')}
+                {renderSlider('Card Padding', 'playerInfoPadding', 0.2, 2, 0.1, 'rem', 'Padding inside cards')}
+                {renderSlider('Border Width', 'playerCardBorderWidth', 0, 8, 1, 'px')}
                 {renderSlider('Border Radius', 'playerCardBorderRadius', 0, 24, 2, 'px', 'Roundness of card corners')}
-                {renderSlider('Shadow Blur', 'playerCardShadowBlur', 4, 32, 2, 'px')}
-                {renderSlider('Shadow Opacity', 'playerCardShadowOpacity', 0.1, 1, 0.05, '', 'Shadow darkness (0.1-1)')}
+                {renderSlider('Shadow Blur', 'playerCardShadowBlur', 0, 32, 2, 'px')}
+                {renderSlider('Shadow Opacity', 'playerCardShadowOpacity', 0, 1, 0.05, '', 'Shadow darkness (0-1)')}
               </>
             )}
           </div>
@@ -183,26 +183,26 @@ function UICustomization({ onClose }) {
             <SectionHeader title="Typography" sectionKey="typography" />
             {expandedSections.typography && (
               <>
-                {renderSlider('Base Font Size', 'playerCardFontSize', 0.75, 1.5, 0.05, 'rem')}
-                {renderSlider('Player Name Size', 'playerNameFontSize', 1, 2, 0.1, 'rem')}
+                {renderSlider('Base Font Size', 'playerCardFontSize', 0.5, 1.5, 0.05, 'rem')}
+                {renderSlider('Player Name Size', 'playerNameFontSize', 0.7, 2, 0.1, 'rem')}
                 {renderSelect('Player Name Weight', 'playerNameFontWeight', [
                   { value: 'normal', label: 'Normal' },
                   { value: 'bold', label: 'Bold' },
                   { value: '300', label: 'Light' },
                   { value: '900', label: 'Heavy' }
                 ])}
-                {renderSlider('Stat Label Size', 'statLabelFontSize', 0.6, 1.2, 0.05, 'rem')}
+                {renderSlider('Stat Label Size', 'statLabelFontSize', 0.5, 1.2, 0.05, 'rem')}
                 {renderSelect('Stat Label Weight', 'statLabelFontWeight', [
                   { value: 'normal', label: 'Normal' },
                   { value: 'bold', label: 'Bold' }
                 ])}
                 {renderSlider('Stat Label Spacing', 'statLabelLetterSpacing', 0, 2, 0.1, 'px', 'Letter spacing')}
-                {renderSlider('Stat Value Size', 'statValueFontSize', 1, 2, 0.1, 'rem')}
+                {renderSlider('Stat Value Size', 'statValueFontSize', 0.7, 2, 0.1, 'rem')}
                 {renderSelect('Stat Value Weight', 'statValueFontWeight', [
                   { value: 'normal', label: 'Normal' },
                   { value: 'bold', label: 'Bold' }
                 ])}
-                {renderSlider('Inventory Label Size', 'inventoryLabelFontSize', 0.6, 1.2, 0.05, 'rem')}
+                {renderSlider('Inventory Label Size', 'inventoryLabelFontSize', 0.5, 1.2, 0.05, 'rem')}
               </>
             )}
           </div>
@@ -212,9 +212,9 @@ function UICustomization({ onClose }) {
             <SectionHeader title="Stats Layout" sectionKey="stats" />
             {expandedSections.stats && (
               <>
-                {renderSlider('Stat Padding', 'statPadding', 0.25, 1.5, 0.05, 'rem')}
+                {renderSlider('Stat Padding', 'statPadding', 0.1, 1.5, 0.05, 'rem')}
                 {renderSlider('Stat Border Radius', 'statBorderRadius', 0, 16, 1, 'px')}
-                {renderSlider('Stat Gap', 'statGap', 0.25, 1.5, 0.05, 'rem', 'Space between stats')}
+                {renderSlider('Stat Gap', 'statGap', 0.1, 1.5, 0.05, 'rem', 'Space between stats')}
               </>
             )}
           </div>
@@ -224,9 +224,9 @@ function UICustomization({ onClose }) {
             <SectionHeader title="Inventory" sectionKey="inventory" />
             {expandedSections.inventory && (
               <>
-                {renderSlider('Slot Size', 'inventorySlotSize', 40, 120, 5, 'px')}
-                {renderSlider('Grid Gap', 'inventoryGridGap', 0.25, 1.5, 0.05, 'rem', 'Space between slots')}
-                {renderSlider('Slot Border Width', 'inventorySlotBorderWidth', 1, 6, 1, 'px')}
+                {renderSlider('Slot Size', 'inventorySlotSize', 30, 120, 5, 'px')}
+                {renderSlider('Grid Gap', 'inventoryGridGap', 0.1, 1.5, 0.05, 'rem', 'Space between slots')}
+                {renderSlider('Slot Border Width', 'inventorySlotBorderWidth', 0, 6, 1, 'px')}
                 {renderSlider('Slot Border Radius', 'inventorySlotBorderRadius', 0, 24, 2, 'px')}
               </>
             )}
@@ -237,8 +237,8 @@ function UICustomization({ onClose }) {
             <SectionHeader title="Party Slots" sectionKey="party" />
             {expandedSections.party && (
               <>
-                {renderSlider('Party Slot Size', 'partySlotSize', 30, 120, 5, 'px')}
-                {renderSlider('Border Width', 'partySlotBorderWidth', 1, 6, 1, 'px')}
+                {renderSlider('Party Slot Size', 'partySlotSize', 25, 120, 5, 'px')}
+                {renderSlider('Border Width', 'partySlotBorderWidth', 0, 6, 1, 'px')}
                 {renderSlider('Border Radius', 'partySlotBorderRadius', 0, 24, 2, 'px')}
               </>
             )}
@@ -267,14 +267,14 @@ function UICustomization({ onClose }) {
             {expandedSections.hover && (
               <>
                 <h4 style={{ color: '#d4af37', fontSize: '1rem', marginTop: '1rem' }}>Card Hover</h4>
-                {renderSlider('Hover Shadow Blur', 'cardHoverShadowBlur', 4, 32, 2, 'px')}
-                {renderSlider('Hover Shadow Opacity', 'cardHoverShadowOpacity', 0.1, 1, 0.05, '')}
-                {renderSlider('Hover Lift Amount', 'cardHoverTranslateY', -10, -1, 1, 'px', 'How much card lifts up')}
+                {renderSlider('Hover Shadow Blur', 'cardHoverShadowBlur', 0, 32, 2, 'px')}
+                {renderSlider('Hover Shadow Opacity', 'cardHoverShadowOpacity', 0, 1, 0.05, '')}
+                {renderSlider('Hover Lift Amount', 'cardHoverTranslateY', -10, 0, 1, 'px', 'How much card lifts up (negative = up)')}
 
                 <h4 style={{ color: '#d4af37', fontSize: '1rem', marginTop: '1rem' }}>Inventory Slot Hover</h4>
                 {renderSlider('Hover Scale', 'inventorySlotHoverScale', 1, 1.3, 0.01, 'x')}
-                {renderSlider('Hover Shadow Blur', 'inventorySlotHoverShadowBlur', 4, 24, 2, 'px')}
-                {renderSlider('Hover Shadow Opacity', 'inventorySlotHoverShadowOpacity', 0.1, 1, 0.05, '')}
+                {renderSlider('Hover Shadow Blur', 'inventorySlotHoverShadowBlur', 0, 24, 2, 'px')}
+                {renderSlider('Hover Shadow Opacity', 'inventorySlotHoverShadowOpacity', 0, 1, 0.05, '')}
               </>
             )}
           </div>
@@ -317,6 +317,33 @@ function UICustomization({ onClose }) {
                 inventorySlotSize: 50,
                 partySlotSize: 45
               })}>Compact</button>
+              <button onClick={() => handleLoadPreset({
+                ...defaultUISettings,
+                playerPanelWidth: 250,
+                playerCardSpacing: 0.1,
+                playerInfoPadding: 0.2,
+                playerCardBorderWidth: 1,
+                playerCardBorderRadius: 4,
+                playerCardShadowBlur: 0,
+                playerCardShadowOpacity: 0,
+                playerCardFontSize: 0.5,
+                playerNameFontSize: 0.7,
+                statLabelFontSize: 0.5,
+                statValueFontSize: 0.7,
+                inventoryLabelFontSize: 0.5,
+                statPadding: 0.1,
+                statBorderRadius: 2,
+                statGap: 0.1,
+                inventorySlotSize: 30,
+                inventoryGridGap: 0.1,
+                inventorySlotBorderWidth: 1,
+                partySlotSize: 25,
+                partySlotBorderWidth: 1,
+                cardHoverShadowBlur: 0,
+                cardHoverShadowOpacity: 0,
+                cardHoverTranslateY: 0,
+                inventorySlotHoverScale: 1
+              })}>Ultra Compact</button>
             </div>
 
             <h3 style={{ color: '#d4af37', marginBottom: '1rem', marginTop: '1.5rem' }}>Custom Presets</h3>
