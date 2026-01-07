@@ -23,7 +23,7 @@ function RoomCodeDisplay({ onClose }) {
   }
 
   const roomCode = currentSession.id.slice(0, 6).toUpperCase();
-  const playerUrl = `${window.location.origin}/join`;
+  const playerUrl = `${window.location.origin}/Game-v2/join`;
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {

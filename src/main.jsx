@@ -8,7 +8,7 @@ import { GameProvider } from './contexts/GameContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/Game-v2">
       <Routes>
         {/* Player Routes */}
         <Route path="/join" element={<JoinScreen />} />
