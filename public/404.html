@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>DND Game Master - Redirecting...</title>
+    <script type="text/javascript">
+      // For HashRouter on GitHub Pages
+      // If someone navigates to a path that doesn't exist, redirect to the base
+      // The hash part (if any) will be preserved and handled by the router
+      var pathSegmentsToKeep = 1; // Keep '/Game-v2'
+
+      var l = window.location;
+      var redirect = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/' + l.hash;
+
+      window.location.replace(redirect);
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>

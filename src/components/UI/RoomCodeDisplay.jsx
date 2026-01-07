@@ -23,13 +23,10 @@ function RoomCodeDisplay({ onClose }) {
   }
 
   const roomCode = currentSession.id.slice(0, 6).toUpperCase();
-  // Construct the player URL based on current location to work on any deployment
-  let baseUrl = window.location.href.split('#')[0]; // Get everything before the hash
-  // Ensure base URL ends with a slash
-  if (!baseUrl.endsWith('/')) {
-    baseUrl += '/';
-  }
-  const playerUrl = `${baseUrl}#/join`;
+  // Construct the player URL using origin and pathname for reliability
+  const { origin, pathname } = window.location;
+  const cleanPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
+  const playerUrl = `${origin}${cleanPath}#/join`;
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
