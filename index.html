@@ -4,6 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DND Game Master</title>
+
+    <!-- GitHub Pages SPA routing fix for mobile -->
+    <script type="text/javascript">
+      // Handle the case where someone navigates to /Game-v2/join directly (without hash)
+      (function() {
+        var path = window.location.pathname;
+        var hash = window.location.hash;
+
+        // If the path ends with /join but there's no hash, redirect to use hash routing
+        if (path.indexOf('/join') !== -1 && hash.indexOf('/join') === -1) {
+          window.location.replace(
+            window.location.protocol + '//' +
+            window.location.host +
+            path.split('/join')[0] + '/#/join'
+          );
+        }
+        // If the path ends with /player/ but there's no hash, redirect to use hash routing
+        else if (path.indexOf('/player/') !== -1 && hash.indexOf('/player/') === -1) {
+          var sessionId = path.split('/player/')[1];
+          window.location.replace(
+            window.location.protocol + '//' +
+            window.location.host +
+            path.split('/player/')[0] + '/#/player/' + sessionId
+          );
+        }
+      })();
+    </script>
+
     <style>
       * {
         margin: 0;
