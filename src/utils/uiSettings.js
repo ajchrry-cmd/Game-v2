@@ -27,7 +27,6 @@ export const defaultUISettings = {
   inventoryLabelFontSize: 0.85,
 
   // Stats Layout
-  statSize: 0.9,
   statPadding: 0.5,
   statBorderRadius: 6,
   statGap: 0.5,
@@ -100,7 +99,6 @@ export const applyUISettings = (settings) => {
   document.documentElement.style.setProperty('--inventory-label-font-size', `${settings.inventoryLabelFontSize}rem`);
 
   // Stats Layout
-  document.documentElement.style.setProperty('--stat-size', settings.statSize);
   document.documentElement.style.setProperty('--stat-padding', `${settings.statPadding}rem`);
   document.documentElement.style.setProperty('--stat-border-radius', `${settings.statBorderRadius}px`);
   document.documentElement.style.setProperty('--stat-gap', `${settings.statGap}rem`);
