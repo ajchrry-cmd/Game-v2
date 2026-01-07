@@ -23,7 +23,9 @@ function RoomCodeDisplay({ onClose }) {
   }
 
   const roomCode = currentSession.id.slice(0, 6).toUpperCase();
-  const playerUrl = `${window.location.origin}/Game-v2/#/join`;
+  // Construct the player URL based on current location to work on any deployment
+  const baseUrl = window.location.href.split('#')[0]; // Get everything before the hash
+  const playerUrl = `${baseUrl}#/join`;
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
