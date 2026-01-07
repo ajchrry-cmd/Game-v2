@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import JoinScreen from './components/Player/JoinScreen';
 import PlayerView from './components/Player/PlayerView';
@@ -8,7 +8,7 @@ import { GameProvider } from './contexts/GameContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter basename="/Game-v2">
+    <HashRouter>
       <Routes>
         {/* Player Routes */}
         <Route path="/join" element={<JoinScreen />} />
@@ -21,6 +21,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           </GameProvider>
         } />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   </React.StrictMode>
 );
