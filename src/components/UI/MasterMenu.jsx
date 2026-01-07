@@ -10,6 +10,7 @@ import BonusManager from './BonusManager';
 import MobPlacer from './MobPlacer';
 import DiceRoller from './DiceRoller';
 import UICustomization from './UICustomization';
+import RoomCodeDisplay from './RoomCodeDisplay';
 import './MasterMenu.css';
 
 function MasterMenu() {
@@ -122,6 +123,7 @@ function MasterMenu() {
               <h3>Manage</h3>
               <button onClick={() => openManager('session')}>Sessions</button>
               <button onClick={() => openManager('players')}>Players</button>
+              <button onClick={() => openManager('roomCode')}>📱 Player Access</button>
               <button onClick={() => openManager('items')}>Items</button>
               <button onClick={() => openManager('bonuses')}>Mobs</button>
               <button onClick={() => openManager('maps')}>Maps</button>
@@ -135,6 +137,7 @@ function MasterMenu() {
 
       {activeManager === 'session' && <SessionManager onClose={closeManager} />}
       {activeManager === 'players' && <PlayerManager onClose={closeManager} />}
+      {activeManager === 'roomCode' && <RoomCodeDisplay onClose={closeManager} />}
       {activeManager === 'items' && <ItemManager onClose={closeManager} />}
       {activeManager === 'bonuses' && <BonusManager onClose={closeManager} />}
       {activeManager === 'maps' && <MapManager onClose={closeManager} />}

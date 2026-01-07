@@ -1,0 +1,144 @@
+.join-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  padding: 1rem;
+}
+
+.join-container {
+  background: #2a2a2a;
+  border: 2px solid #d4af37;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.2);
+}
+
+.join-container h1 {
+  color: #d4af37;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+}
+
+.join-subtitle {
+  color: #999;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.join-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.join-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.join-form label {
+  color: #d4af37;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.room-code-input {
+  background: #1a1a1a;
+  border: 2px solid #444;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #fff;
+  font-size: 1.5rem;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.room-code-input:focus {
+  outline: none;
+  border-color: #d4af37;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+.room-code-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.join-button {
+  background: #d4af37;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.join-button:hover:not(:disabled) {
+  background: #c9a532;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}
+
+.join-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.join-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid #ff4444;
+  border-radius: 6px;
+  padding: 0.75rem;
+  color: #ff6666;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.join-help {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #444;
+  text-align: center;
+}
+
+.join-help p {
+  color: #666;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* Mobile optimization */
+@media (max-width: 480px) {
+  .join-container {
+    padding: 1.5rem;
+  }
+
+  .join-container h1 {
+    font-size: 1.5rem;
+  }
+
+  .room-code-input {
+    font-size: 1.2rem;
+  }
+}
