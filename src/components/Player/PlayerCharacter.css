@@ -272,33 +272,104 @@
   border-bottom: 2px solid rgba(212, 175, 55, 0.3);
 }
 
-/* GM Secret Notes Section */
-.gm-notes-section {
+/* GM Secret Notes - Fixed at Bottom */
+.gm-notes-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: linear-gradient(135deg, #3a2a1a 0%, #2a1a0a 100%);
-  border: 3px solid #d4af37;
-  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+  border-top: 3px solid #d4af37;
+  box-shadow: 0 -4px 20px rgba(212, 175, 55, 0.3);
+  z-index: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
   animation: gm-notes-glow 2s ease-in-out infinite alternate;
 }
 
 @keyframes gm-notes-glow {
   from {
-    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 -4px 20px rgba(212, 175, 55, 0.3);
   }
   to {
-    box-shadow: 0 4px 30px rgba(212, 175, 55, 0.5);
+    box-shadow: 0 -4px 30px rgba(212, 175, 55, 0.5);
   }
 }
 
-.gm-notes-content {
-  background: rgba(0, 0, 0, 0.3);
-  border-left: 4px solid #d4af37;
-  padding: 1.25rem;
-  border-radius: 8px;
+.gm-notes-bottom.collapsed {
+  max-height: 60px;
+}
+
+.gm-notes-bottom.expanded {
+  max-height: 80vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gm-notes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  gap: 0.75rem;
+  user-select: none;
+}
+
+.gm-notes-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.gm-notes-title {
+  flex: 1;
+  color: #d4af37;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.gm-notes-toggle {
+  color: #d4af37;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.gm-notes-content-bottom {
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 2px solid rgba(212, 175, 55, 0.5);
+  padding: 1.5rem;
   color: #fff;
   font-size: 1.1rem;
   line-height: 1.8;
   white-space: pre-wrap;
   font-style: italic;
+  margin: 0;
+  cursor: text;
+}
+
+/* Responsive adjustments for GM notes */
+@media (max-width: 768px) {
+  .gm-notes-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .gm-notes-icon {
+    font-size: 1.3rem;
+  }
+
+  .gm-notes-title {
+    font-size: 1rem;
+  }
+
+  .gm-notes-toggle {
+    font-size: 1rem;
+  }
+
+  .gm-notes-content-bottom {
+    font-size: 1rem;
+    padding: 1rem;
+  }
 }
 
 /* Custom Stats Grid */

@@ -8,6 +8,7 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
   const [flashColor, setFlashColor] = useState('#ff0000');
   const [dismissedMessages, setDismissedMessages] = useState([]);
   const [processedFlashes, setProcessedFlashes] = useState([]);
+  const [notesExpanded, setNotesExpanded] = useState(false);
 
   // Debug logging
   useEffect(() => {
@@ -164,16 +165,6 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
           )}
         </div>
 
-        {/* GM Secret Notes */}
-        {player.gmNotes && (
-          <div className="pc-section gm-notes-section">
-            <h3 className="pc-section-title">📜 Secret Information</h3>
-            <div className="gm-notes-content">
-              {player.gmNotes}
-            </div>
-          </div>
-        )}
-
         {/* Base Stats - Large Cards */}
         {!settings.blindMode && (settings.showPower || settings.showMoney) && (
           <div className="pc-stats-primary">
@@ -286,6 +277,25 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
           </div>
         )}
       </div>
+
+      {/* GM Secret Notes - Fixed at bottom */}
+      {player.gmNotes && (
+        <div
+          className={`gm-notes-bottom ${notesExpanded ? 'expanded' : 'collapsed'}`}
+          onClick={() => setNotesExpanded(!notesExpanded)}
+        >
+          <div className="gm-notes-header">
+            <span className="gm-notes-icon">📜</span>
+            <span className="gm-notes-title">Secret Information</span>
+            <span className="gm-notes-toggle">{notesExpanded ? '▼' : '▲'}</span>
+          </div>
+          {notesExpanded && (
+            <div className="gm-notes-content-bottom" onClick={(e) => e.stopPropagation()}>
+              {player.gmNotes}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
