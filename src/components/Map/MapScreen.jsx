@@ -420,6 +420,7 @@ function MapScreen() {
                 key={player.id}
                 position={position}
                 onDrag={(e, data) => handleDrag(player.id, e, data)}
+                scale={mapTransform.scale}
               >
                 <div
                   className="player-token"
@@ -544,6 +545,7 @@ function MapScreen() {
                 position={placedBonus.position}
                 onDrag={(e, data) => handleBonusDrag(placedBonus.id, e, data)}
                 disabled={resizing !== null}
+                scale={mapTransform.scale}
               >
                 <div
                   className="bonus-item"
