@@ -326,7 +326,9 @@ function AttachedMobEditor({ player, onClose, onSave }) {
               background: 'rgba(0, 0, 0, 0.7)',
               padding: '2px 6px',
               borderRadius: '4px',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              position: 'relative',
+              zIndex: 100
             }}>
               {player.name}
             </span>
