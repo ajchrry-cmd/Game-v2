@@ -122,6 +122,7 @@ function PlayerView() {
           items={items}
           bonuses={bonuses}
           sessionName={session?.name}
+          sessionId={sessionId}
           onChangeCharacter={handleChangeCharacter}
         />
       )}

@@ -58,6 +58,20 @@ export const GameProvider = ({ children }) => {
   // UI state
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Companion App settings
+  const [companionSettings, setCompanionSettings] = useState({
+    showPower: true,
+    showMoney: true,
+    showCustomStats: true,
+    showInventory: true,
+    showParty: true,
+    showStatusEffects: true,
+    allowCharacterSwitch: true,
+    blindMode: false
+  });
+  const [playerMessages, setPlayerMessages] = useState({});
+  const [playerFlashEvents, setPlayerFlashEvents] = useState({});
+
   // Real-time listener unsubscribe functions
   const sessionUnsubscribe = useRef(null);
 
@@ -112,7 +126,19 @@ export const GameProvider = ({ children }) => {
           spinStartRotation: 0,
           spinTargetRotation: 0,
           spinDuration: 0
-        }
+        },
+        companionSettings: {
+          showPower: true,
+          showMoney: true,
+          showCustomStats: true,
+          showInventory: true,
+          showParty: true,
+          showStatusEffects: true,
+          allowCharacterSwitch: true,
+          blindMode: false
+        },
+        playerMessages: {},
+        playerFlashEvents: {}
       };
       const docRef = await addDoc(collection(db, 'sessions'), newSession);
       const session = { id: docRef.id, ...newSession };
@@ -155,6 +181,18 @@ export const GameProvider = ({ children }) => {
           setWheelSpinStartRotation(session.wheelState?.spinStartRotation || 0);
           setWheelSpinTargetRotation(session.wheelState?.spinTargetRotation || 0);
           setWheelSpinDuration(session.wheelState?.spinDuration || 0);
+          setCompanionSettings(session.companionSettings || {
+            showPower: true,
+            showMoney: true,
+            showCustomStats: true,
+            showInventory: true,
+            showParty: true,
+            showStatusEffects: true,
+            allowCharacterSwitch: true,
+            blindMode: false
+          });
+          setPlayerMessages(session.playerMessages || {});
+          setPlayerFlashEvents(session.playerFlashEvents || {});
 
           // Reset flag after state updates are queued
           setTimeout(() => {
@@ -200,7 +238,10 @@ export const GameProvider = ({ children }) => {
           spinStartRotation: wheelSpinStartRotation,
           spinTargetRotation: wheelSpinTargetRotation,
           spinDuration: wheelSpinDuration
-        }
+        },
+        companionSettings,
+        playerMessages,
+        playerFlashEvents
       };
       await setDoc(doc(db, 'sessions', currentSession.id), sessionData);
       setCurrentSession(sessionData);
@@ -232,7 +273,7 @@ export const GameProvider = ({ children }) => {
       }, 100); // Reduced from 1000ms to 100ms for near-instant sync
       return () => clearTimeout(timer);
     }
-  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses, wheelLastResult, wheelSpinActive, wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration]);
+  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses, wheelLastResult, wheelSpinActive, wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration, companionSettings, playerMessages, playerFlashEvents]);
 
   // Cleanup session listener on unmount
   useEffect(() => {
@@ -586,6 +627,54 @@ export const GameProvider = ({ children }) => {
     setPlayerPositions({ ...playerPositions, [playerId]: position });
   };
 
+  // ===== COMPANION APP FUNCTIONS =====
+  const updateCompanionSettings = (newSettings) => {
+    setCompanionSettings(newSettings);
+  };
+
+  const sendPlayerMessage = (playerId, message) => {
+    const messageId = uuidv4();
+    const messageData = {
+      id: messageId,
+      text: message,
+      timestamp: Date.now(),
+      read: false
+    };
+
+    setPlayerMessages(prev => ({
+      ...prev,
+      [playerId]: [...(prev[playerId] || []), messageData]
+    }));
+  };
+
+  const flashPlayerScreen = (playerId, color) => {
+    const flashId = uuidv4();
+    const flashData = {
+      id: flashId,
+      color: color,
+      timestamp: Date.now()
+    };
+
+    setPlayerFlashEvents(prev => ({
+      ...prev,
+      [playerId]: [...(prev[playerId] || []), flashData]
+    }));
+  };
+
+  const clearPlayerMessage = (playerId, messageId) => {
+    setPlayerMessages(prev => ({
+      ...prev,
+      [playerId]: (prev[playerId] || []).filter(m => m.id !== messageId)
+    }));
+  };
+
+  const clearPlayerFlash = (playerId, flashId) => {
+    setPlayerFlashEvents(prev => ({
+      ...prev,
+      [playerId]: (prev[playerId] || []).filter(f => f.id !== flashId)
+    }));
+  };
+
   const value = {
     // Session
     currentSession,
@@ -658,6 +747,16 @@ export const GameProvider = ({ children }) => {
     updateBonusPosition,
     updateBonusSize,
     removeBonus,
+
+    // Companion App
+    companionSettings,
+    updateCompanionSettings,
+    playerMessages,
+    sendPlayerMessage,
+    clearPlayerMessage,
+    playerFlashEvents,
+    flashPlayerScreen,
+    clearPlayerFlash,
 
     // Utilities
     uploadImage,

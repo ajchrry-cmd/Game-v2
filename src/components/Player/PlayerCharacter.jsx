@@ -1,12 +1,53 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useGame } from '../../contexts/GameContext';
 import { loadUISettings } from '../../utils/uiSettings';
 import './PlayerCharacter.css';
 
-function PlayerCharacter({ player, items, bonuses, sessionName, onChangeCharacter }) {
+function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, onChangeCharacter }) {
+  const { companionSettings, playerMessages, playerFlashEvents, clearPlayerMessage, clearPlayerFlash } = useGame();
+  const [currentMessage, setCurrentMessage] = useState(null);
+  const [flashActive, setFlashActive] = useState(false);
+  const [flashColor, setFlashColor] = useState('#ff0000');
   // Load UI customization settings
   useEffect(() => {
     loadUISettings();
   }, []);
+
+  // Handle new messages
+  useEffect(() => {
+    if (playerMessages && playerMessages[player.id]) {
+      const messages = playerMessages[player.id];
+      const unreadMessages = messages.filter(m => !m.read);
+      if (unreadMessages.length > 0) {
+        setCurrentMessage(unreadMessages[0]);
+      }
+    }
+  }, [playerMessages, player.id]);
+
+  // Handle flash events
+  useEffect(() => {
+    if (playerFlashEvents && playerFlashEvents[player.id]) {
+      const flashes = playerFlashEvents[player.id];
+      if (flashes.length > 0) {
+        const latestFlash = flashes[flashes.length - 1];
+        setFlashColor(latestFlash.color);
+        setFlashActive(true);
+
+        // Clear flash after animation
+        setTimeout(() => {
+          setFlashActive(false);
+          clearPlayerFlash(player.id, latestFlash.id);
+        }, 1000);
+      }
+    }
+  }, [playerFlashEvents, player.id]);
+
+  const handleDismissMessage = () => {
+    if (currentMessage) {
+      clearPlayerMessage(player.id, currentMessage.id);
+      setCurrentMessage(null);
+    }
+  };
 
   const inventorySlots = player.inventorySlots || 4;
   const customStats = player.customStats || [];
@@ -14,15 +55,49 @@ function PlayerCharacter({ player, items, bonuses, sessionName, onChangeCharacte
   const party = player.party || [];
   const statusEffects = player.statusEffects || [];
 
+  const settings = companionSettings || {
+    showPower: true,
+    showMoney: true,
+    showCustomStats: true,
+    showInventory: true,
+    showParty: true,
+    showStatusEffects: true,
+    allowCharacterSwitch: true,
+    blindMode: false
+  };
+
   return (
     <div className="player-character-view">
+      {/* Flash overlay */}
+      {flashActive && (
+        <div
+          className="flash-overlay"
+          style={{ backgroundColor: flashColor }}
+        />
+      )}
+
+      {/* Message modal */}
+      {currentMessage && (
+        <div className="message-modal-overlay" onClick={handleDismissMessage}>
+          <div className="message-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>📨 Message from GM</h3>
+            <p className="message-text">{currentMessage.text}</p>
+            <button onClick={handleDismissMessage} className="message-dismiss-btn">
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="pc-header">
         <div className="pc-header-content">
           <h2 className="session-name">{sessionName || 'Game Session'}</h2>
-          <button onClick={onChangeCharacter} className="change-btn">
-            ↻ Change
-          </button>
+          {settings.allowCharacterSwitch && (
+            <button onClick={onChangeCharacter} className="change-btn">
+              ↻ Change
+            </button>
+          )}
         </div>
       </div>
 
@@ -31,29 +106,38 @@ function PlayerCharacter({ player, items, bonuses, sessionName, onChangeCharacte
         {/* Character Name */}
         <div className="pc-name-section">
           <h1 className="pc-name">{player.name}</h1>
+          {settings.blindMode && (
+            <p className="blind-mode-notice">🙈 Information hidden by GM</p>
+          )}
         </div>
 
         {/* Base Stats - Large Cards */}
-        <div className="pc-stats-primary">
-          <div className="pc-stat-card power">
-            <div className="pc-stat-icon">⚔️</div>
-            <div className="pc-stat-content">
-              <div className="pc-stat-label">Power</div>
-              <div className="pc-stat-value">{player.power || 0}</div>
-            </div>
-          </div>
+        {!settings.blindMode && (settings.showPower || settings.showMoney) && (
+          <div className="pc-stats-primary">
+            {settings.showPower && (
+              <div className="pc-stat-card power">
+                <div className="pc-stat-icon">⚔️</div>
+                <div className="pc-stat-content">
+                  <div className="pc-stat-label">Power</div>
+                  <div className="pc-stat-value">{player.power || 0}</div>
+                </div>
+              </div>
+            )}
 
-          <div className="pc-stat-card money">
-            <div className="pc-stat-icon">💰</div>
-            <div className="pc-stat-content">
-              <div className="pc-stat-label">Money</div>
-              <div className="pc-stat-value">{player.money || 0}</div>
-            </div>
+            {settings.showMoney && (
+              <div className="pc-stat-card money">
+                <div className="pc-stat-icon">💰</div>
+                <div className="pc-stat-content">
+                  <div className="pc-stat-label">Money</div>
+                  <div className="pc-stat-value">{player.money || 0}</div>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Custom Stats */}
-        {customStats.length > 0 && (
+        {!settings.blindMode && settings.showCustomStats && customStats.length > 0 && (
           <div className="pc-section">
             <h3 className="pc-section-title">Stats</h3>
             <div className="pc-stats-grid">
@@ -68,8 +152,9 @@ function PlayerCharacter({ player, items, bonuses, sessionName, onChangeCharacte
         )}
 
         {/* Inventory */}
-        <div className="pc-section">
-          <h3 className="pc-section-title">🎒 Inventory</h3>
+        {!settings.blindMode && settings.showInventory && (
+          <div className="pc-section">
+            <h3 className="pc-section-title">🎒 Inventory</h3>
           <div className="pc-inventory-grid" style={{
             gridTemplateColumns: `repeat(${Math.min(inventorySlots, 4)}, 1fr)`
           }}>
@@ -92,10 +177,11 @@ function PlayerCharacter({ player, items, bonuses, sessionName, onChangeCharacte
               );
             })}
           </div>
-        </div>
+          </div>
+        )}
 
         {/* Party */}
-        {partySlots > 0 && (
+        {!settings.blindMode && settings.showParty && partySlots > 0 && (
           <div className="pc-section">
             <h3 className="pc-section-title">👥 Party</h3>
             <div className="pc-inventory-grid" style={{
@@ -124,7 +210,7 @@ function PlayerCharacter({ player, items, bonuses, sessionName, onChangeCharacte
         )}
 
         {/* Status Effects */}
-        {statusEffects.length > 0 && (
+        {!settings.blindMode && settings.showStatusEffects && statusEffects.length > 0 && (
           <div className="pc-section">
             <h3 className="pc-section-title">✨ Status Effects</h3>
             <div className="pc-status-list">

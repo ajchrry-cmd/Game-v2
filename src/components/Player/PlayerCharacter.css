@@ -5,6 +5,109 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  position: relative;
+}
+
+/* Flash overlay effect */
+.flash-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  pointer-events: none;
+  animation: flashAnimation 1s ease-out;
+}
+
+@keyframes flashAnimation {
+  0% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+  100% { opacity: 0; }
+}
+
+/* Message modal */
+.message-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.message-modal {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+  border: 3px solid #d4af37;
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.message-modal h3 {
+  color: #d4af37;
+  font-size: 1.8rem;
+  margin: 0 0 1.5rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.message-text {
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin: 0 0 2rem 0;
+  white-space: pre-wrap;
+}
+
+.message-dismiss-btn {
+  background: linear-gradient(135deg, #d4af37 0%, #c9a532 100%);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}
+
+.message-dismiss-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.6);
+}
+
+.message-dismiss-btn:active {
+  transform: translateY(0);
+}
+
+/* Blind mode notice */
+.blind-mode-notice {
+  color: #999;
+  font-size: 1.2rem;
+  text-align: center;
+  margin-top: 1rem;
+  font-style: italic;
 }
 
 /* Header */
