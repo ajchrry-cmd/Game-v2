@@ -19,8 +19,10 @@ function PlayerContextMenu({
   const [showMobEditor, setShowMobEditor] = useState(false);
   const menuRef = useRef(null);
 
-  // Close menu when clicking outside
+  // Close menu when clicking outside (but not when mob editor is open)
   useEffect(() => {
+    if (showMobEditor) return; // Don't handle outside clicks when mob editor is open
+
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         onClose();
@@ -29,7 +31,7 @@ function PlayerContextMenu({
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose]);
+  }, [onClose, showMobEditor]);
 
   const handleAddItem = (itemId) => {
     const currentInventory = player.inventory || [];
