@@ -8,6 +8,20 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
   const [flashColor, setFlashColor] = useState('#ff0000');
   const [dismissedMessages, setDismissedMessages] = useState([]);
   const [processedFlashes, setProcessedFlashes] = useState([]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('PlayerCharacter mounted/updated:', {
+      hasPlayer: !!player,
+      playerName: player?.name,
+      hasItems: !!items,
+      hasBonuses: !!bonuses,
+      hasSettings: !!companionSettings,
+      sessionName,
+      sessionId
+    });
+  }, [player, items, bonuses, companionSettings, sessionName, sessionId]);
+
   // Load UI customization settings
   useEffect(() => {
     loadUISettings();
@@ -53,11 +67,35 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
     }
   };
 
+  // Safety check
+  if (!player) {
+    console.error('PlayerCharacter: No player data received');
+    return (
+      <div className="player-character-view">
+        <div className="pc-header">
+          <div className="pc-header-content">
+            <h2 className="session-name">Error</h2>
+          </div>
+        </div>
+        <div className="pc-content">
+          <div className="pc-name-section">
+            <h1 className="pc-name">No Player Data</h1>
+            <p style={{ color: '#999', textAlign: 'center', marginTop: '1rem' }}>
+              Unable to load player information. Please try selecting your character again.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const inventorySlots = player.inventorySlots || 4;
   const customStats = player.customStats || [];
   const partySlots = player.partySlots || 0;
   const party = player.party || [];
   const statusEffects = player.statusEffects || [];
+  const safeItems = items || [];
+  const safeBonuses = bonuses || [];
 
   const settings = companionSettings || {
     showPower: true,
@@ -69,6 +107,8 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
     allowCharacterSwitch: true,
     blindMode: false
   };
+
+  console.log('PlayerCharacter rendering with settings:', settings);
 
   return (
     <div className="player-character-view">
@@ -163,8 +203,8 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
             gridTemplateColumns: `repeat(${Math.min(inventorySlots, 4)}, 1fr)`
           }}>
             {Array.from({ length: inventorySlots }).map((_, index) => {
-              const itemId = player.inventory[index];
-              const item = itemId ? items.find(i => i.id === itemId) : null;
+              const itemId = player.inventory ? player.inventory[index] : null;
+              const item = itemId ? safeItems.find(i => i.id === itemId) : null;
               return (
                 <div key={index} className="pc-item-slot">
                   {item ? (
@@ -193,7 +233,7 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
             }}>
               {Array.from({ length: partySlots }).map((_, index) => {
                 const mobId = party[index];
-                const mob = mobId ? bonuses.find(b => b.id === mobId) : null;
+                const mob = mobId ? safeBonuses.find(b => b.id === mobId) : null;
                 return (
                   <div key={index} className="pc-item-slot">
                     {mob ? (

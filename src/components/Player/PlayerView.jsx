@@ -53,10 +53,18 @@ function PlayerView() {
       (docSnap) => {
         if (docSnap.exists()) {
           const sessionData = { id: docSnap.id, ...docSnap.data() };
+          console.log('PlayerView: Session loaded:', {
+            sessionId: sessionData.id,
+            name: sessionData.name,
+            playerCount: sessionData.players?.length || 0,
+            hasCompanionSettings: !!sessionData.companionSettings,
+            companionSettings: sessionData.companionSettings
+          });
           setSession(sessionData);
           setPlayers(sessionData.players || []);
           setLoading(false);
         } else {
+          console.error('PlayerView: Session not found');
           setError('Session not found');
           setLoading(false);
         }
@@ -108,6 +116,16 @@ function PlayerView() {
 
   const selectedPlayer = players.find(p => p.id === selectedPlayerId);
 
+  // Debug logging
+  if (selectedPlayer) {
+    console.log('PlayerView: Selected player:', {
+      playerId: selectedPlayer.id,
+      playerName: selectedPlayer.name,
+      hasInventory: !!selectedPlayer.inventory,
+      inventoryCount: selectedPlayer.inventory?.length || 0
+    });
+  }
+
   // Extract companion settings and messages from session
   const companionSettings = session?.companionSettings || {
     showPower: true,
@@ -122,6 +140,15 @@ function PlayerView() {
 
   const playerMessages = session?.playerMessages || {};
   const playerFlashEvents = session?.playerFlashEvents || {};
+
+  console.log('PlayerView: Rendering with:', {
+    hasSession: !!session,
+    selectedPlayerId,
+    hasSelectedPlayer: !!selectedPlayer,
+    itemsCount: items.length,
+    bonusesCount: bonuses.length,
+    playersCount: players.length
+  });
 
   return (
     <div className="player-view">
