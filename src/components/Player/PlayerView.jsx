@@ -108,6 +108,21 @@ function PlayerView() {
 
   const selectedPlayer = players.find(p => p.id === selectedPlayerId);
 
+  // Extract companion settings and messages from session
+  const companionSettings = session?.companionSettings || {
+    showPower: true,
+    showMoney: true,
+    showCustomStats: true,
+    showInventory: true,
+    showParty: true,
+    showStatusEffects: true,
+    allowCharacterSwitch: true,
+    blindMode: false
+  };
+
+  const playerMessages = session?.playerMessages || {};
+  const playerFlashEvents = session?.playerFlashEvents || {};
+
   return (
     <div className="player-view">
       {!selectedPlayerId || !selectedPlayer ? (
@@ -123,6 +138,9 @@ function PlayerView() {
           bonuses={bonuses}
           sessionName={session?.name}
           sessionId={sessionId}
+          companionSettings={companionSettings}
+          playerMessages={playerMessages}
+          playerFlashEvents={playerFlashEvents}
           onChangeCharacter={handleChangeCharacter}
         />
       )}

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useGame } from '../../contexts/GameContext';
 import { loadUISettings } from '../../utils/uiSettings';
 import './PlayerCharacter.css';
 
-function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, onChangeCharacter }) {
-  const { companionSettings, playerMessages, playerFlashEvents, clearPlayerMessage, clearPlayerFlash } = useGame();
+function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, companionSettings, playerMessages, playerFlashEvents, onChangeCharacter }) {
   const [currentMessage, setCurrentMessage] = useState(null);
   const [flashActive, setFlashActive] = useState(false);
   const [flashColor, setFlashColor] = useState('#ff0000');
+  const [dismissedMessages, setDismissedMessages] = useState([]);
+  const [processedFlashes, setProcessedFlashes] = useState([]);
   // Load UI customization settings
   useEffect(() => {
     loadUISettings();
@@ -17,12 +17,12 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, onCha
   useEffect(() => {
     if (playerMessages && playerMessages[player.id]) {
       const messages = playerMessages[player.id];
-      const unreadMessages = messages.filter(m => !m.read);
-      if (unreadMessages.length > 0) {
+      const unreadMessages = messages.filter(m => !dismissedMessages.includes(m.id));
+      if (unreadMessages.length > 0 && (!currentMessage || currentMessage.id !== unreadMessages[0].id)) {
         setCurrentMessage(unreadMessages[0]);
       }
     }
-  }, [playerMessages, player.id]);
+  }, [playerMessages, player.id, dismissedMessages, currentMessage]);
 
   // Handle flash events
   useEffect(() => {
@@ -30,21 +30,25 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, onCha
       const flashes = playerFlashEvents[player.id];
       if (flashes.length > 0) {
         const latestFlash = flashes[flashes.length - 1];
-        setFlashColor(latestFlash.color);
-        setFlashActive(true);
 
-        // Clear flash after animation
-        setTimeout(() => {
-          setFlashActive(false);
-          clearPlayerFlash(player.id, latestFlash.id);
-        }, 1000);
+        // Only process if we haven't seen this flash before
+        if (!processedFlashes.includes(latestFlash.id)) {
+          setFlashColor(latestFlash.color);
+          setFlashActive(true);
+          setProcessedFlashes(prev => [...prev, latestFlash.id]);
+
+          // Clear flash after animation
+          setTimeout(() => {
+            setFlashActive(false);
+          }, 1000);
+        }
       }
     }
-  }, [playerFlashEvents, player.id]);
+  }, [playerFlashEvents, player.id, processedFlashes]);
 
   const handleDismissMessage = () => {
     if (currentMessage) {
-      clearPlayerMessage(player.id, currentMessage.id);
+      setDismissedMessages(prev => [...prev, currentMessage.id]);
       setCurrentMessage(null);
     }
   };
