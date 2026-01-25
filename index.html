@@ -5,29 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DND Game Master</title>
 
-    <!-- GitHub Pages SPA routing fix for mobile -->
+    <!-- GitHub Pages SPA routing fix for mobile and hash preservation -->
     <script type="text/javascript">
-      // Handle the case where someone navigates to /Game-v2/join directly (without hash)
       (function() {
-        var path = window.location.pathname;
-        var hash = window.location.hash;
+        var l = window.location;
+        var path = l.pathname;
+        var hash = l.hash;
+        var search = l.search;
 
-        // If the path ends with /join but there's no hash, redirect to use hash routing
-        if (path.indexOf('/join') !== -1 && hash.indexOf('/join') === -1) {
-          window.location.replace(
-            window.location.protocol + '//' +
-            window.location.host +
-            path.split('/join')[0] + '/#/join'
-          );
+        // Debug logging for mobile troubleshooting
+        console.log('Initial load:', {
+          href: l.href,
+          pathname: path,
+          hash: hash,
+          search: search,
+          userAgent: navigator.userAgent
+        });
+
+        // Handle /Game-v2/join -> /Game-v2/#/join
+        if (path.indexOf('/join') !== -1 && !hash) {
+          var basePath = path.split('/join')[0];
+          if (!basePath.endsWith('/')) basePath += '/';
+          l.replace(l.protocol + '//' + l.host + basePath + '#/join');
+          return;
         }
-        // If the path ends with /player/ but there's no hash, redirect to use hash routing
-        else if (path.indexOf('/player/') !== -1 && hash.indexOf('/player/') === -1) {
-          var sessionId = path.split('/player/')[1];
-          window.location.replace(
-            window.location.protocol + '//' +
-            window.location.host +
-            path.split('/player/')[0] + '/#/player/' + sessionId
-          );
+
+        // Handle /Game-v2/player/SESSION_ID -> /Game-v2/#/player/SESSION_ID
+        if (path.indexOf('/player/') !== -1 && hash.indexOf('/player/') === -1) {
+          var parts = path.split('/player/');
+          var sessionId = parts[1];
+          var basePath = parts[0];
+          if (!basePath.endsWith('/')) basePath += '/';
+          l.replace(l.protocol + '//' + l.host + basePath + '#/player/' + sessionId);
+          return;
+        }
+
+        // Handle case where hash was stripped (some mobile apps do this)
+        // Check if there's a query parameter with the intended hash
+        if (search && search.indexOf('hash=') !== -1) {
+          var hashParam = search.split('hash=')[1].split('&')[0];
+          var basePath = path;
+          if (!basePath.endsWith('/')) basePath += '/';
+          l.replace(l.protocol + '//' + l.host + basePath + '#' + decodeURIComponent(hashParam));
+          return;
         }
       })();
     </script>

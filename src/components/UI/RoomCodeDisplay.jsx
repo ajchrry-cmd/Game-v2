@@ -10,9 +10,10 @@ function RoomCodeDisplay({ onClose }) {
 
   useEffect(() => {
     if (currentSession) {
-      const { origin, pathname } = window.location;
-      const cleanPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
-      const playerUrl = `${origin}${cleanPath}#/join`;
+      // Use Vite's BASE_URL for reliable cross-platform URL construction
+      const baseUrl = import.meta.env.BASE_URL;
+      const origin = window.location.origin;
+      const playerUrl = `${origin}${baseUrl}#/join`;
 
       // Generate QR code using Google Charts API
       const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(playerUrl)}`;
@@ -21,9 +22,9 @@ function RoomCodeDisplay({ onClose }) {
       // Debug logging
       console.log('Player URL components:', {
         origin,
-        pathname,
-        cleanPath,
-        finalUrl: playerUrl
+        baseUrl,
+        finalUrl: playerUrl,
+        userAgent: navigator.userAgent
       });
     }
   }, [currentSession]);
@@ -44,10 +45,10 @@ function RoomCodeDisplay({ onClose }) {
   }
 
   const roomCode = currentSession.id.slice(0, 6).toUpperCase();
-  // Construct the player URL using origin and pathname for reliability
-  const { origin, pathname } = window.location;
-  const cleanPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
-  const playerUrl = `${origin}${cleanPath}#/join`;
+  // Construct the player URL using Vite's BASE_URL for consistency
+  const baseUrl = import.meta.env.BASE_URL;
+  const origin = window.location.origin;
+  const playerUrl = `${origin}${baseUrl}#/join`;
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {

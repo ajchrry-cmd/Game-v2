@@ -2,21 +2,49 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DND Game Master - Redirecting...</title>
     <script type="text/javascript">
-      // For HashRouter on GitHub Pages
-      // If someone navigates to a path that doesn't exist, redirect to the base
-      // The hash part (if any) will be preserved and handled by the router
-      var pathSegmentsToKeep = 1; // Keep '/Game-v2'
+      // Enhanced 404 redirect for GitHub Pages with HashRouter
+      (function() {
+        var l = window.location;
 
-      var l = window.location;
-      var redirect = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/' + l.hash;
+        // Debug logging
+        console.log('404 Page - Redirecting:', {
+          href: l.href,
+          pathname: l.pathname,
+          hash: l.hash,
+          search: l.search,
+          userAgent: navigator.userAgent
+        });
 
-      window.location.replace(redirect);
+        // Keep '/Game-v2' as base
+        var pathSegmentsToKeep = 1;
+        var basePath = l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/');
+        if (!basePath.endsWith('/')) basePath += '/';
+
+        // Build redirect URL
+        var redirect = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + basePath;
+
+        // Preserve hash if it exists
+        if (l.hash) {
+          redirect += l.hash;
+        }
+        // If no hash but we're trying to access a route, create appropriate hash
+        else if (l.pathname.indexOf('/join') !== -1) {
+          redirect += '#/join';
+        }
+        else if (l.pathname.indexOf('/player/') !== -1) {
+          var sessionId = l.pathname.split('/player/')[1];
+          redirect += '#/player/' + sessionId;
+        }
+
+        console.log('404 Page - Redirecting to:', redirect);
+        window.location.replace(redirect);
+      })();
     </script>
   </head>
   <body>
-    <p>Redirecting...</p>
+    <p style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">Redirecting to DND Game Master...</p>
   </body>
 </html>
