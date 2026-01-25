@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
+import QRCode from 'qrcode';
 import './Manager.css';
 import './RoomCodeDisplay.css';
 
@@ -15,9 +16,22 @@ function RoomCodeDisplay({ onClose }) {
       const origin = window.location.origin;
       const playerUrl = `${origin}${baseUrl}#/join`;
 
-      // Generate QR code using Google Charts API
-      const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(playerUrl)}`;
-      setQrCodeUrl(qrUrl);
+      // Generate QR code using qrcode library
+      QRCode.toDataURL(playerUrl, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      })
+        .then(url => {
+          setQrCodeUrl(url);
+          console.log('QR Code generated successfully');
+        })
+        .catch(err => {
+          console.error('Error generating QR code:', err);
+        });
 
       // Debug logging
       console.log('Player URL components:', {
