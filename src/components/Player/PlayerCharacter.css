@@ -272,6 +272,35 @@
   border-bottom: 2px solid rgba(212, 175, 55, 0.3);
 }
 
+/* GM Secret Notes Section */
+.gm-notes-section {
+  background: linear-gradient(135deg, #3a2a1a 0%, #2a1a0a 100%);
+  border: 3px solid #d4af37;
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+  animation: gm-notes-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes gm-notes-glow {
+  from {
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+  }
+  to {
+    box-shadow: 0 4px 30px rgba(212, 175, 55, 0.5);
+  }
+}
+
+.gm-notes-content {
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 4px solid #d4af37;
+  padding: 1.25rem;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  font-style: italic;
+}
+
 /* Custom Stats Grid */
 .pc-stats-grid {
   display: grid;

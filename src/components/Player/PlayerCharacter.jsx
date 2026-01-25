@@ -164,6 +164,16 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
           )}
         </div>
 
+        {/* GM Secret Notes */}
+        {player.gmNotes && (
+          <div className="pc-section gm-notes-section">
+            <h3 className="pc-section-title">📜 Secret Information</h3>
+            <div className="gm-notes-content">
+              {player.gmNotes}
+            </div>
+          </div>
+        )}
+
         {/* Base Stats - Large Cards */}
         {!settings.blindMode && (settings.showPower || settings.showMoney) && (
           <div className="pc-stats-primary">

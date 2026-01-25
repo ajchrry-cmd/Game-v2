@@ -139,6 +139,80 @@ function PlayerView() {
     }
   };
 
+  const handleSendMessage = async (playerId, message) => {
+    if (!session) return;
+
+    const sessionRef = doc(db, 'sessions', sessionId);
+    const currentMessages = session.playerMessages || {};
+    const playerMessagesList = currentMessages[playerId] || [];
+
+    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const messageData = {
+      id: messageId,
+      text: message,
+      timestamp: Date.now(),
+      read: false
+    };
+
+    const updatedMessages = {
+      ...currentMessages,
+      [playerId]: [...playerMessagesList, messageData]
+    };
+
+    try {
+      await updateDoc(sessionRef, {
+        playerMessages: updatedMessages
+      });
+    } catch (err) {
+      console.error('Error sending message:', err);
+    }
+  };
+
+  const handleFlashScreen = async (playerId, color) => {
+    if (!session) return;
+
+    const sessionRef = doc(db, 'sessions', sessionId);
+    const currentFlashes = session.playerFlashEvents || {};
+    const playerFlashList = currentFlashes[playerId] || [];
+
+    const flashId = `flash_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const flashData = {
+      id: flashId,
+      color: color,
+      timestamp: Date.now()
+    };
+
+    const updatedFlashes = {
+      ...currentFlashes,
+      [playerId]: [...playerFlashList, flashData]
+    };
+
+    try {
+      await updateDoc(sessionRef, {
+        playerFlashEvents: updatedFlashes
+      });
+    } catch (err) {
+      console.error('Error flashing screen:', err);
+    }
+  };
+
+  const handleUpdatePlayerNotes = async (playerId, notes) => {
+    if (!session) return;
+
+    const sessionRef = doc(db, 'sessions', sessionId);
+    const updatedPlayers = players.map(p =>
+      p.id === playerId ? { ...p, gmNotes: notes } : p
+    );
+
+    try {
+      await updateDoc(sessionRef, {
+        players: updatedPlayers
+      });
+    } catch (err) {
+      console.error('Error updating player notes:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="player-view-loading">
@@ -200,7 +274,11 @@ function PlayerView() {
         <CharacterSelect
           players={players}
           sessionName={session?.name}
+          sessionId={sessionId}
           onSelectCharacter={handleSelectCharacter}
+          onSendMessage={handleSendMessage}
+          onFlashScreen={handleFlashScreen}
+          onUpdatePlayerNotes={handleUpdatePlayerNotes}
         />
       ) : (
         <PlayerCharacter
