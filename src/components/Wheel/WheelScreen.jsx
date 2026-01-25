@@ -30,6 +30,19 @@ function WheelScreen() {
   const currentWheel = wheels.find(w => w.id === currentWheelId);
   const isBattleWheel = currentWheel?.type === 'battle';
 
+  // Clear any stale spin state on mount
+  useEffect(() => {
+    // If there's a spin that's been active for more than 30 seconds, it's stale - clear it
+    if (wheelSpinActive && wheelSpinStartTime) {
+      const elapsed = Date.now() - wheelSpinStartTime;
+      if (elapsed > 30000) { // 30 seconds
+        console.log('Clearing stale spin state on mount - elapsed:', elapsed, 'ms');
+        setWheelSpinActive(false);
+        setIsSpinning(false);
+      }
+    }
+  }, []); // Only run on mount
+
   useEffect(() => {
     if (currentWheel && canvasRef.current) {
       drawWheel();
@@ -302,6 +315,14 @@ function WheelScreen() {
     return () => {
       if (animationFrame) {
         cancelAnimationFrame(animationFrame);
+      }
+      // IMPORTANT: Reset spin state on cleanup to prevent stuck state
+      // This ensures that if the component unmounts or dependencies change,
+      // the wheel can be spun again
+      if (!hasCompleted) {
+        console.log('Animation cleaned up before completion - resetting spin state');
+        setIsSpinning(false);
+        setWheelSpinActive(false);
       }
     };
   }, [wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration, currentWheel]);
