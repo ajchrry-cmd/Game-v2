@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { loadUISettings } from '../../utils/uiSettings';
 import './PlayerCharacter.css';
 
-function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, companionSettings, playerMessages, playerFlashEvents, onChangeCharacter }) {
+function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, companionSettings, playerMessages, playerFlashEvents, onChangeCharacter, onClearMessage, onClearFlash }) {
   const [currentMessage, setCurrentMessage] = useState(null);
   const [flashActive, setFlashActive] = useState(false);
   const [flashColor, setFlashColor] = useState('#ff0000');
@@ -51,6 +51,11 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
           setFlashActive(true);
           setProcessedFlashes(prev => [...prev, latestFlash.id]);
 
+          // Remove flash from Firebase so it doesn't reappear on refresh
+          if (onClearFlash) {
+            onClearFlash(player.id, latestFlash.id);
+          }
+
           // Clear flash after animation
           setTimeout(() => {
             setFlashActive(false);
@@ -58,12 +63,16 @@ function PlayerCharacter({ player, items, bonuses, sessionName, sessionId, compa
         }
       }
     }
-  }, [playerFlashEvents, player.id, processedFlashes]);
+  }, [playerFlashEvents, player.id, processedFlashes, onClearFlash]);
 
   const handleDismissMessage = () => {
     if (currentMessage) {
       setDismissedMessages(prev => [...prev, currentMessage.id]);
       setCurrentMessage(null);
+      // Remove message from Firebase so it doesn't reappear on refresh
+      if (onClearMessage) {
+        onClearMessage(player.id, currentMessage.id);
+      }
     }
   };
 

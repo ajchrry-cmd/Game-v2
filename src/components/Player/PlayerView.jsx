@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase/config';
-import { doc, collection, onSnapshot, getDocs } from 'firebase/firestore';
+import { doc, collection, onSnapshot, getDocs, updateDoc } from 'firebase/firestore';
 import PlayerCharacter from './PlayerCharacter';
 import CharacterSelect from './CharacterSelect';
 import './PlayerView.css';
@@ -95,6 +95,50 @@ function PlayerView() {
     localStorage.removeItem(`player_${sessionId}`);
   };
 
+  const handleClearMessage = async (playerId, messageId) => {
+    if (!session) return;
+
+    const sessionRef = doc(db, 'sessions', sessionId);
+    const currentMessages = session.playerMessages || {};
+    const playerMessagesList = currentMessages[playerId] || [];
+
+    // Filter out the dismissed message
+    const updatedMessages = {
+      ...currentMessages,
+      [playerId]: playerMessagesList.filter(msg => msg.id !== messageId)
+    };
+
+    try {
+      await updateDoc(sessionRef, {
+        playerMessages: updatedMessages
+      });
+    } catch (err) {
+      console.error('Error clearing message:', err);
+    }
+  };
+
+  const handleClearFlash = async (playerId, flashId) => {
+    if (!session) return;
+
+    const sessionRef = doc(db, 'sessions', sessionId);
+    const currentFlashes = session.playerFlashEvents || {};
+    const playerFlashList = currentFlashes[playerId] || [];
+
+    // Filter out the processed flash
+    const updatedFlashes = {
+      ...currentFlashes,
+      [playerId]: playerFlashList.filter(flash => flash.id !== flashId)
+    };
+
+    try {
+      await updateDoc(sessionRef, {
+        playerFlashEvents: updatedFlashes
+      });
+    } catch (err) {
+      console.error('Error clearing flash:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="player-view-loading">
@@ -169,6 +213,8 @@ function PlayerView() {
           playerMessages={playerMessages}
           playerFlashEvents={playerFlashEvents}
           onChangeCharacter={handleChangeCharacter}
+          onClearMessage={handleClearMessage}
+          onClearFlash={handleClearFlash}
         />
       )}
     </div>
