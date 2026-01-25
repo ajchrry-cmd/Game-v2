@@ -199,11 +199,9 @@ function PlayerContextMenu({
 
           <div className="menu-divider"></div>
 
-          {(player.attachedMobs && player.attachedMobs.length > 0) && (
-            <button onClick={handleOpenMobEditor}>
-              🎯 Position Attached Mobs
-            </button>
-          )}
+          <button onClick={handleOpenMobEditor}>
+            🎯 Manage Attached Mobs
+          </button>
 
           <button onClick={() => setActiveSubmenu('adjustPower')}>
             ⚔️ Adjust Power

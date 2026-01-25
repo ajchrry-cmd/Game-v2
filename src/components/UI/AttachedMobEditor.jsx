@@ -40,6 +40,28 @@ function AttachedMobEditor({ player, onClose, onSave }) {
     setAttachedMobs(newAttachedMobs);
   };
 
+  const handleAddMob = (bonusId) => {
+    const newMob = {
+      mobId: bonusId,
+      offset: { x: 1, y: -1 }, // Default position
+      size: 0.6, // Default size (60% of token)
+      layer: 'above' // Default layer
+    };
+    setAttachedMobs([...attachedMobs, newMob]);
+    setSelectedMobIndex(attachedMobs.length); // Auto-select the new mob
+  };
+
+  const handleRemoveMob = (index) => {
+    const newAttachedMobs = [...attachedMobs];
+    newAttachedMobs.splice(index, 1);
+    setAttachedMobs(newAttachedMobs);
+    if (selectedMobIndex === index) {
+      setSelectedMobIndex(null);
+    } else if (selectedMobIndex > index) {
+      setSelectedMobIndex(selectedMobIndex - 1);
+    }
+  };
+
   const handleSave = () => {
     onSave(attachedMobs);
     onClose();
@@ -52,9 +74,101 @@ function AttachedMobEditor({ player, onClose, onSave }) {
         <h2>Position Attached Mobs - {player.name}</h2>
 
         <div style={{ marginTop: '1rem', color: '#999', fontSize: '0.9rem' }}>
-          Drag the mobs to position them around the player token. These positions will be maintained when the player moves on the map.
+          Add mobs to attach to this player, then drag them to position around the token. These positions will be maintained when the player moves on the map.
         </div>
 
+        {/* Add Mob Section */}
+        <div style={{
+          marginTop: '1.5rem',
+          background: '#2a2a2a',
+          borderRadius: '8px',
+          padding: '1rem',
+          border: '2px solid #555'
+        }}>
+          <h3 style={{ color: '#d4af37', marginBottom: '1rem', fontSize: '1rem' }}>Add Mobs</h3>
+          {bonuses.length === 0 ? (
+            <div style={{
+              padding: '2rem',
+              textAlign: 'center',
+              color: '#999',
+              fontSize: '0.9rem'
+            }}>
+              No mobs available. Create mobs in the Mob Manager first.
+            </div>
+          ) : (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+              gap: '0.75rem',
+              maxHeight: '200px',
+              overflowY: 'auto'
+            }}>
+              {bonuses.map(mob => {
+              const isAlreadyAttached = attachedMobs.some(am =>
+                (typeof am === 'string' ? am : am.mobId) === mob.id
+              );
+              return (
+                <button
+                  key={mob.id}
+                  onClick={() => handleAddMob(mob.id)}
+                  disabled={isAlreadyAttached}
+                  style={{
+                    background: isAlreadyAttached ? '#1a1a1a' : '#3a3a3a',
+                    border: '2px solid ' + (isAlreadyAttached ? '#333' : '#555'),
+                    borderRadius: '8px',
+                    padding: '0.5rem',
+                    cursor: isAlreadyAttached ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    opacity: isAlreadyAttached ? 0.5 : 1,
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isAlreadyAttached) {
+                      e.currentTarget.style.borderColor = '#d4af37';
+                      e.currentTarget.style.background = '#4a4a4a';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isAlreadyAttached) {
+                      e.currentTarget.style.borderColor = '#555';
+                      e.currentTarget.style.background = '#3a3a3a';
+                    }
+                  }}
+                >
+                  {mob.imageUrl && (
+                    <img
+                      src={mob.imageUrl}
+                      alt={mob.name}
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        objectFit: 'contain',
+                        borderRadius: '4px'
+                      }}
+                    />
+                  )}
+                  <span style={{
+                    color: isAlreadyAttached ? '#666' : '#fff',
+                    fontSize: '0.75rem',
+                    textAlign: 'center',
+                    wordBreak: 'break-word'
+                  }}>
+                    {mob.name}
+                  </span>
+                  {isAlreadyAttached && (
+                    <span style={{ color: '#d4af37', fontSize: '0.65rem' }}>✓ Added</span>
+                  )}
+                </button>
+              );
+            })}
+            </div>
+          )}
+        </div>
+
+        {/* Preview Area */}
         <div style={{
           marginTop: '2rem',
           background: '#1a1a1a',
@@ -97,6 +211,27 @@ function AttachedMobEditor({ player, onClose, onSave }) {
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)'
                 }}
               />
+            )}
+
+            {/* No mobs message */}
+            {attachedMobs.length === 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                textAlign: 'center',
+                color: '#999',
+                fontSize: '0.9rem',
+                maxWidth: '300px',
+                marginTop: '40px'
+              }}>
+                <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🎯</div>
+                <div>No mobs attached yet</div>
+                <div style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>
+                  Select mobs from above to attach to this player
+                </div>
+              </div>
             )}
 
             {/* Attached mobs */}
@@ -229,7 +364,7 @@ function AttachedMobEditor({ player, onClose, onSave }) {
             </div>
 
             {/* Layer Control */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
               <label style={{ color: '#fff', minWidth: '60px' }}>Layer:</label>
               <select
                 value={attachedMobs[selectedMobIndex]?.layer || 'above'}
@@ -249,6 +384,26 @@ function AttachedMobEditor({ player, onClose, onSave }) {
                  attachedMobs[selectedMobIndex]?.layer === 'front' ? 'L5' : 'L4'}
               </span>
             </div>
+
+            {/* Remove Button */}
+            <button
+              onClick={() => handleRemoveMob(selectedMobIndex)}
+              style={{
+                width: '100%',
+                background: '#d32f2f',
+                color: '#fff',
+                border: 'none',
+                padding: '0.75rem',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#b71c1c'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#d32f2f'}
+            >
+              🗑️ Remove This Mob
+            </button>
           </div>
         )}
 
