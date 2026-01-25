@@ -38,8 +38,7 @@ function PlayerContextMenu({
       return;
     }
 
-    onUpdatePlayer({
-      ...player,
+    onUpdatePlayer(player.id, {
       inventory: [...currentInventory, itemId]
     });
     onClose();
@@ -50,8 +49,7 @@ function PlayerContextMenu({
     const newInventory = [...currentInventory];
     newInventory.splice(index, 1);
 
-    onUpdatePlayer({
-      ...player,
+    onUpdatePlayer(player.id, {
       inventory: newInventory
     });
     onClose();
@@ -60,8 +58,7 @@ function PlayerContextMenu({
   const handleAddStatusEffect = (effect) => {
     const currentEffects = player.statusEffects || [];
     if (!currentEffects.includes(effect)) {
-      onUpdatePlayer({
-        ...player,
+      onUpdatePlayer(player.id, {
         statusEffects: [...currentEffects, effect]
       });
     }
@@ -71,8 +68,7 @@ function PlayerContextMenu({
 
   const handleRemoveStatusEffect = (effect) => {
     const currentEffects = player.statusEffects || [];
-    onUpdatePlayer({
-      ...player,
+    onUpdatePlayer(player.id, {
       statusEffects: currentEffects.filter(e => e !== effect)
     });
     onClose();
@@ -92,8 +88,7 @@ function PlayerContextMenu({
       return;
     }
 
-    onUpdatePlayer({
-      ...player,
+    onUpdatePlayer(player.id, {
       party: [...currentParty, bonusId]
     });
     onClose();
@@ -104,8 +99,7 @@ function PlayerContextMenu({
     const newParty = [...currentParty];
     newParty.splice(index, 1);
 
-    onUpdatePlayer({
-      ...player,
+    onUpdatePlayer(player.id, {
       party: newParty
     });
     onClose();
@@ -113,8 +107,7 @@ function PlayerContextMenu({
 
   const handleAdjustStat = (stat, amount) => {
     const currentValue = player[stat] || 0;
-    onUpdatePlayer({
-      ...player,
+    onUpdatePlayer(player.id, {
       [stat]: Math.max(0, currentValue + amount)
     });
   };
