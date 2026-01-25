@@ -404,14 +404,15 @@ function MapEditor({ map, onClose }) {
   };
 
   // Resize functions
-  const handleResizeStart = (e, squareId, currentWidth, currentHeight) => {
+  const handleResizeStart = (e, squareId, currentWidth, currentHeight, shape) => {
     e.stopPropagation();
     setResizing(squareId);
     setResizeStart({
       width: currentWidth,
       height: currentHeight,
       x: e.clientX,
-      y: e.clientY
+      y: e.clientY,
+      shape: shape // Store the shape type
     });
   };
 
@@ -420,8 +421,15 @@ function MapEditor({ map, onClose }) {
 
     const deltaX = e.clientX - resizeStart.x;
     const deltaY = e.clientY - resizeStart.y;
-    const newWidth = Math.max(30, resizeStart.width + deltaX);
-    const newHeight = Math.max(30, resizeStart.height + deltaY);
+
+    // For lines, use smaller minimum for thickness (height), but normal minimum for length (width)
+    // For other shapes, use 30px minimum for both dimensions
+    const isLine = resizeStart.shape === 'line';
+    const minWidth = 30; // Minimum length for all shapes
+    const minHeight = isLine ? 1 : 30; // Lines can be as thin as 1px, others need 30px minimum
+
+    const newWidth = Math.max(minWidth, resizeStart.width + deltaX);
+    const newHeight = Math.max(minHeight, resizeStart.height + deltaY);
 
     setMapData(prevMapData => ({
       ...prevMapData,
@@ -1203,7 +1211,7 @@ function MapEditor({ map, onClose }) {
                               {/* Resize handle */}
                               <div
                                 className="shape-resize-handle"
-                                onMouseDown={(e) => handleResizeStart(e, square.id, square.size.width, square.size.height)}
+                                onMouseDown={(e) => handleResizeStart(e, square.id, square.size.width, square.size.height, square.shape)}
                                 style={{
                                   position: 'absolute',
                                   bottom: square.shape === 'line' ? '50%' : '-8px',
