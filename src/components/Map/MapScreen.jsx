@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Draggable from 'react-draggable';
 import { useGame } from '../../contexts/GameContext';
+import PlayerContextMenu from './PlayerContextMenu';
 import './MapScreen.css';
 
 function MapScreen() {
@@ -18,7 +19,9 @@ function MapScreen() {
     placeBonus,
     updateBonusPosition,
     updateBonusSize,
-    removeBonus
+    removeBonus,
+    sendPlayerMessage,
+    flashPlayerScreen
   } = useGame();
 
   const [resizing, setResizing] = useState(null);
@@ -31,6 +34,7 @@ function MapScreen() {
     const saved = localStorage.getItem('playerTokenSize');
     return saved ? parseInt(saved) : 50;
   });
+  const [contextMenu, setContextMenu] = useState(null);
 
   const currentMap = maps.find(m => m.id === currentMapId);
 
@@ -78,6 +82,22 @@ function MapScreen() {
 
   const handleResizeEnd = () => {
     setResizing(null);
+  };
+
+  const handlePlayerContextMenu = (e, player) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      player,
+      position: {
+        x: e.clientX,
+        y: e.clientY
+      }
+    });
+  };
+
+  const handleCloseContextMenu = () => {
+    setContextMenu(null);
   };
 
   React.useEffect(() => {
@@ -401,7 +421,10 @@ function MapScreen() {
                 position={position}
                 onDrag={(e, data) => handleDrag(player.id, e, data)}
               >
-                <div className="player-token">
+                <div
+                  className="player-token"
+                  onContextMenu={(e) => handlePlayerContextMenu(e, player)}
+                >
                   {/* Main player icon */}
                   {player.iconType === 'custom' && player.iconUrl ? (
                     <img
@@ -715,6 +738,20 @@ function MapScreen() {
           })
         )}
       </div>
+
+      {/* Player context menu */}
+      {contextMenu && (
+        <PlayerContextMenu
+          player={contextMenu.player}
+          position={contextMenu.position}
+          onClose={handleCloseContextMenu}
+          items={items}
+          bonuses={bonuses}
+          onUpdatePlayer={updatePlayer}
+          onSendMessage={sendPlayerMessage}
+          onFlashScreen={flashPlayerScreen}
+        />
+      )}
     </div>
   );
 }
