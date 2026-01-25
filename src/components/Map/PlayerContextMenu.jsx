@@ -157,7 +157,8 @@ function PlayerContextMenu({
         className="player-context-menu"
         style={{
           left: `${position.x}px`,
-          top: `${position.y}px`
+          top: `${position.y}px`,
+          display: showMobEditor ? 'none' : 'block'
         }}
       >
       <div className="context-menu-header">
