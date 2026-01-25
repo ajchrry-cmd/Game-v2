@@ -40,7 +40,10 @@
 .character-select {
   min-height: 100vh;
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-  padding: 2rem 1rem;
+  padding: 2rem 1rem 4rem 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .select-container {
