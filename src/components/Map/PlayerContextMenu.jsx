@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AttachedMobEditor from '../UI/AttachedMobEditor';
 import './PlayerContextMenu.css';
 
 function PlayerContextMenu({
@@ -15,6 +16,7 @@ function PlayerContextMenu({
   const [messageText, setMessageText] = useState('');
   const [customEffect, setCustomEffect] = useState('');
   const [flashColor, setFlashColor] = useState('#ff0000');
+  const [showMobEditor, setShowMobEditor] = useState(false);
   const menuRef = useRef(null);
 
   // Close menu when clicking outside
@@ -124,6 +126,18 @@ function PlayerContextMenu({
     onClose();
   };
 
+  const handleOpenMobEditor = () => {
+    setShowMobEditor(true);
+  };
+
+  const handleSaveAttachedMobs = (attachedMobs) => {
+    onUpdatePlayer(player.id, {
+      attachedMobs
+    });
+    setShowMobEditor(false);
+    onClose();
+  };
+
   const playerInventory = player.inventory || [];
   const playerParty = player.party || [];
   const playerEffects = player.statusEffects || [];
@@ -135,14 +149,15 @@ function PlayerContextMenu({
   ];
 
   return (
-    <div
-      ref={menuRef}
-      className="player-context-menu"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`
-      }}
-    >
+    <>
+      <div
+        ref={menuRef}
+        className="player-context-menu"
+        style={{
+          left: `${position.x}px`,
+          top: `${position.y}px`
+        }}
+      >
       <div className="context-menu-header">
         <strong>{player.name}</strong>
       </div>
@@ -183,6 +198,12 @@ function PlayerContextMenu({
           )}
 
           <div className="menu-divider"></div>
+
+          {(player.attachedMobs && player.attachedMobs.length > 0) && (
+            <button onClick={handleOpenMobEditor}>
+              🎯 Position Attached Mobs
+            </button>
+          )}
 
           <button onClick={() => setActiveSubmenu('adjustPower')}>
             ⚔️ Adjust Power
@@ -439,7 +460,17 @@ function PlayerContextMenu({
           </div>
         </div>
       )}
-    </div>
+      </div>
+
+      {/* Attached Mob Editor */}
+      {showMobEditor && (
+        <AttachedMobEditor
+          player={player}
+          onClose={() => setShowMobEditor(false)}
+          onSave={handleSaveAttachedMobs}
+        />
+      )}
+    </>
   );
 }
 
