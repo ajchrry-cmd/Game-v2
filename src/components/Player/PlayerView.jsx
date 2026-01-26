@@ -213,6 +213,23 @@ function PlayerView() {
     }
   };
 
+  const handleUpdatePlayerPin = async (playerId, pin) => {
+    if (!session) return;
+
+    const sessionRef = doc(db, 'sessions', sessionId);
+    const updatedPlayers = players.map(p =>
+      p.id === playerId ? { ...p, pin: pin } : p
+    );
+
+    try {
+      await updateDoc(sessionRef, {
+        players: updatedPlayers
+      });
+    } catch (err) {
+      console.error('Error updating player PIN:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="player-view-loading">
@@ -279,6 +296,7 @@ function PlayerView() {
           onSendMessage={handleSendMessage}
           onFlashScreen={handleFlashScreen}
           onUpdatePlayerNotes={handleUpdatePlayerNotes}
+          onUpdatePlayerPin={handleUpdatePlayerPin}
         />
       ) : (
         <PlayerCharacter
