@@ -230,6 +230,20 @@ function PlayerView() {
     }
   };
 
+  const handleUpdateGmPin = async (pin) => {
+    if (!session) return;
+
+    const sessionRef = doc(db, 'sessions', sessionId);
+
+    try {
+      await updateDoc(sessionRef, {
+        gmPin: pin
+      });
+    } catch (err) {
+      console.error('Error updating GM PIN:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="player-view-loading">
@@ -275,6 +289,7 @@ function PlayerView() {
 
   const playerMessages = session?.playerMessages || {};
   const playerFlashEvents = session?.playerFlashEvents || {};
+  const gmPin = session?.gmPin || '';
 
   console.log('PlayerView: Rendering with:', {
     hasSession: !!session,
@@ -297,6 +312,8 @@ function PlayerView() {
           onFlashScreen={handleFlashScreen}
           onUpdatePlayerNotes={handleUpdatePlayerNotes}
           onUpdatePlayerPin={handleUpdatePlayerPin}
+          gmPin={gmPin}
+          onUpdateGmPin={handleUpdateGmPin}
         />
       ) : (
         <PlayerCharacter

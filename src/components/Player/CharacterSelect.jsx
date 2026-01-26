@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import './PlayerView.css';
 
-function CharacterSelect({ players, sessionName, onSelectCharacter, sessionId, onSendMessage, onFlashScreen, onUpdatePlayerNotes, onUpdatePlayerPin }) {
-  const [secretClicks, setSecretClicks] = useState(0);
+function CharacterSelect({ players, sessionName, onSelectCharacter, sessionId, onSendMessage, onFlashScreen, onUpdatePlayerNotes, onUpdatePlayerPin, gmPin, onUpdateGmPin }) {
   const [showSecretMenu, setShowSecretMenu] = useState(false);
   const [selectedPlayerForAction, setSelectedPlayerForAction] = useState('');
   const [secretMessage, setSecretMessage] = useState('');
@@ -14,20 +13,53 @@ function CharacterSelect({ players, sessionName, onSelectCharacter, sessionId, o
   const [showPinPrompt, setShowPinPrompt] = useState(false);
   const [selectedPlayerForPin, setSelectedPlayerForPin] = useState(null);
   const [enteredPin, setEnteredPin] = useState('');
+  const [showGmPinPrompt, setShowGmPinPrompt] = useState(false);
+  const [enteredGmPin, setEnteredGmPin] = useState('');
+  const [newGmPin, setNewGmPin] = useState('');
+  const [confirmGmPin, setConfirmGmPin] = useState('');
 
-  const handleSessionNameClick = () => {
-    const newCount = secretClicks + 1;
-    setSecretClicks(newCount);
-
-    if (newCount >= 10) {
+  const handleGmButtonClick = () => {
+    // If GM PIN is set, show PIN prompt
+    if (gmPin) {
+      setShowGmPinPrompt(true);
+      setEnteredGmPin('');
+    } else {
+      // No PIN set, open menu directly
       setShowSecretMenu(true);
-      setSecretClicks(0);
     }
+  };
 
-    // Reset counter after 2 seconds of no clicks
-    setTimeout(() => {
-      setSecretClicks(0);
-    }, 2000);
+  const handleGmPinSubmit = () => {
+    if (enteredGmPin === gmPin) {
+      // PIN correct
+      setShowGmPinPrompt(false);
+      setShowSecretMenu(true);
+      setEnteredGmPin('');
+    } else {
+      // PIN incorrect
+      alert('Incorrect GM PIN!');
+      setEnteredGmPin('');
+    }
+  };
+
+  const handleGmPinCancel = () => {
+    setShowGmPinPrompt(false);
+    setEnteredGmPin('');
+  };
+
+  const handleSetGmPin = () => {
+    if (newGmPin.length !== 4) {
+      alert('GM PIN must be exactly 4 digits!');
+      return;
+    }
+    if (newGmPin !== confirmGmPin) {
+      alert('PINs do not match!');
+      return;
+    }
+    onUpdateGmPin(newGmPin);
+    setNewGmPin('');
+    setConfirmGmPin('');
+    alert('GM PIN saved!');
   };
 
   const handleSendSecretMessage = () => {
@@ -111,13 +143,31 @@ function CharacterSelect({ players, sessionName, onSelectCharacter, sessionId, o
     return (
       <div className="character-select">
         <div className="select-container">
-          <h1 onClick={handleSessionNameClick} style={{ cursor: 'pointer' }}>
-            🎲 {sessionName || 'Game Session'}
-          </h1>
+          <h1>🎲 {sessionName || 'Game Session'}</h1>
           <div className="empty-state">
             <p>No characters available yet.</p>
             <p className="help-text">Ask your GM to add players to the session.</p>
           </div>
+          <button
+            onClick={handleGmButtonClick}
+            style={{
+              marginTop: '2rem',
+              padding: '0.75rem 2rem',
+              background: '#d4af37',
+              color: '#000',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              margin: '2rem auto 0'
+            }}
+          >
+            🔐 GM Controls
+          </button>
         </div>
       </div>
     );
@@ -126,10 +176,29 @@ function CharacterSelect({ players, sessionName, onSelectCharacter, sessionId, o
   return (
     <div className="character-select">
       <div className="select-container">
-        <h1 onClick={handleSessionNameClick} style={{ cursor: 'pointer' }}>
-          🎲 {sessionName || 'Game Session'}
-        </h1>
+        <h1>🎲 {sessionName || 'Game Session'}</h1>
         <p className="select-subtitle">Select your character</p>
+
+        <button
+          onClick={handleGmButtonClick}
+          style={{
+            marginBottom: '1.5rem',
+            padding: '0.75rem 2rem',
+            background: '#d4af37',
+            color: '#000',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            margin: '0 auto 1.5rem'
+          }}
+        >
+          🔐 GM Controls
+        </button>
 
         <div className="character-grid">
           {players.map((player) => (
@@ -412,6 +481,79 @@ function CharacterSelect({ players, sessionName, onSelectCharacter, sessionId, o
                   Save PIN
                 </button>
               </div>
+
+              {/* GM PIN Management */}
+              <div style={{
+                background: '#2a2a2a',
+                padding: '1rem',
+                borderRadius: '8px',
+                border: '2px solid #444',
+                marginTop: '1rem'
+              }}>
+                <h3 style={{ color: '#d4af37', marginBottom: '1rem' }}>🔐 GM PIN Security</h3>
+                <p style={{ color: '#999', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                  {gmPin ? 'Change the GM PIN for accessing these controls' : 'Set a GM PIN to protect these controls'}
+                </p>
+                <input
+                  type="text"
+                  value={newGmPin}
+                  onChange={(e) => setNewGmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  placeholder="Enter 4-digit GM PIN"
+                  maxLength="4"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    borderRadius: '4px',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                    border: '1px solid #555',
+                    fontSize: '1.2rem',
+                    letterSpacing: '0.5rem',
+                    textAlign: 'center',
+                    marginBottom: '0.5rem'
+                  }}
+                />
+                <input
+                  type="text"
+                  value={confirmGmPin}
+                  onChange={(e) => setConfirmGmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  placeholder="Confirm GM PIN"
+                  maxLength="4"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    borderRadius: '4px',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                    border: '1px solid #555',
+                    fontSize: '1.2rem',
+                    letterSpacing: '0.5rem',
+                    textAlign: 'center',
+                    marginBottom: '0.5rem'
+                  }}
+                />
+                <button
+                  onClick={handleSetGmPin}
+                  disabled={newGmPin.length !== 4 || confirmGmPin.length !== 4}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    background: '#d4af37',
+                    color: '#000',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {gmPin ? 'Update GM PIN' : 'Set GM PIN'}
+                </button>
+                {gmPin && (
+                  <p style={{ color: '#888', fontSize: '0.75rem', marginTop: '0.5rem', textAlign: 'center' }}>
+                    Current PIN is set (🔒 Protected)
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -480,6 +622,78 @@ function CharacterSelect({ players, sessionName, onSelectCharacter, sessionId, o
                   borderRadius: '4px',
                   fontWeight: 'bold',
                   cursor: enteredPin.length === 4 ? 'pointer' : 'not-allowed'
+                }}
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GM PIN Entry Prompt */}
+      {showGmPinPrompt && (
+        <div className="modal-overlay" onClick={handleGmPinCancel}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <button className="modal-close" onClick={handleGmPinCancel}>×</button>
+            <h2>🔐 GM Access</h2>
+            <p style={{ color: '#999', textAlign: 'center', marginBottom: '1.5rem' }}>
+              Enter GM PIN to access controls
+            </p>
+            <input
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={enteredGmPin}
+              onChange={(e) => setEnteredGmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              placeholder="****"
+              maxLength="4"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && enteredGmPin.length === 4) {
+                  handleGmPinSubmit();
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                borderRadius: '8px',
+                background: '#1a1a1a',
+                color: '#fff',
+                border: '2px solid #555',
+                fontSize: '2rem',
+                letterSpacing: '1rem',
+                textAlign: 'center',
+                marginBottom: '1rem'
+              }}
+            />
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button
+                onClick={handleGmPinCancel}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  background: '#444',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGmPinSubmit}
+                disabled={enteredGmPin.length !== 4}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  background: enteredGmPin.length === 4 ? '#d4af37' : '#555',
+                  color: enteredGmPin.length === 4 ? '#000' : '#999',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontWeight: 'bold',
+                  cursor: enteredGmPin.length === 4 ? 'pointer' : 'not-allowed'
                 }}
               >
                 Submit
