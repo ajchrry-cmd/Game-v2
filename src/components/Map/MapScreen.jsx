@@ -119,15 +119,19 @@ function MapScreen() {
 
   const handleMapContextMenu = (e) => {
     e.preventDefault();
+    e.stopPropagation();
 
     // Calculate the position on the map (accounting for transform)
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    // Convert screen coordinates to map coordinates
-    const mapX = (clickX - mapTransform.x) / mapTransform.scale;
-    const mapY = (clickY - mapTransform.y) / mapTransform.scale;
+    // Convert screen coordinates to map coordinates (inverse transform)
+    // Map content has: transform: translate(tx, ty) scale(s)
+    // Screen position = mapPos * scale + translate
+    // Therefore: mapPos = (screenPos - translate) / scale
+    const mapX = Math.round((clickX - mapTransform.x) / mapTransform.scale);
+    const mapY = Math.round((clickY - mapTransform.y) / mapTransform.scale);
 
     setContextMenu(null); // Close player context menu
     setMapContextMenu({
