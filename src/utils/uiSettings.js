@@ -58,7 +58,13 @@ export const defaultUISettings = {
   cardHoverTranslateY: -2,
   inventorySlotHoverScale: 1.05,
   inventorySlotHoverShadowBlur: 12,
-  inventorySlotHoverShadowOpacity: 0.3
+  inventorySlotHoverShadowOpacity: 0.3,
+
+  // Map Settings
+  mapDefaultZoom: 1,
+  mapCenterX: 0,
+  mapCenterY: 0,
+  playerTokenSize: 50
 };
 
 /**
@@ -131,6 +137,9 @@ export const applyUISettings = (settings) => {
   document.documentElement.style.setProperty('--inventory-slot-hover-scale', settings.inventorySlotHoverScale);
   document.documentElement.style.setProperty('--inventory-slot-hover-shadow-blur', `${settings.inventorySlotHoverShadowBlur}px`);
   document.documentElement.style.setProperty('--inventory-slot-hover-shadow-opacity', settings.inventorySlotHoverShadowOpacity);
+
+  // Map Settings (stored for component access, not CSS variables)
+  // These are read by MapScreen component directly from settings
 };
 
 /**

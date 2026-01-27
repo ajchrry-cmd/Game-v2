@@ -6,6 +6,7 @@ function UICustomization({ onClose }) {
   const [settings, setSettings] = useState(defaultUISettings);
   const [expandedSections, setExpandedSections] = useState({
     panel: true,
+    map: false,
     cardGeneral: false,
     typography: false,
     stats: false,
@@ -152,6 +153,19 @@ function UICustomization({ onClose }) {
           <p style={{ color: '#999', marginBottom: '1rem' }}>
             Customize every aspect of player card appearance. Click section headers to expand/collapse.
           </p>
+
+          {/* Map Settings */}
+          <div className="config-section">
+            <SectionHeader title="Map Settings" sectionKey="map" />
+            {expandedSections.map && (
+              <>
+                {renderSlider('Default Zoom', 'mapDefaultZoom', 0.5, 3, 0.1, 'x', 'Initial zoom level when opening map (0.5x to 3x)')}
+                {renderSlider('Map Center X', 'mapCenterX', -2000, 2000, 50, 'px', 'Horizontal center position')}
+                {renderSlider('Map Center Y', 'mapCenterY', -2000, 2000, 50, 'px', 'Vertical center position')}
+                {renderSlider('Player Token Size', 'playerTokenSize', 30, 100, 5, 'px', 'Size of player tokens on map')}
+              </>
+            )}
+          </div>
 
           {/* Panel Settings */}
           <div className="config-section">

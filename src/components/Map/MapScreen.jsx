@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Draggable from 'react-draggable';
 import { useGame } from '../../contexts/GameContext';
 import PlayerContextMenu from './PlayerContextMenu';
+import { loadUISettings, defaultUISettings } from '../../utils/uiSettings';
 import './MapScreen.css';
 
 function MapScreen() {
@@ -26,22 +27,26 @@ function MapScreen() {
 
   const [resizing, setResizing] = useState(null);
   const [selectedBonusId, setSelectedBonusId] = useState(null);
-  const [defaultZoom, setDefaultZoom] = useState(() => {
-    const saved = localStorage.getItem('mapDefaultZoom');
-    return saved ? parseFloat(saved) : 1;
+
+  // Load map settings from UI customization once on mount
+  const [mapSettings] = useState(() => {
+    const uiSettings = loadUISettings();
+    return {
+      defaultZoom: uiSettings.mapDefaultZoom || defaultUISettings.mapDefaultZoom,
+      centerX: uiSettings.mapCenterX || defaultUISettings.mapCenterX,
+      centerY: uiSettings.mapCenterY || defaultUISettings.mapCenterY,
+      mapSettings.tokenSize: uiSettings.playerTokenSize || defaultUISettings.playerTokenSize
+    };
   });
+
   const [mapTransform, setMapTransform] = useState(() => ({
-    scale: defaultZoom,
-    x: 0,
-    y: 0
+    scale: mapSettings.defaultZoom,
+    x: mapSettings.centerX,
+    y: mapSettings.centerY
   }));
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [lastTouchDistance, setLastTouchDistance] = useState(null);
-  const [tokenSize, setTokenSize] = useState(() => {
-    const saved = localStorage.getItem('playerTokenSize');
-    return saved ? parseInt(saved) : 50;
-  });
   const [contextMenu, setContextMenu] = useState(null);
 
   const currentMap = maps.find(m => m.id === currentMapId);
@@ -251,32 +256,8 @@ function MapScreen() {
     }));
   };
 
-  const handleTokenSizeIncrease = () => {
-    const newSize = Math.min(100, tokenSize + 10);
-    setTokenSize(newSize);
-    localStorage.setItem('playerTokenSize', newSize);
-  };
-
-  const handleTokenSizeDecrease = () => {
-    const newSize = Math.max(30, tokenSize - 10);
-    setTokenSize(newSize);
-    localStorage.setItem('playerTokenSize', newSize);
-  };
-
-  const handleDefaultZoomIncrease = () => {
-    const newZoom = Math.min(3, defaultZoom + 0.1);
-    setDefaultZoom(newZoom);
-    localStorage.setItem('mapDefaultZoom', newZoom);
-  };
-
-  const handleDefaultZoomDecrease = () => {
-    const newZoom = Math.max(0.5, defaultZoom - 0.1);
-    setDefaultZoom(newZoom);
-    localStorage.setItem('mapDefaultZoom', newZoom);
-  };
-
   const handleResetZoom = () => {
-    setMapTransform({ scale: defaultZoom, x: 0, y: 0 });
+    setMapTransform({ scale: mapSettings.defaultZoom, x: mapSettings.centerX, y: mapSettings.centerY });
   };
 
   return (
@@ -287,20 +268,6 @@ function MapScreen() {
           <button onClick={handleZoomIn} title="Zoom In">+</button>
           <button onClick={handleZoomOut} title="Zoom Out">−</button>
           <button onClick={handleResetZoom} title="Reset">⟲</button>
-        </div>
-
-        <div className="token-size-controls">
-          <label>Player Size:</label>
-          <button onClick={handleTokenSizeDecrease} title="Decrease Token Size">−</button>
-          <span>{tokenSize}px</span>
-          <button onClick={handleTokenSizeIncrease} title="Increase Token Size">+</button>
-        </div>
-
-        <div className="token-size-controls">
-          <label>Default Zoom:</label>
-          <button onClick={handleDefaultZoomDecrease} title="Decrease Default Zoom">−</button>
-          <span>{Math.round(defaultZoom * 100)}%</span>
-          <button onClick={handleDefaultZoomIncrease} title="Increase Default Zoom">+</button>
         </div>
 
         <div
@@ -459,8 +426,8 @@ function MapScreen() {
                       src={player.iconUrl}
                       alt={player.name}
                       style={{
-                        width: `${tokenSize}px`,
-                        height: `${tokenSize}px`,
+                        width: `${mapSettings.tokenSize}px`,
+                        height: `${mapSettings.tokenSize}px`,
                         borderRadius: '50%',
                         border: '3px solid #fff',
                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
@@ -473,8 +440,8 @@ function MapScreen() {
                       className="token-circle"
                       style={{
                         backgroundColor: player.iconColor,
-                        width: `${tokenSize}px`,
-                        height: `${tokenSize}px`,
+                        width: `${mapSettings.tokenSize}px`,
+                        height: `${mapSettings.tokenSize}px`,
                         borderRadius: '50%',
                         border: '3px solid #fff',
                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
@@ -494,8 +461,8 @@ function MapScreen() {
 
                     // Convert ratio to pixels for current token size
                     const offsetPixels = {
-                      x: offsetRatio.x * tokenSize,
-                      y: offsetRatio.y * tokenSize
+                      x: offsetRatio.x * mapSettings.tokenSize,
+                      y: offsetRatio.y * mapSettings.tokenSize
                     };
 
                     const size = attachedMob.size || 0.6; // Default to 60% of token size
@@ -503,7 +470,7 @@ function MapScreen() {
                     const mob = bonuses.find(b => b.id === mobId);
                     if (!mob) return null;
 
-                    const mobSize = tokenSize * size;
+                    const mobSize = mapSettings.tokenSize * size;
                     // Map layer to zIndex: back=3, below=7, same=10, above=13, front=17
                     const layerToZIndex = {
                       'back': 3,
