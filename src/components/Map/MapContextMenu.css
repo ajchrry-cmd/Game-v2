@@ -1,0 +1,188 @@
+.map-context-menu {
+  position: fixed;
+  background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+  border: 2px solid #d4af37;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+  z-index: 10000;
+  min-width: 250px;
+  max-width: 350px;
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  animation: menuFadeIn 0.15s ease-out;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.map-context-menu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.map-context-menu::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+.map-context-menu::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 4px;
+}
+
+.menu-header {
+  padding: 0.75rem 1rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #d4af37;
+  border-bottom: 1px solid #444;
+  background: #252525;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.menu-section-label {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: bold;
+  margin-top: 0.25rem;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: none;
+  border: none;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.menu-item:hover {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%);
+  padding-left: 1.2rem;
+}
+
+.menu-item:active {
+  background: rgba(212, 175, 55, 0.3);
+}
+
+.menu-icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.menu-icon-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.menu-icon-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  flex-shrink: 0;
+}
+
+.submenu-trigger {
+  position: relative;
+}
+
+.submenu-arrow {
+  margin-left: auto;
+  color: #d4af37;
+  font-size: 0.8rem;
+}
+
+.menu-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #444 50%, transparent 100%);
+  margin: 0.5rem 0;
+}
+
+.menu-back {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: linear-gradient(135deg, #3a3a3a 0%, #2f2f2f 100%);
+  border: none;
+  border-bottom: 1px solid #444;
+  color: #d4af37;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: bold;
+  transition: all 0.15s ease;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.menu-back:hover {
+  background: linear-gradient(135deg, #4a4a4a 0%, #3f3f3f 100%);
+  padding-left: 1.2rem;
+}
+
+.submenu-scrollable {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.submenu-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.submenu-scrollable::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.submenu-scrollable::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 3px;
+}
+
+/* Checkbox items */
+.checkbox-item {
+  padding-right: 0.5rem;
+}
+
+.checkbox-item.checked {
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.checkbox {
+  font-size: 1.1rem;
+  color: #d4af37;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Prevent text selection */
+.map-context-menu * {
+  user-select: none;
+  -webkit-user-select: none;
+}

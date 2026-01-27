@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Draggable from 'react-draggable';
 import { useGame } from '../../contexts/GameContext';
 import PlayerContextMenu from './PlayerContextMenu';
+import MapContextMenu from './MapContextMenu';
 import { loadUISettings, defaultUISettings } from '../../utils/uiSettings';
 import './MapScreen.css';
 
@@ -9,6 +10,7 @@ function MapScreen() {
   const {
     maps,
     currentMapId,
+    setCurrentMapId,
     players,
     items,
     playerPositions,
@@ -48,6 +50,7 @@ function MapScreen() {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [lastTouchDistance, setLastTouchDistance] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
+  const [mapContextMenu, setMapContextMenu] = useState(null);
 
   const currentMap = maps.find(m => m.id === currentMapId);
 
@@ -100,6 +103,7 @@ function MapScreen() {
   const handlePlayerContextMenu = (e, player) => {
     e.preventDefault();
     e.stopPropagation();
+    setMapContextMenu(null); // Close map context menu
     setContextMenu({
       player,
       position: {
@@ -111,6 +115,44 @@ function MapScreen() {
 
   const handleCloseContextMenu = () => {
     setContextMenu(null);
+  };
+
+  const handleMapContextMenu = (e) => {
+    e.preventDefault();
+
+    // Calculate the position on the map (accounting for transform)
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    // Convert screen coordinates to map coordinates
+    const mapX = (clickX - mapTransform.x) / mapTransform.scale;
+    const mapY = (clickY - mapTransform.y) / mapTransform.scale;
+
+    setContextMenu(null); // Close player context menu
+    setMapContextMenu({
+      position: {
+        x: e.clientX,
+        y: e.clientY
+      },
+      mapPosition: {
+        x: mapX,
+        y: mapY
+      }
+    });
+  };
+
+  const handleCloseMapContextMenu = () => {
+    setMapContextMenu(null);
+  };
+
+  const handleTeleportPlayer = (playerId, position) => {
+    updatePlayerPosition(playerId, position);
+  };
+
+  const handlePlaceItemOnMap = (itemId, position) => {
+    // Items are placed as bonuses on the map
+    placeBonus(itemId, position);
   };
 
   React.useEffect(() => {
@@ -285,6 +327,7 @@ function MapScreen() {
         >
           <div
             className="map-content"
+            onContextMenu={handleMapContextMenu}
             style={{
               backgroundColor: currentMap.backgroundColor || '#1a1a1a',
               backgroundImage: mapBackground ? `url(${mapBackground})` : 'none',
@@ -746,6 +789,24 @@ function MapScreen() {
           onUpdatePlayer={updatePlayer}
           onSendMessage={sendPlayerMessage}
           onFlashScreen={flashPlayerScreen}
+        />
+      )}
+
+      {/* Map context menu */}
+      {mapContextMenu && (
+        <MapContextMenu
+          position={mapContextMenu.position}
+          mapPosition={mapContextMenu.mapPosition}
+          onClose={handleCloseMapContextMenu}
+          maps={maps}
+          currentMapId={currentMapId}
+          onSelectMap={setCurrentMapId}
+          bonuses={bonuses}
+          onPlaceBonus={placeBonus}
+          items={items}
+          onPlaceItem={handlePlaceItemOnMap}
+          players={players}
+          onTeleportPlayer={handleTeleportPlayer}
         />
       )}
     </div>
