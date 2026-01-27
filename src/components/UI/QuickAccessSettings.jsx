@@ -27,6 +27,42 @@ function QuickAccessSettings({ onClose }) {
     return saved ? JSON.parse(saved) : {};
   });
 
+  // Initialize order values for items that don't have them yet
+  useEffect(() => {
+    const buttonTypes = [
+      { id: 'wheels', items: wheels },
+      { id: 'scenes', items: scenes },
+      { id: 'mobs', items: bonuses },
+      { id: 'items', items: items }
+    ];
+
+    let needsUpdate = false;
+    const updatedCustomizations = { ...itemCustomizations };
+
+    buttonTypes.forEach(({ id, items }) => {
+      items.forEach((item, index) => {
+        const key = `${id}_${item.id}`;
+        if (!updatedCustomizations[key]) {
+          updatedCustomizations[key] = {
+            emoji: '',
+            color: '#2a2a2a',
+            order: index,
+            categoryId: null
+          };
+          needsUpdate = true;
+        } else if (updatedCustomizations[key].order === undefined || updatedCustomizations[key].order === 999) {
+          // Initialize order for existing items that have default value
+          updatedCustomizations[key].order = index;
+          needsUpdate = true;
+        }
+      });
+    });
+
+    if (needsUpdate) {
+      setItemCustomizations(updatedCustomizations);
+    }
+  }, [wheels, scenes, bonuses, items]);
+
   const handleSave = () => {
     localStorage.setItem('quickAccessButtons', JSON.stringify(buttons));
     localStorage.setItem('quickAccessItemCustomizations', JSON.stringify(itemCustomizations));
@@ -447,11 +483,25 @@ function QuickAccessSettings({ onClose }) {
                               {/* Custom emoji */}
                               <input
                                 type="text"
-                                value={customization.emoji}
-                                onChange={(e) => handleUpdateItemCustomization(button.id, item.id, { emoji: e.target.value })}
+                                value={customization.emoji || ''}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  handleUpdateItemCustomization(button.id, item.id, { emoji: e.target.value });
+                                }}
+                                onClick={(e) => e.stopPropagation()}
                                 placeholder="📌"
-                                style={{ width: '45px', textAlign: 'center', fontSize: '1rem', padding: '0.25rem' }}
+                                style={{
+                                  width: '60px',
+                                  textAlign: 'center',
+                                  fontSize: '1.2rem',
+                                  padding: '0.35rem',
+                                  background: '#1a1a1a',
+                                  border: '1px solid #555',
+                                  color: '#fff',
+                                  borderRadius: '4px'
+                                }}
                                 title="Custom emoji prefix"
+                                maxLength={3}
                               />
 
                               {/* Item name */}
@@ -461,8 +511,18 @@ function QuickAccessSettings({ onClose }) {
                               <input
                                 type="color"
                                 value={customization.color}
-                                onChange={(e) => handleUpdateItemCustomization(button.id, item.id, { color: e.target.value })}
-                                style={{ width: '40px', height: '30px' }}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  handleUpdateItemCustomization(button.id, item.id, { color: e.target.value });
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                  width: '50px',
+                                  height: '35px',
+                                  border: '1px solid #555',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                                }}
                                 title="Border color"
                               />
 
@@ -470,8 +530,19 @@ function QuickAccessSettings({ onClose }) {
                               {button.categories && button.categories.length > 0 && (
                                 <select
                                   value={customization.categoryId || ''}
-                                  onChange={(e) => handleAssignCategory(button.id, item.id, e.target.value)}
-                                  style={{ fontSize: '0.85rem', padding: '0.25rem' }}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    handleAssignCategory(button.id, item.id, e.target.value);
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{
+                                    fontSize: '0.85rem',
+                                    padding: '0.35rem',
+                                    background: '#1a1a1a',
+                                    border: '1px solid #555',
+                                    color: '#fff',
+                                    borderRadius: '4px'
+                                  }}
                                 >
                                   <option value="">Uncategorized</option>
                                   {button.categories.map(cat => (
