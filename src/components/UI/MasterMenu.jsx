@@ -28,6 +28,11 @@ function MasterMenu() {
   } = useGame();
 
   const [activeManager, setActiveManager] = useState(null);
+  const [expandedSections, setExpandedSections] = useState({
+    quickAccess: true,
+    content: false,
+    settings: false
+  });
 
   const openManager = (manager) => {
     setActiveManager(manager);
@@ -50,6 +55,13 @@ function MasterMenu() {
     setMenuOpen(false);
   };
 
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   return (
     <>
       <button
@@ -62,78 +74,129 @@ function MasterMenu() {
       {menuOpen && (
         <div className="menu-overlay" onClick={() => setMenuOpen(false)}>
           <div className="menu-panel" onClick={(e) => e.stopPropagation()}>
-            <h2>Game Master Menu</h2>
+            <h2>🎲 GM Control Panel</h2>
 
+            {/* Quick Access Section */}
             <div className="menu-section">
-              <h3>Scenes</h3>
-              <button
-                className={currentScene === 'map' ? 'active' : ''}
-                onClick={() => { setCurrentScene('map'); setMenuOpen(false); }}
-              >
-                Map
-              </button>
-
-              <div className="submenu">
-                <label>Wheels:</label>
-                {wheels.length === 0 ? (
-                  <p className="empty-state">No wheels created</p>
-                ) : (
-                  wheels.map(wheel => (
+              <h3 onClick={() => toggleSection('quickAccess')} style={{ cursor: 'pointer' }}>
+                <span className="section-arrow">{expandedSections.quickAccess ? '▼' : '▶'}</span>
+                ⚡ Quick Actions
+              </h3>
+              {expandedSections.quickAccess && (
+                <>
+                  <div className="button-grid">
                     <button
-                      key={wheel.id}
-                      onClick={() => switchToWheel(wheel.id)}
+                      className={currentScene === 'map' ? 'active' : ''}
+                      onClick={() => { setCurrentScene('map'); setMenuOpen(false); }}
                     >
-                      {wheel.name}
+                      🗺️ Map
                     </button>
-                  ))
-                )}
-              </div>
-
-              <div className="submenu">
-                <label>Scene Images:</label>
-                {scenes.length === 0 ? (
-                  <p className="empty-state">No scenes created</p>
-                ) : (
-                  scenes.map(scene => (
                     <button
-                      key={scene.id}
-                      onClick={() => switchToScene(scene.id)}
+                      className={currentScene === 'shop' ? 'active' : ''}
+                      onClick={() => { setCurrentScene('shop'); setMenuOpen(false); }}
                     >
-                      {scene.name}
+                      🛒 Shop
                     </button>
-                  ))
+                    <button onClick={() => openManager('mobPlacer')}>
+                      👾 Add Mobs
+                    </button>
+                    <button onClick={() => openManager('diceRoller')}>
+                      🎲 Dice
+                    </button>
+                    <button onClick={() => openManager('session')}>
+                      💾 Session
+                    </button>
+                    <button onClick={() => openManager('roomCode')}>
+                      📱 Players
+                    </button>
+                  </div>
+                  {(wheels.length > 0 || scenes.length > 0) && (
+                    <div className="quick-switcher">
+                    {wheels.length > 0 && (
+                      <div className="switcher-group">
+                        <span className="switcher-label">🎡 Wheels:</span>
+                        <div className="switcher-buttons">
+                          {wheels.slice(0, 3).map(wheel => (
+                            <button
+                              key={wheel.id}
+                              className="compact-btn"
+                              onClick={() => switchToWheel(wheel.id)}
+                            >
+                              {wheel.name}
+                            </button>
+                          ))}
+                          {wheels.length > 3 && (
+                            <button className="compact-btn more" onClick={() => openManager('wheels')}>
+                              +{wheels.length - 3}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {scenes.length > 0 && (
+                      <div className="switcher-group">
+                        <span className="switcher-label">🎬 Scenes:</span>
+                        <div className="switcher-buttons">
+                          {scenes.slice(0, 3).map(scene => (
+                            <button
+                              key={scene.id}
+                              className="compact-btn"
+                              onClick={() => switchToScene(scene.id)}
+                            >
+                              {scene.name}
+                            </button>
+                          ))}
+                          {scenes.length > 3 && (
+                            <button className="compact-btn more" onClick={() => openManager('scenes')}>
+                              +{scenes.length - 3}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
-              </div>
-
-              <button onClick={() => openManager('mobPlacer')}>
-                Add Mobs
-              </button>
-
-              <button onClick={() => openManager('diceRoller')}>
-                🎲 Dice Roller
-              </button>
-
-              <button
-                className={currentScene === 'shop' ? 'active' : ''}
-                onClick={() => { setCurrentScene('shop'); setMenuOpen(false); }}
-              >
-                Shop
-              </button>
+                </>
+              )}
             </div>
 
+            {/* Content Management Section */}
             <div className="menu-section">
-              <h3>Manage</h3>
-              <button onClick={() => openManager('session')}>Sessions</button>
-              <button onClick={() => openManager('players')}>Players</button>
-              <button onClick={() => openManager('roomCode')}>📱 Player Access</button>
-              <button onClick={() => openManager('companionSettings')}>🎮 Companion App Settings</button>
-              <button onClick={() => openManager('items')}>Items</button>
-              <button onClick={() => openManager('bonuses')}>Mobs</button>
-              <button onClick={() => openManager('maps')}>Maps</button>
-              <button onClick={() => openManager('wheels')}>Wheels</button>
-              <button onClick={() => openManager('scenes')}>Scene Images</button>
-              <button onClick={() => openManager('uiCustomization')}>⚙️ UI Customization</button>
-              <button onClick={() => openManager('quickAccessSettings')}>🎯 Quick Access Buttons</button>
+              <h3 onClick={() => toggleSection('content')} style={{ cursor: 'pointer' }}>
+                <span className="section-arrow">{expandedSections.content ? '▼' : '▶'}</span>
+                📦 Content
+              </h3>
+              {expandedSections.content && (
+                <div className="button-grid">
+                  <button onClick={() => openManager('players')}>👥 Players</button>
+                  <button onClick={() => openManager('items')}>🎒 Items</button>
+                  <button onClick={() => openManager('bonuses')}>👹 Mobs</button>
+                  <button onClick={() => openManager('maps')}>🗺️ Maps</button>
+                  <button onClick={() => openManager('wheels')}>🎡 Wheels</button>
+                  <button onClick={() => openManager('scenes')}>🎬 Scenes</button>
+                </div>
+              )}
+            </div>
+
+            {/* Settings Section */}
+            <div className="menu-section">
+              <h3 onClick={() => toggleSection('settings')} style={{ cursor: 'pointer' }}>
+                <span className="section-arrow">{expandedSections.settings ? '▼' : '▶'}</span>
+                ⚙️ Settings
+              </h3>
+              {expandedSections.settings && (
+                <>
+                  <button onClick={() => openManager('uiCustomization')}>
+                    🎨 UI Customization
+                  </button>
+                  <button onClick={() => openManager('quickAccessSettings')}>
+                    🎯 Quick Access Buttons
+                  </button>
+                  <button onClick={() => openManager('companionSettings')}>
+                    🎮 Companion App
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
