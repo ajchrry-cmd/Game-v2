@@ -35,7 +35,7 @@ function MapScreen() {
       defaultZoom: uiSettings.mapDefaultZoom || defaultUISettings.mapDefaultZoom,
       centerX: uiSettings.mapCenterX || defaultUISettings.mapCenterX,
       centerY: uiSettings.mapCenterY || defaultUISettings.mapCenterY,
-      mapSettings.tokenSize: uiSettings.playerTokenSize || defaultUISettings.playerTokenSize
+      tokenSize: uiSettings.playerTokenSize || defaultUISettings.playerTokenSize
     };
   });
 
