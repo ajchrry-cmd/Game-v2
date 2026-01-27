@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useGame } from '../../contexts/GameContext';
 import './Manager.css';
 
 function QuickAccessSettings({ onClose }) {
+  const { wheels, scenes, bonuses, items } = useGame();
+
   const [buttons, setButtons] = useState(() => {
     const saved = localStorage.getItem('quickAccessButtons');
     if (saved) {
@@ -19,9 +22,14 @@ function QuickAccessSettings({ onClose }) {
 
   const [editingButton, setEditingButton] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [itemCustomizations, setItemCustomizations] = useState(() => {
+    const saved = localStorage.getItem('quickAccessItemCustomizations');
+    return saved ? JSON.parse(saved) : {};
+  });
 
   const handleSave = () => {
     localStorage.setItem('quickAccessButtons', JSON.stringify(buttons));
+    localStorage.setItem('quickAccessItemCustomizations', JSON.stringify(itemCustomizations));
     // Dispatch event to notify App.jsx of changes
     window.dispatchEvent(new Event('quickAccessButtonsChanged'));
     alert('Quick access settings saved!');
@@ -121,6 +129,84 @@ function QuickAccessSettings({ onClose }) {
     if (confirm('Delete this button?')) {
       setButtons(prev => prev.filter(btn => btn.id !== buttonId));
     }
+  };
+
+  // Get items for a dropdown button
+  const getDropdownItems = (buttonId) => {
+    switch (buttonId) {
+      case 'wheels':
+        return wheels;
+      case 'scenes':
+        return scenes;
+      case 'mobs':
+        return bonuses;
+      case 'items':
+        return items;
+      default:
+        return [];
+    }
+  };
+
+  // Get or create item customization
+  const getItemCustomization = (buttonId, itemId) => {
+    const key = `${buttonId}_${itemId}`;
+    return itemCustomizations[key] || {
+      emoji: '',
+      color: '#2a2a2a',
+      order: 999
+    };
+  };
+
+  // Update item customization
+  const handleUpdateItemCustomization = (buttonId, itemId, updates) => {
+    const key = `${buttonId}_${itemId}`;
+    setItemCustomizations(prev => ({
+      ...prev,
+      [key]: {
+        ...getItemCustomization(buttonId, itemId),
+        ...updates
+      }
+    }));
+  };
+
+  // Move item up/down in list
+  const handleMoveItem = (buttonId, itemId, direction) => {
+    const items = getDropdownItems(buttonId);
+    const currentItem = items.find(i => i.id === itemId);
+    if (!currentItem) return;
+
+    const currentOrder = getItemCustomization(buttonId, itemId).order;
+
+    // Get all items with their orders
+    const itemsWithOrders = items.map(item => ({
+      ...item,
+      customOrder: getItemCustomization(buttonId, item.id).order
+    })).sort((a, b) => a.customOrder - b.customOrder);
+
+    const currentIndex = itemsWithOrders.findIndex(i => i.id === itemId);
+    if (currentIndex === -1) return;
+
+    if (direction === 'up' && currentIndex > 0) {
+      const swapItem = itemsWithOrders[currentIndex - 1];
+      handleUpdateItemCustomization(buttonId, itemId, { order: swapItem.customOrder });
+      handleUpdateItemCustomization(buttonId, swapItem.id, { order: currentOrder });
+    } else if (direction === 'down' && currentIndex < itemsWithOrders.length - 1) {
+      const swapItem = itemsWithOrders[currentIndex + 1];
+      handleUpdateItemCustomization(buttonId, itemId, { order: swapItem.customOrder });
+      handleUpdateItemCustomization(buttonId, swapItem.id, { order: currentOrder });
+    }
+  };
+
+  // Assign item to category
+  const handleAssignCategory = (buttonId, itemId, categoryId) => {
+    const key = `${buttonId}_${itemId}`;
+    setItemCustomizations(prev => ({
+      ...prev,
+      [key]: {
+        ...getItemCustomization(buttonId, itemId),
+        categoryId: categoryId || null
+      }
+    }));
   };
 
   return (
@@ -287,8 +373,120 @@ function QuickAccessSettings({ onClose }) {
                   )}
 
                   <p style={{ fontSize: '0.85rem', color: '#999', marginTop: '0.5rem' }}>
-                    Note: Use the dropdown menu in the app to assign items to categories by right-clicking items.
+                    Assign items to categories in the section below.
                   </p>
+                </div>
+              )}
+
+              {/* Items customization for dropdown buttons */}
+              {button.type === 'dropdown' && (
+                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #333' }}>
+                  <h4 style={{ color: '#d4af37', marginBottom: '0.5rem' }}>Customize Items</h4>
+                  <p style={{ fontSize: '0.85rem', color: '#999', marginBottom: '0.75rem' }}>
+                    Customize appearance and order of items in this dropdown
+                  </p>
+
+                  {(() => {
+                    const items = getDropdownItems(button.id);
+                    if (items.length === 0) {
+                      return (
+                        <p style={{ color: '#666', fontSize: '0.9rem', fontStyle: 'italic' }}>
+                          No items available. Create some {button.label.toLowerCase()} first.
+                        </p>
+                      );
+                    }
+
+                    // Sort items by custom order
+                    const sortedItems = [...items].sort((a, b) => {
+                      const aOrder = getItemCustomization(button.id, a.id).order;
+                      const bOrder = getItemCustomization(button.id, b.id).order;
+                      return aOrder - bOrder;
+                    });
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '300px', overflowY: 'auto' }}>
+                        {sortedItems.map((item, index) => {
+                          const customization = getItemCustomization(button.id, item.id);
+                          return (
+                            <div key={item.id} style={{
+                              background: '#252525',
+                              padding: '0.75rem',
+                              borderRadius: '4px',
+                              border: `2px solid ${customization.color}`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem'
+                            }}>
+                              {/* Move buttons */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                <button
+                                  onClick={() => handleMoveItem(button.id, item.id, 'up')}
+                                  disabled={index === 0}
+                                  style={{ padding: '0.15rem 0.35rem', fontSize: '0.65rem' }}
+                                >
+                                  ▲
+                                </button>
+                                <button
+                                  onClick={() => handleMoveItem(button.id, item.id, 'down')}
+                                  disabled={index === sortedItems.length - 1}
+                                  style={{ padding: '0.15rem 0.35rem', fontSize: '0.65rem' }}
+                                >
+                                  ▼
+                                </button>
+                              </div>
+
+                              {/* Item preview */}
+                              {item.imageUrl && button.id === 'mobs' && (
+                                <img
+                                  src={item.imageUrl}
+                                  alt={item.name}
+                                  style={{ width: '30px', height: '30px', objectFit: 'contain', borderRadius: '4px' }}
+                                />
+                              )}
+
+                              {/* Custom emoji */}
+                              <input
+                                type="text"
+                                value={customization.emoji}
+                                onChange={(e) => handleUpdateItemCustomization(button.id, item.id, { emoji: e.target.value })}
+                                placeholder="📌"
+                                style={{ width: '45px', textAlign: 'center', fontSize: '1rem', padding: '0.25rem' }}
+                                title="Custom emoji prefix"
+                              />
+
+                              {/* Item name */}
+                              <span style={{ flex: 1, color: '#fff' }}>{item.name}</span>
+
+                              {/* Color picker */}
+                              <input
+                                type="color"
+                                value={customization.color}
+                                onChange={(e) => handleUpdateItemCustomization(button.id, item.id, { color: e.target.value })}
+                                style={{ width: '40px', height: '30px' }}
+                                title="Border color"
+                              />
+
+                              {/* Category assignment */}
+                              {button.categories && button.categories.length > 0 && (
+                                <select
+                                  value={customization.categoryId || ''}
+                                  onChange={(e) => handleAssignCategory(button.id, item.id, e.target.value)}
+                                  style={{ fontSize: '0.85rem', padding: '0.25rem' }}
+                                >
+                                  <option value="">Uncategorized</option>
+                                  {button.categories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>
+                                      {cat.emoji} {cat.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>

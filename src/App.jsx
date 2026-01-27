@@ -39,6 +39,10 @@ function App() {
       { id: 'shop', emoji: '🛒', label: 'Shop', color: '#2a2a2a', type: 'action', action: 'openShop', enabled: true }
     ];
   });
+  const [itemCustomizations, setItemCustomizations] = useState(() => {
+    const saved = localStorage.getItem('quickAccessItemCustomizations');
+    return saved ? JSON.parse(saved) : {};
+  });
 
   // Load and apply UI customization settings on mount
   useEffect(() => {
@@ -48,9 +52,13 @@ function App() {
   // Listen for quick access button configuration changes
   useEffect(() => {
     const handleQuickAccessChange = () => {
-      const saved = localStorage.getItem('quickAccessButtons');
-      if (saved) {
-        setQuickAccessButtons(JSON.parse(saved));
+      const savedButtons = localStorage.getItem('quickAccessButtons');
+      if (savedButtons) {
+        setQuickAccessButtons(JSON.parse(savedButtons));
+      }
+      const savedCustomizations = localStorage.getItem('quickAccessItemCustomizations');
+      if (savedCustomizations) {
+        setItemCustomizations(JSON.parse(savedCustomizations));
       }
     };
 
@@ -127,6 +135,17 @@ function App() {
     }
   };
 
+  // Get item customization
+  const getItemCustomization = (buttonId, itemId) => {
+    const key = `${buttonId}_${itemId}`;
+    return itemCustomizations[key] || {
+      emoji: '',
+      color: '#2a2a2a',
+      order: 999,
+      categoryId: null
+    };
+  };
+
   // Render dropdown menu with category support
   const renderDropdownMenu = (button) => {
     const items = getDropdownItems(button.id);
@@ -134,15 +153,44 @@ function App() {
 
     const categories = button.categories || [];
 
-    // Get category assignment from localStorage
-    const categoryAssignments = JSON.parse(localStorage.getItem(`categoryAssignments_${button.id}`) || '{}');
+    // Sort items by custom order
+    const sortedItems = [...items].sort((a, b) => {
+      const aOrder = getItemCustomization(button.id, a.id).order;
+      const bOrder = getItemCustomization(button.id, b.id).order;
+      return aOrder - bOrder;
+    });
+
+    // Helper function to render an item with customizations
+    const renderItem = (item) => {
+      const customization = getItemCustomization(button.id, item.id);
+      return (
+        <div
+          key={item.id}
+          className="dropdown-item"
+          onClick={() => handleItemSelection(button.id, item.id)}
+          style={{
+            borderLeft: `4px solid ${customization.color}`,
+            paddingLeft: '11px'
+          }}
+        >
+          {item.imageUrl && button.id === 'mobs' && (
+            <img src={item.imageUrl} alt={item.name} style={{ width: '20px', height: '20px', marginRight: '8px' }} />
+          )}
+          {customization.emoji && <span style={{ marginRight: '6px' }}>{customization.emoji}</span>}
+          {item.name}
+        </div>
+      );
+    };
 
     if (categories.length > 0) {
       // Render with categories
       return (
         <div className="dropdown-menu">
           {categories.map(category => {
-            const categoryItems = items.filter(item => categoryAssignments[item.id] === category.id);
+            const categoryItems = sortedItems.filter(item => {
+              const customization = getItemCustomization(button.id, item.id);
+              return customization.categoryId === category.id;
+            });
             if (categoryItems.length === 0) return null;
 
             return (
@@ -150,42 +198,23 @@ function App() {
                 <div className="dropdown-category-header">
                   {category.emoji} {category.name}
                 </div>
-                {categoryItems.map(item => (
-                  <div
-                    key={item.id}
-                    className="dropdown-item"
-                    onClick={() => handleItemSelection(button.id, item.id)}
-                  >
-                    {item.imageUrl && button.id === 'mobs' && (
-                      <img src={item.imageUrl} alt={item.name} style={{ width: '20px', height: '20px', marginRight: '8px' }} />
-                    )}
-                    {item.name}
-                  </div>
-                ))}
+                {categoryItems.map(item => renderItem(item))}
               </div>
             );
           })}
 
           {/* Uncategorized items */}
           {(() => {
-            const uncategorized = items.filter(item => !categoryAssignments[item.id]);
+            const uncategorized = sortedItems.filter(item => {
+              const customization = getItemCustomization(button.id, item.id);
+              return !customization.categoryId;
+            });
             if (uncategorized.length === 0) return null;
 
             return (
               <div>
                 <div className="dropdown-category-header">📋 Uncategorized</div>
-                {uncategorized.map(item => (
-                  <div
-                    key={item.id}
-                    className="dropdown-item"
-                    onClick={() => handleItemSelection(button.id, item.id)}
-                  >
-                    {item.imageUrl && button.id === 'mobs' && (
-                      <img src={item.imageUrl} alt={item.name} style={{ width: '20px', height: '20px', marginRight: '8px' }} />
-                    )}
-                    {item.name}
-                  </div>
-                ))}
+                {uncategorized.map(item => renderItem(item))}
               </div>
             );
           })()}
@@ -195,18 +224,7 @@ function App() {
       // Render flat list (no categories)
       return (
         <div className="dropdown-menu">
-          {items.map(item => (
-            <div
-              key={item.id}
-              className="dropdown-item"
-              onClick={() => handleItemSelection(button.id, item.id)}
-            >
-              {item.imageUrl && button.id === 'mobs' && (
-                <img src={item.imageUrl} alt={item.name} style={{ width: '20px', height: '20px', marginRight: '8px' }} />
-              )}
-              {item.name}
-            </div>
-          ))}
+          {sortedItems.map(item => renderItem(item))}
         </div>
       );
     }
