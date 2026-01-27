@@ -10,6 +10,7 @@ import BonusManager from './BonusManager';
 import MobPlacer from './MobPlacer';
 import DiceRoller from './DiceRoller';
 import UICustomization from './UICustomization';
+import QuickAccessSettings from './QuickAccessSettings';
 import RoomCodeDisplay from './RoomCodeDisplay';
 import CompanionSettings from './CompanionSettings';
 import './MasterMenu.css';
@@ -132,6 +133,7 @@ function MasterMenu() {
               <button onClick={() => openManager('wheels')}>Wheels</button>
               <button onClick={() => openManager('scenes')}>Scene Images</button>
               <button onClick={() => openManager('uiCustomization')}>⚙️ UI Customization</button>
+              <button onClick={() => openManager('quickAccessSettings')}>🎯 Quick Access Buttons</button>
             </div>
           </div>
         </div>
@@ -149,6 +151,7 @@ function MasterMenu() {
       {activeManager === 'mobPlacer' && <MobPlacer onClose={closeManager} />}
       {activeManager === 'diceRoller' && <DiceRoller onClose={closeManager} />}
       {activeManager === 'uiCustomization' && <UICustomization onClose={closeManager} />}
+      {activeManager === 'quickAccessSettings' && <QuickAccessSettings onClose={closeManager} />}
     </>
   );
 }
