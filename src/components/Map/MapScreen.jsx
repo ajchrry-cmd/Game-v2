@@ -26,7 +26,15 @@ function MapScreen() {
 
   const [resizing, setResizing] = useState(null);
   const [selectedBonusId, setSelectedBonusId] = useState(null);
-  const [mapTransform, setMapTransform] = useState({ scale: 1, x: 0, y: 0 });
+  const [defaultZoom, setDefaultZoom] = useState(() => {
+    const saved = localStorage.getItem('mapDefaultZoom');
+    return saved ? parseFloat(saved) : 1;
+  });
+  const [mapTransform, setMapTransform] = useState(() => ({
+    scale: defaultZoom,
+    x: 0,
+    y: 0
+  }));
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [lastTouchDistance, setLastTouchDistance] = useState(null);
@@ -255,8 +263,20 @@ function MapScreen() {
     localStorage.setItem('playerTokenSize', newSize);
   };
 
+  const handleDefaultZoomIncrease = () => {
+    const newZoom = Math.min(3, defaultZoom + 0.1);
+    setDefaultZoom(newZoom);
+    localStorage.setItem('mapDefaultZoom', newZoom);
+  };
+
+  const handleDefaultZoomDecrease = () => {
+    const newZoom = Math.max(0.5, defaultZoom - 0.1);
+    setDefaultZoom(newZoom);
+    localStorage.setItem('mapDefaultZoom', newZoom);
+  };
+
   const handleResetZoom = () => {
-    setMapTransform({ scale: 1, x: 0, y: 0 });
+    setMapTransform({ scale: defaultZoom, x: 0, y: 0 });
   };
 
   return (
@@ -274,6 +294,13 @@ function MapScreen() {
           <button onClick={handleTokenSizeDecrease} title="Decrease Token Size">−</button>
           <span>{tokenSize}px</span>
           <button onClick={handleTokenSizeIncrease} title="Increase Token Size">+</button>
+        </div>
+
+        <div className="token-size-controls">
+          <label>Default Zoom:</label>
+          <button onClick={handleDefaultZoomDecrease} title="Decrease Default Zoom">−</button>
+          <span>{Math.round(defaultZoom * 100)}%</span>
+          <button onClick={handleDefaultZoomIncrease} title="Increase Default Zoom">+</button>
         </div>
 
         <div
