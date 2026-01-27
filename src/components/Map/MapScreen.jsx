@@ -315,6 +315,7 @@ function MapScreen() {
         <div
           className="map-canvas"
           onClick={() => setSelectedBonusId(null)}
+          onContextMenu={handleMapContextMenu}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -327,7 +328,6 @@ function MapScreen() {
         >
           <div
             className="map-content"
-            onContextMenu={handleMapContextMenu}
             style={{
               backgroundColor: currentMap.backgroundColor || '#1a1a1a',
               backgroundImage: mapBackground ? `url(${mapBackground})` : 'none',
