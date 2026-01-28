@@ -3,6 +3,7 @@ import Draggable from 'react-draggable';
 import { useGame } from '../../contexts/GameContext';
 import PlayerContextMenu from './PlayerContextMenu';
 import MapContextMenu from './MapContextMenu';
+import RadialMenu from '../UI/RadialMenu';
 import { loadUISettings, defaultUISettings } from '../../utils/uiSettings';
 import './MapScreen.css';
 
@@ -51,6 +52,7 @@ function MapScreen() {
   const [lastTouchDistance, setLastTouchDistance] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [mapContextMenu, setMapContextMenu] = useState(null);
+  const [radialMenu, setRadialMenu] = useState(null);
 
   const currentMap = maps.find(m => m.id === currentMapId);
 
@@ -104,13 +106,26 @@ function MapScreen() {
     e.preventDefault();
     e.stopPropagation();
     setMapContextMenu(null); // Close map context menu
-    setContextMenu({
-      player,
-      position: {
-        x: e.clientX,
-        y: e.clientY
-      }
-    });
+    setRadialMenu(null); // Close radial menu
+
+    // Show radial menu if Alt key is pressed, otherwise show full context menu
+    if (e.altKey) {
+      setRadialMenu({
+        player,
+        position: {
+          x: e.clientX,
+          y: e.clientY
+        }
+      });
+    } else {
+      setContextMenu({
+        player,
+        position: {
+          x: e.clientX,
+          y: e.clientY
+        }
+      });
+    }
   };
 
   const handleCloseContextMenu = () => {
@@ -157,6 +172,167 @@ function MapScreen() {
   const handlePlaceItemOnMap = (itemId, position) => {
     // Items are placed as bonuses on the map
     placeBonus(itemId, position);
+  };
+
+  // Quick action handlers for radial menu
+  const handleQuickDamage = (player, amount) => {
+    const currentPower = player.power || 0;
+    updatePlayer(player.id, { power: Math.max(0, currentPower - amount) });
+  };
+
+  const handleQuickHeal = (player, amount) => {
+    const currentPower = player.power || 0;
+    updatePlayer(player.id, { power: currentPower + amount });
+  };
+
+  const handleQuickAdjustMoney = (player, amount) => {
+    const currentMoney = player.money || 0;
+    updatePlayer(player.id, { money: currentMoney + amount });
+  };
+
+  const handleBonusContextMenu = (e, placedBonus, bonus) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.altKey) {
+      setRadialMenu({
+        bonus: placedBonus,
+        bonusData: bonus,
+        position: {
+          x: e.clientX,
+          y: e.clientY
+        }
+      });
+    }
+  };
+
+  // Get radial menu actions for a placed bonus/mob
+  const getBonusRadialActions = (placedBonus, bonus) => {
+    return [
+      {
+        icon: '🗑️',
+        label: 'Remove',
+        onClick: () => {
+          removeBonus(placedBonus.id);
+          setSelectedBonusId(null);
+        },
+        variant: 'danger'
+      },
+      {
+        icon: '📋',
+        label: 'Duplicate',
+        onClick: () => {
+          placeBonus(placedBonus.bonusId, {
+            x: placedBonus.position.x + 50,
+            y: placedBonus.position.y + 50
+          });
+        },
+        variant: 'success'
+      },
+      {
+        icon: '🔍',
+        label: 'Zoom +',
+        onClick: () => {
+          const newSize = Math.min(200, (placedBonus.size || 60) + 20);
+          updateBonusSize(placedBonus.id, newSize);
+        }
+      },
+      {
+        icon: '🔎',
+        label: 'Zoom -',
+        onClick: () => {
+          const newSize = Math.max(30, (placedBonus.size || 60) - 20);
+          updateBonusSize(placedBonus.id, newSize);
+        }
+      },
+      {
+        icon: '👑',
+        label: 'Boss Size',
+        onClick: () => {
+          updateBonusSize(placedBonus.id, 120);
+        },
+        variant: 'primary'
+      },
+      {
+        icon: '↩️',
+        label: 'Normal Size',
+        onClick: () => {
+          updateBonusSize(placedBonus.id, 60);
+        }
+      }
+    ];
+  };
+
+  // Get radial menu actions for a player
+  const getPlayerRadialActions = (player) => {
+    return [
+      {
+        icon: '❤️',
+        label: 'Heal +5',
+        onClick: () => handleQuickHeal(player, 5),
+        variant: 'success'
+      },
+      {
+        icon: '⚔️',
+        label: 'Damage -5',
+        onClick: () => handleQuickDamage(player, 5),
+        variant: 'danger'
+      },
+      {
+        icon: '💰',
+        label: 'Money +10',
+        onClick: () => handleQuickAdjustMoney(player, 10),
+        variant: 'success'
+      },
+      {
+        icon: '💸',
+        label: 'Money -10',
+        onClick: () => handleQuickAdjustMoney(player, -10),
+        variant: 'danger'
+      },
+      {
+        icon: '✉️',
+        label: 'Message',
+        onClick: () => {
+          setRadialMenu(null);
+          setContextMenu({
+            player,
+            position: radialMenu.position
+          });
+          // Will open full menu for message
+        },
+        variant: 'primary'
+      },
+      {
+        icon: '⚡',
+        label: 'Flash',
+        onClick: () => flashPlayerScreen(player.id, '#ff0000', 500),
+        variant: 'primary'
+      },
+      {
+        icon: '🎒',
+        label: 'Inventory',
+        onClick: () => {
+          setRadialMenu(null);
+          setContextMenu({
+            player,
+            position: radialMenu.position
+          });
+          // Will open full menu for inventory
+        }
+      },
+      {
+        icon: '⚙️',
+        label: 'More',
+        onClick: () => {
+          setRadialMenu(null);
+          setContextMenu({
+            player,
+            position: radialMenu.position
+          });
+        }
+      }
+    ];
   };
 
   React.useEffect(() => {
@@ -314,6 +490,11 @@ function MapScreen() {
           <button onClick={handleZoomIn} title="Zoom In">+</button>
           <button onClick={handleZoomOut} title="Zoom Out">−</button>
           <button onClick={handleResetZoom} title="Reset">⟲</button>
+        </div>
+
+        {/* Quick help indicator */}
+        <div className="radial-menu-hint" title="Hold Alt + Right-Click on tokens for quick actions">
+          <span>⚡ Alt + Right-Click for Quick Actions</span>
         </div>
 
         <div
@@ -594,6 +775,7 @@ function MapScreen() {
                     e.stopPropagation();
                     setSelectedBonusId(placedBonus.id);
                   }}
+                  onContextMenu={(e) => handleBonusContextMenu(e, placedBonus, bonus)}
                 >
                   {isSelected && (
                     <button
@@ -811,6 +993,19 @@ function MapScreen() {
           onPlaceItem={handlePlaceItemOnMap}
           players={players}
           onTeleportPlayer={handleTeleportPlayer}
+        />
+      )}
+
+      {/* Radial menu for quick actions */}
+      {radialMenu && (
+        <RadialMenu
+          position={radialMenu.position}
+          actions={radialMenu.player
+            ? getPlayerRadialActions(radialMenu.player)
+            : getBonusRadialActions(radialMenu.bonus, radialMenu.bonusData)
+          }
+          onClose={() => setRadialMenu(null)}
+          centerLabel={radialMenu.player?.name || radialMenu.bonusData?.name || ''}
         />
       )}
     </div>
