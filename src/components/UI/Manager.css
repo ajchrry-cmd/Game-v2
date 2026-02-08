@@ -468,7 +468,7 @@
 .wheel-segments-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
   max-height: 400px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -494,126 +494,62 @@
   background: #e4bf47;
 }
 
-.wheel-segment-card {
-  background: #1a1a1a;
-  padding: 1rem;
-  border-radius: 8px;
-  border: 2px solid #333;
-  transition: all 0.2s ease;
-}
-
-.wheel-segment-card:hover {
-  border-color: #d4af37;
-  box-shadow: 0 2px 12px rgba(212, 175, 55, 0.15);
-  transform: translateY(-1px);
-}
-
-.wheel-segment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.wheel-segment-number {
-  color: #d4af37;
-  font-weight: bold;
-  font-size: 0.95rem;
-  background: #2a2a2a;
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px;
-  border: 1px solid #444;
-}
-
-.wheel-remove-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  line-height: 1;
-  padding: 0;
-  transition: all 0.2s;
-}
-
-.wheel-remove-btn:hover:not(:disabled) {
-  transform: scale(1.1);
-}
-
-.wheel-segment-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.wheel-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.wheel-field-label {
-  color: #aaa;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.wheel-segment-input {
-  padding: 0.6rem;
-  background: #2a2a2a;
-  border: 2px solid #444;
-  border-radius: 6px;
-  color: #fff;
-  font-size: 0.95rem;
-  transition: all 0.2s;
-}
-
-.wheel-segment-input:focus {
-  outline: none;
-  border-color: #d4af37;
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
-}
-
-.wheel-field-row {
+/* Compact Row Layout for Wheel Manager */
+.wheel-segment-row {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.75rem;
-}
-
-.wheel-color-wrapper {
-  display: flex;
+  grid-template-columns: auto auto auto 1fr auto auto;
   align-items: center;
   gap: 0.5rem;
-  background: #2a2a2a;
-  padding: 0.4rem;
+  background: #1a1a1a;
+  padding: 0.5rem 0.75rem;
   border-radius: 6px;
-  border: 2px solid #444;
-  transition: border-color 0.2s;
+  border: 2px solid #333;
+  transition: all 0.2s;
+  cursor: move;
 }
 
-.wheel-color-wrapper:hover {
+.wheel-segment-row:hover {
+  border-color: #d4af37;
+  background: #252525;
+}
+
+.wheel-segment-row.dragging {
+  opacity: 0.5;
   border-color: #d4af37;
 }
 
-.wheel-color-preview {
-  width: 36px;
-  height: 36px;
-  border-radius: 4px;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  transition: transform 0.2s;
+.wheel-drag-handle {
+  color: #666;
+  font-size: 1.1rem;
+  cursor: grab;
+  user-select: none;
+  padding: 0 0.2rem;
+  line-height: 1;
 }
 
-.wheel-color-preview:hover {
-  transform: scale(1.08);
+.wheel-drag-handle:active {
+  cursor: grabbing;
+}
+
+.wheel-segment-num {
+  color: #d4af37;
+  font-weight: bold;
+  font-size: 0.8rem;
+  min-width: 28px;
+}
+
+.wheel-color-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  border: 2px solid #fff;
+  cursor: pointer;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.wheel-color-swatch:hover {
+  transform: scale(1.1);
 }
 
 .wheel-color-input {
@@ -624,46 +560,49 @@
   pointer-events: none;
 }
 
-.wheel-weight-field {
+.wheel-name-input {
   flex: 1;
-}
-
-.wheel-weight-badge {
-  color: #d4af37;
-  font-weight: bold;
-  font-size: 0.9rem;
+  padding: 0.4rem;
   background: #2a2a2a;
-  padding: 0.2rem 0.6rem;
-  border-radius: 10px;
-  margin-left: 0.5rem;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.85rem;
+  min-width: 0;
 }
 
-.wheel-weight-controls {
+.wheel-name-input:focus {
+  outline: none;
+  border-color: #d4af37;
+}
+
+.wheel-weight-section {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.4rem;
+  min-width: 180px;
 }
 
 .wheel-weight-slider {
   flex: 1;
-  height: 5px;
-  border-radius: 2.5px;
+  height: 4px;
+  border-radius: 2px;
   background: #2a2a2a;
   outline: none;
   -webkit-appearance: none;
   cursor: pointer;
+  min-width: 70px;
 }
 
 .wheel-weight-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: #d4af37;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .wheel-weight-slider::-webkit-slider-thumb:hover {
@@ -672,14 +611,13 @@
 }
 
 .wheel-weight-slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: #d4af37;
   cursor: pointer;
   border: none;
   transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .wheel-weight-slider::-moz-range-thumb:hover {
@@ -688,21 +626,45 @@
 }
 
 .wheel-weight-input {
-  width: 60px;
-  padding: 0.4rem;
+  width: 45px;
+  padding: 0.3rem;
   background: #2a2a2a;
-  border: 2px solid #444;
-  border-radius: 6px;
+  border: 1px solid #444;
+  border-radius: 4px;
   color: #fff;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-align: center;
-  transition: all 0.2s;
 }
 
 .wheel-weight-input:focus {
   outline: none;
   border-color: #d4af37;
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
+}
+
+.wheel-percentage {
+  color: #d4af37;
+  font-weight: bold;
+  font-size: 0.8rem;
+  min-width: 40px;
+  text-align: right;
+}
+
+.wheel-remove-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.wheel-remove-btn:hover:not(:disabled) {
+  transform: scale(1.1);
 }
 
 .wheel-add-segment {
@@ -735,15 +697,28 @@
 }
 
 @media screen and (max-width: 768px) {
-  .wheel-field-row {
-    grid-template-columns: 1fr;
+  .wheel-segment-row {
+    grid-template-columns: auto auto auto 1fr;
+    gap: 0.4rem;
+    padding: 0.5rem;
+  }
+
+  .wheel-weight-section {
+    grid-column: 1 / -1;
+    min-width: unset;
+    margin-top: 0.25rem;
+  }
+
+  .wheel-remove-btn {
+    grid-row: 1;
+    grid-column: 4;
+  }
+
+  .wheel-name-input {
+    font-size: 0.8rem;
   }
 
   .wheel-segments-list {
     max-height: 300px;
-  }
-
-  .wheel-weight-input {
-    width: 55px;
   }
 }
