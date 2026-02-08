@@ -340,111 +340,115 @@ function WheelScreen() {
   return (
     <div className="wheel-screen">
       <h1 className="wheel-title">{currentWheel.name}</h1>
-      <div className="wheel-container">
-        <canvas
-          ref={canvasRef}
-          width={800}
-          height={800}
-          className="wheel-canvas"
-        />
-      </div>
-      <button
-        className="spin-button"
-        onClick={spinWheel}
-        disabled={isSpinning}
-      >
-        {isSpinning ? 'Spinning...' : 'SPIN'}
-      </button>
-      {wheelLastResult !== null && wheelLastResult !== undefined && (
-        <div className="result-display">
-          <h2>Result:</h2>
-          <p>{currentWheel.segments[wheelLastResult]?.text}</p>
-        </div>
-      )}
-      {isBattleWheel && (
-        <div className="battle-wheel-editor">
-          <div className="editor-header">
-            <h2>Wheel Editor</h2>
-            <p className="editor-subtitle">Customize your wheel segments</p>
+      <div className={`wheel-layout ${isBattleWheel ? 'side-by-side' : 'centered'}`}>
+        <div className="wheel-section">
+          <div className="wheel-container">
+            <canvas
+              ref={canvasRef}
+              width={800}
+              height={800}
+              className="wheel-canvas"
+            />
           </div>
-          <div className="segments-list">
-            {currentWheel.segments.map((segment, index) => (
-              <div key={index} className="segment-edit-card">
-                <div className="segment-header">
-                  <span className="segment-number">#{index + 1}</span>
-                  <button
-                    className="remove-segment-btn"
-                    onClick={() => handleRemoveSegment(index)}
-                    disabled={currentWheel.segments.length <= 2}
-                    title={currentWheel.segments.length <= 2 ? "Wheel must have at least 2 segments" : "Remove segment"}
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className="segment-controls">
-                  <div className="segment-field">
-                    <label className="field-label">Segment Name</label>
-                    <input
-                      type="text"
-                      placeholder="Enter segment name"
-                      value={segment.text}
-                      onChange={(e) => handleUpdateSegment(index, 'text', e.target.value)}
-                      className="segment-name-input"
-                    />
-                  </div>
-                  <div className="segment-row">
-                    <div className="segment-field color-field">
-                      <label className="field-label">Color</label>
-                      <div className="color-picker-wrapper">
-                        <div
-                          className="color-preview"
-                          style={{ backgroundColor: segment.color }}
-                          title={segment.color}
-                          onClick={() => document.getElementById(`color-${index}`).click()}
-                        />
-                        <input
-                          id={`color-${index}`}
-                          type="color"
-                          value={segment.color}
-                          onChange={(e) => handleUpdateSegment(index, 'color', e.target.value)}
-                          className="segment-color-input"
-                        />
-                      </div>
-                    </div>
-                    <div className="segment-field weight-field">
-                      <label className="field-label">
-                        Weight
-                        <span className="weight-percentage">{calculatePercentage(currentWheel.segments, segment.weight || 1)}%</span>
-                      </label>
-                      <div className="weight-controls">
-                        <input
-                          type="range"
-                          min="1"
-                          max="100"
-                          value={segment.weight || 1}
-                          onChange={(e) => handleUpdateSegment(index, 'weight', parseInt(e.target.value) || 1)}
-                          className="segment-weight-slider"
-                        />
-                        <input
-                          type="number"
-                          min="1"
-                          max="100"
-                          value={segment.weight || 1}
-                          onChange={(e) => handleUpdateSegment(index, 'weight', parseInt(e.target.value) || 1)}
-                          className="segment-weight-input"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button className="add-segment-btn" onClick={handleAddSegment}>
-            <span className="add-icon">+</span> Add New Segment
+          <button
+            className="spin-button"
+            onClick={spinWheel}
+            disabled={isSpinning}
+          >
+            {isSpinning ? 'Spinning...' : 'SPIN'}
           </button>
+          {wheelLastResult !== null && wheelLastResult !== undefined && (
+            <div className="result-display">
+              <h2>Result:</h2>
+              <p>{currentWheel.segments[wheelLastResult]?.text}</p>
+            </div>
+          )}
         </div>
-      )}
+        {isBattleWheel && (
+          <div className="battle-wheel-editor">
+            <div className="editor-header">
+              <h2>Wheel Editor</h2>
+              <p className="editor-subtitle">Customize your wheel segments</p>
+            </div>
+            <div className="segments-list">
+              {currentWheel.segments.map((segment, index) => (
+                <div key={index} className="segment-edit-card">
+                  <div className="segment-header">
+                    <span className="segment-number">#{index + 1}</span>
+                    <button
+                      className="remove-segment-btn"
+                      onClick={() => handleRemoveSegment(index)}
+                      disabled={currentWheel.segments.length <= 2}
+                      title={currentWheel.segments.length <= 2 ? "Wheel must have at least 2 segments" : "Remove segment"}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="segment-controls">
+                    <div className="segment-field">
+                      <label className="field-label">Segment Name</label>
+                      <input
+                        type="text"
+                        placeholder="Enter segment name"
+                        value={segment.text}
+                        onChange={(e) => handleUpdateSegment(index, 'text', e.target.value)}
+                        className="segment-name-input"
+                      />
+                    </div>
+                    <div className="segment-row">
+                      <div className="segment-field color-field">
+                        <label className="field-label">Color</label>
+                        <div className="color-picker-wrapper">
+                          <div
+                            className="color-preview"
+                            style={{ backgroundColor: segment.color }}
+                            title={segment.color}
+                            onClick={() => document.getElementById(`color-${index}`).click()}
+                          />
+                          <input
+                            id={`color-${index}`}
+                            type="color"
+                            value={segment.color}
+                            onChange={(e) => handleUpdateSegment(index, 'color', e.target.value)}
+                            className="segment-color-input"
+                          />
+                        </div>
+                      </div>
+                      <div className="segment-field weight-field">
+                        <label className="field-label">
+                          Weight
+                          <span className="weight-percentage">{calculatePercentage(currentWheel.segments, segment.weight || 1)}%</span>
+                        </label>
+                        <div className="weight-controls">
+                          <input
+                            type="range"
+                            min="1"
+                            max="100"
+                            value={segment.weight || 1}
+                            onChange={(e) => handleUpdateSegment(index, 'weight', parseInt(e.target.value) || 1)}
+                            className="segment-weight-slider"
+                          />
+                          <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            value={segment.weight || 1}
+                            onChange={(e) => handleUpdateSegment(index, 'weight', parseInt(e.target.value) || 1)}
+                            className="segment-weight-input"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="add-segment-btn" onClick={handleAddSegment}>
+              <span className="add-icon">+</span> Add New Segment
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

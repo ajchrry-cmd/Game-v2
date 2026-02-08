@@ -4,9 +4,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   background: #1a1a1a;
   padding: 2rem;
+  overflow-y: auto;
 }
 
 .wheel-title {
@@ -14,17 +14,56 @@
   font-size: 3rem;
   margin-bottom: 2rem;
   text-align: center;
+  flex-shrink: 0;
+}
+
+.wheel-layout {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1800px;
+  flex: 1;
+  align-items: flex-start;
+  min-height: 0;
+}
+
+.wheel-layout.centered {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.wheel-layout.side-by-side {
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.wheel-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.wheel-layout.side-by-side .wheel-section {
+  max-width: 50%;
 }
 
 .wheel-container {
   position: relative;
   margin-bottom: 2rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .wheel-canvas {
   display: block;
-  max-width: 90vmin;
-  max-height: 90vmin;
+  width: 100%;
+  max-width: min(600px, 90vmin);
+  height: auto;
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5));
 }
 
@@ -91,6 +130,22 @@
 }
 
 /* Mobile/Portrait Layout */
+@media screen and (max-width: 1200px) {
+  .wheel-layout.side-by-side {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .wheel-layout.side-by-side .wheel-section {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .battle-wheel-editor {
+    max-width: 900px;
+  }
+}
+
 @media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
   .wheel-screen {
     padding: 1rem;
@@ -103,7 +158,6 @@
 
   .wheel-canvas {
     max-width: 85vmin;
-    max-height: 85vmin;
   }
 
   .spin-button {
@@ -123,18 +177,31 @@
     font-size: 1.2rem;
     padding: 1rem;
   }
+
+  .wheel-layout {
+    gap: 1rem;
+  }
 }
 
 /* Battle Wheel Editor */
 .battle-wheel-editor {
-  margin-top: 2rem;
   background: linear-gradient(135deg, #2a2a2a 0%, #252525 100%);
   padding: 2rem;
   border-radius: 16px;
-  max-width: 900px;
+  flex: 1;
   width: 100%;
+  max-width: 600px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   border: 1px solid #3a3a3a;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  align-self: flex-start;
+  max-height: calc(100vh - 150px);
+}
+
+.wheel-layout.side-by-side .battle-wheel-editor {
+  max-width: none;
 }
 
 .editor-header {
@@ -163,9 +230,11 @@
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  max-height: 500px;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 0.5rem;
+  flex: 1;
+  min-height: 0;
 }
 
 .segments-list::-webkit-scrollbar {
