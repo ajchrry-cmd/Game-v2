@@ -1,7 +1,6 @@
 .manager-modal {
-  min-width: 900px;
-  max-width: 1200px;
-  width: 85vw;
+  width: 700px;
+  max-width: 95vw;
   max-height: 90vh;
   height: 85vh;
 }
@@ -143,7 +142,6 @@
 /* Mobile/Portrait Layout */
 @media screen and (max-width: 768px), (orientation: portrait) and (max-width: 1024px) {
   .manager-modal {
-    min-width: unset;
     width: 95vw;
     max-width: 95vw;
     max-height: 95vh;
@@ -241,7 +239,8 @@
 
 /* Dice Roller Styles */
 .dice-roller-modal {
-  max-width: 900px;
+  width: 600px;
+  max-width: 95vw;
 }
 
 .current-roll-result {
