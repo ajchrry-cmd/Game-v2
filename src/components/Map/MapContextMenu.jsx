@@ -17,6 +17,7 @@ function MapContextMenu({
 }) {
   const menuRef = useRef(null);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
+  const [adjustedPosition, setAdjustedPosition] = useState(position);
   const [commonMobs, setCommonMobs] = useState(() => {
     // Load common mobs from localStorage
     const saved = localStorage.getItem('commonMobs');
@@ -27,6 +28,43 @@ function MapContextMenu({
     const saved = localStorage.getItem('commonItems');
     return saved ? JSON.parse(saved) : [];
   });
+
+  // Adjust menu position to keep it within viewport bounds
+  useEffect(() => {
+    if (!menuRef.current) return;
+
+    const menu = menuRef.current;
+    const rect = menu.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let newX = position.x;
+    let newY = position.y;
+
+    // Check right edge
+    if (rect.right > viewportWidth) {
+      newX = viewportWidth - rect.width - 10;
+    }
+
+    // Check left edge
+    if (newX < 10) {
+      newX = 10;
+    }
+
+    // Check bottom edge
+    if (rect.bottom > viewportHeight) {
+      newY = viewportHeight - rect.height - 10;
+    }
+
+    // Check top edge
+    if (newY < 10) {
+      newY = 10;
+    }
+
+    if (newX !== position.x || newY !== position.y) {
+      setAdjustedPosition({ x: newX, y: newY });
+    }
+  }, [position, activeSubmenu]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -114,8 +152,8 @@ function MapContextMenu({
       ref={menuRef}
       className="map-context-menu"
       style={{
-        left: position.x,
-        top: position.y
+        left: adjustedPosition.x,
+        top: adjustedPosition.y
       }}
     >
       {!activeSubmenu && (

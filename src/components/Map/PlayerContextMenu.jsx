@@ -17,7 +17,45 @@ function PlayerContextMenu({
   const [customEffect, setCustomEffect] = useState('');
   const [flashColor, setFlashColor] = useState('#ff0000');
   const [showMobEditor, setShowMobEditor] = useState(false);
+  const [adjustedPosition, setAdjustedPosition] = useState(position);
   const menuRef = useRef(null);
+
+  // Adjust menu position to keep it within viewport bounds
+  useEffect(() => {
+    if (!menuRef.current) return;
+
+    const menu = menuRef.current;
+    const rect = menu.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let newX = position.x;
+    let newY = position.y;
+
+    // Check right edge
+    if (rect.right > viewportWidth) {
+      newX = viewportWidth - rect.width - 10;
+    }
+
+    // Check left edge
+    if (newX < 10) {
+      newX = 10;
+    }
+
+    // Check bottom edge
+    if (rect.bottom > viewportHeight) {
+      newY = viewportHeight - rect.height - 10;
+    }
+
+    // Check top edge
+    if (newY < 10) {
+      newY = 10;
+    }
+
+    if (newX !== position.x || newY !== position.y) {
+      setAdjustedPosition({ x: newX, y: newY });
+    }
+  }, [position, activeSubmenu]);
 
   // Close menu when clicking outside (but not when mob editor is open)
   useEffect(() => {
@@ -156,8 +194,8 @@ function PlayerContextMenu({
         ref={menuRef}
         className="player-context-menu"
         style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
+          left: `${adjustedPosition.x}px`,
+          top: `${adjustedPosition.y}px`,
           display: showMobEditor ? 'none' : 'block'
         }}
       >

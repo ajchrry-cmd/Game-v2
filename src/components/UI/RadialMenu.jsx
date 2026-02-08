@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import './RadialMenu.css';
 
 /**
@@ -7,6 +7,40 @@ import './RadialMenu.css';
  */
 function RadialMenu({ position, actions, onClose, centerLabel }) {
   const menuRef = useRef(null);
+  const [adjustedPosition, setAdjustedPosition] = useState(position);
+
+  // Adjust menu position to keep it within viewport bounds
+  // Radial menu extends ~100px in all directions (80px radius + 35px for item size)
+  useEffect(() => {
+    const menuRadius = 115; // Total radius including item size
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let newX = position.x;
+    let newY = position.y;
+
+    // Check right edge
+    if (newX + menuRadius > viewportWidth) {
+      newX = viewportWidth - menuRadius - 10;
+    }
+
+    // Check left edge
+    if (newX - menuRadius < 0) {
+      newX = menuRadius + 10;
+    }
+
+    // Check bottom edge
+    if (newY + menuRadius > viewportHeight) {
+      newY = viewportHeight - menuRadius - 10;
+    }
+
+    // Check top edge
+    if (newY - menuRadius < 0) {
+      newY = menuRadius + 10;
+    }
+
+    setAdjustedPosition({ x: newX, y: newY });
+  }, [position]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -54,8 +88,8 @@ function RadialMenu({ position, actions, onClose, centerLabel }) {
       ref={menuRef}
       className="radial-menu"
       style={{
-        left: position.x,
-        top: position.y
+        left: adjustedPosition.x,
+        top: adjustedPosition.y
       }}
     >
       {/* Center circle */}
