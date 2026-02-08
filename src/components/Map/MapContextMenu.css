@@ -76,13 +76,6 @@
   position: relative;
 }
 
-.menu-item > span {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .menu-item:hover {
   background: linear-gradient(90deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%);
   padding-left: 1.2rem;

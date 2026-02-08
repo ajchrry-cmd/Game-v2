@@ -58,13 +58,6 @@
   font-size: 0.95rem;
 }
 
-.context-menu-items button > span {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .context-menu-items button:hover {
   background: #4a4a4a;
   border-color: #d4af37;
