@@ -5,8 +5,7 @@
   border-radius: 8px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
   z-index: 10000;
-  min-width: 250px;
-  max-width: 350px;
+  width: 280px;
   max-height: 80vh;
   overflow-y: auto;
   overflow-x: hidden;
@@ -75,6 +74,13 @@
   font-size: 0.95rem;
   transition: all 0.15s ease;
   position: relative;
+}
+
+.menu-item > span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-item:hover {
