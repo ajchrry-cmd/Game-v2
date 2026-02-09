@@ -108,9 +108,9 @@ function MapScreen() {
     setMapContextMenu(null); // Close map context menu
     setRadialMenu(null); // Close radial menu
 
-    // Show radial menu if Alt key is pressed, otherwise show full context menu
-    if (e.altKey) {
-      setRadialMenu({
+    // Show radial menu by default, full context menu if Shift key is pressed
+    if (e.shiftKey) {
+      setContextMenu({
         player,
         position: {
           x: e.clientX,
@@ -118,7 +118,7 @@ function MapScreen() {
         }
       });
     } else {
-      setContextMenu({
+      setRadialMenu({
         player,
         position: {
           x: e.clientX,
@@ -194,16 +194,15 @@ function MapScreen() {
     e.preventDefault();
     e.stopPropagation();
 
-    if (e.altKey) {
-      setRadialMenu({
-        bonus: placedBonus,
-        bonusData: bonus,
-        position: {
-          x: e.clientX,
-          y: e.clientY
-        }
-      });
-    }
+    // Show radial menu by default on bonus right-click
+    setRadialMenu({
+      bonus: placedBonus,
+      bonusData: bonus,
+      position: {
+        x: e.clientX,
+        y: e.clientY
+      }
+    });
   };
 
   // Get radial menu actions for a placed bonus/mob
@@ -493,8 +492,8 @@ function MapScreen() {
         </div>
 
         {/* Quick help indicator */}
-        <div className="radial-menu-hint" title="Hold Alt + Right-Click on tokens for quick actions">
-          <span>⚡ Alt + Right-Click for Quick Actions</span>
+        <div className="radial-menu-hint" title="Right-Click tokens for radial quick actions menu">
+          <span>⚡ Right-Click for Quick Actions | Shift + Right-Click for Full Menu</span>
         </div>
 
         <div
