@@ -28,6 +28,12 @@ function MapEditor({ map, onClose }) {
     lineLength: 100,
     lineThickness: 3
   });
+
+  // Custom shape templates
+  const [customShapes, setCustomShapes] = useState(() => {
+    const saved = localStorage.getItem('mapEditorCustomShapes');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [isSaving, setIsSaving] = useState(false);
 
   // Drawing state
@@ -148,12 +154,21 @@ function MapEditor({ map, onClose }) {
 
   // Quick add shape at specific position (for context menu)
   const quickAddShape = (shape, color, text, position, size, textSize) => {
+    // For lines: use black as default color and enforce max thickness of 5
+    const finalColor = shape === 'line' ? (color || '#000000') : (color || '#d4af37');
+    let finalSize = size || (shape === 'line' ? { width: 100, height: 3 } : { width: 80, height: 80 });
+
+    // Enforce line thickness max of 5
+    if (shape === 'line' && finalSize.height > 5) {
+      finalSize = { ...finalSize, height: 5 };
+    }
+
     const square = {
       id: uuidv4(),
       shape,
       position,
-      size: size || (shape === 'line' ? { width: 100, height: 3 } : { width: 80, height: 80 }),
-      color: color || '#d4af37',
+      size: finalSize,
+      color: finalColor,
       text: text || '',
       textSize: textSize || 16,
       textColor: '#ffffff',
@@ -164,6 +179,39 @@ function MapEditor({ map, onClose }) {
       ...prevMapData,
       squares: [...prevMapData.squares, square]
     }));
+  };
+
+  // Save current selection as custom shape
+  const saveAsCustomShape = () => {
+    if (!selectedSquare) return;
+
+    const name = prompt('Enter a name for this custom shape:');
+    if (!name) return;
+
+    const icon = prompt('Enter an emoji icon for this shape (optional):') || '⭐';
+
+    const customShape = {
+      id: uuidv4(),
+      name,
+      icon,
+      shape: selectedSquare.shape,
+      color: selectedSquare.color,
+      text: selectedSquare.text || '',
+      textSize: selectedSquare.textSize || 16,
+      size: selectedSquare.size
+    };
+
+    const updated = [...customShapes, customShape];
+    setCustomShapes(updated);
+    localStorage.setItem('mapEditorCustomShapes', JSON.stringify(updated));
+    alert('Custom shape saved!');
+  };
+
+  // Delete custom shape
+  const deleteCustomShape = (shapeId) => {
+    const updated = customShapes.filter(s => s.id !== shapeId);
+    setCustomShapes(updated);
+    localStorage.setItem('mapEditorCustomShapes', JSON.stringify(updated));
   };
 
   // Handle context menu
@@ -177,9 +225,38 @@ function MapEditor({ map, onClose }) {
     const clickX = (e.clientX - rect.left - panOffset.x) / zoom;
     const clickY = (e.clientY - rect.top - panOffset.y) / zoom;
 
+    // Calculate position with viewport bounds checking
+    const menuWidth = 200; // Approximate menu width
+    const menuHeight = 600; // Approximate max menu height
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let menuX = e.clientX;
+    let menuY = e.clientY;
+
+    // Check right edge
+    if (menuX + menuWidth > viewportWidth) {
+      menuX = viewportWidth - menuWidth - 10;
+    }
+
+    // Check bottom edge
+    if (menuY + menuHeight > viewportHeight) {
+      menuY = viewportHeight - menuHeight - 10;
+    }
+
+    // Check left edge
+    if (menuX < 10) {
+      menuX = 10;
+    }
+
+    // Check top edge
+    if (menuY < 10) {
+      menuY = 10;
+    }
+
     setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
+      x: menuX,
+      y: menuY,
       mapX: clickX,
       mapY: clickY
     });
@@ -1026,6 +1103,9 @@ function MapEditor({ map, onClose }) {
                     <button className="danger" onClick={() => handleDeleteSquare(selectedSquare.id)}>
                       Delete Square
                     </button>
+                    <button className="primary" onClick={saveAsCustomShape} style={{ marginTop: '0.5rem' }}>
+                      ⭐ Save as Custom Shape
+                    </button>
                   </>
                 )}
 
@@ -1450,7 +1530,7 @@ function MapEditor({ map, onClose }) {
                 <button onClick={() => { quickAddShape('square', '#8B4513', 'Door', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 60, height: 20 }, 14); closeContextMenu(); }}>
                   🚪 Door
                 </button>
-                <button onClick={() => { quickAddShape('line', '#654321', '', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 200, height: 8 }); closeContextMenu(); }}>
+                <button onClick={() => { quickAddShape('line', '#654321', '', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 200, height: 5 }); closeContextMenu(); }}>
                   🧱 Wall
                 </button>
                 <button onClick={() => { quickAddShape('circle', '#4169E1', 'Pillar', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 12); closeContextMenu(); }}>
@@ -1501,6 +1581,49 @@ function MapEditor({ map, onClose }) {
                   🔥 Lava
                 </button>
               </div>
+
+              {customShapes.length > 0 && (
+                <div className="context-menu-section">
+                  <div className="context-menu-header">Custom Shapes</div>
+                  {customShapes.map(customShape => (
+                    <div key={customShape.id} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <button
+                        onClick={() => {
+                          quickAddShape(
+                            customShape.shape,
+                            customShape.color,
+                            customShape.text,
+                            { x: contextMenu.mapX, y: contextMenu.mapY },
+                            customShape.size,
+                            customShape.textSize
+                          );
+                          closeContextMenu();
+                        }}
+                        style={{ flex: 1 }}
+                      >
+                        {customShape.icon} {customShape.name}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`Delete custom shape "${customShape.name}"?`)) {
+                            deleteCustomShape(customShape.id);
+                          }
+                        }}
+                        className="danger"
+                        style={{
+                          padding: '0.6rem 0.5rem',
+                          minWidth: 'auto',
+                          flex: '0 0 auto'
+                        }}
+                        title="Delete custom shape"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
