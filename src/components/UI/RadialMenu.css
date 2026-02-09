@@ -47,7 +47,6 @@
   border-radius: 50%;
   background: linear-gradient(135deg, #3a3a3a 0%, #2f2f2f 100%);
   border: 2px solid #666;
-  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -62,12 +61,12 @@
 
 @keyframes radialItemPop {
   0% {
-    transform: translate(-50%, -50%) scale(0);
     opacity: 0;
+    scale: 0;
   }
   100% {
-    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
+    scale: 1;
   }
 }
 
@@ -83,12 +82,12 @@
 .radial-item:hover:not(:disabled) {
   background: linear-gradient(135deg, #4a4a4a 0%, #3f3f3f 100%);
   border-color: #d4af37;
-  transform: translate(-50%, -50%) scale(1.15);
+  scale: 1.15;
   box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
 }
 
 .radial-item:active:not(:disabled) {
-  transform: translate(-50%, -50%) scale(0.95);
+  scale: 0.95;
 }
 
 .radial-item:disabled {

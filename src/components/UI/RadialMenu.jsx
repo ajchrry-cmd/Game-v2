@@ -105,7 +105,7 @@ function RadialMenu({ position, actions, onClose, centerLabel }) {
             key={index}
             className={`radial-item ${action.variant || ''}`}
             style={{
-              transform: `translate(${pos.x}px, ${pos.y}px)`
+              transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`
             }}
             onClick={() => handleAction(action)}
             title={action.label}
