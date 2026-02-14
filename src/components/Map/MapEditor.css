@@ -268,8 +268,22 @@
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem 0.75rem;
   margin-bottom: 0.25rem;
+  user-select: none;
+}
+
+.context-menu-header.clickable {
+  cursor: pointer;
+  background: #1a1a1a;
+  border-radius: 4px;
+  transition: all 0.2s;
+  border: 1px solid #444;
+}
+
+.context-menu-header.clickable:hover {
+  background: #2a2a2a;
+  border-color: #d4af37;
 }
 
 .context-menu-section button {

@@ -66,6 +66,13 @@ function MapEditor({ map, onClose }) {
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState(null);
+  const [expandedSections, setExpandedSections] = useState({
+    basicShapes: false,
+    commonObjects: false,
+    markers: false,
+    terrain: false,
+    customShapes: true // Keep custom shapes expanded by default
+  });
 
   // Initialize canvas
   useEffect(() => {
@@ -226,33 +233,28 @@ function MapEditor({ map, onClose }) {
     const clickY = (e.clientY - rect.top - panOffset.y) / zoom;
 
     // Calculate position with viewport bounds checking
-    const menuWidth = 200; // Approximate menu width
+    const menuWidth = 220;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const menuHeight = Math.min(viewportHeight * 0.8, 800); // Max height is 80vh (from CSS)
 
     let menuX = e.clientX;
     let menuY = e.clientY;
 
-    // Check right edge
-    if (menuX + menuWidth > viewportWidth) {
-      menuX = viewportWidth - menuWidth - 10;
+    // Position menu to the left of cursor if it would go off right edge
+    if (menuX + menuWidth > viewportWidth - 10) {
+      menuX = Math.max(10, viewportWidth - menuWidth - 10);
     }
 
-    // Check bottom edge
-    if (menuY + menuHeight > viewportHeight) {
-      menuY = viewportHeight - menuHeight - 10;
+    // Position menu above cursor if it would go off bottom edge
+    // Use conservative estimate - max possible menu height
+    const maxMenuHeight = viewportHeight * 0.8;
+    if (menuY + maxMenuHeight > viewportHeight - 10) {
+      menuY = Math.max(10, viewportHeight - maxMenuHeight - 10);
     }
 
-    // Check left edge
-    if (menuX < 10) {
-      menuX = 10;
-    }
-
-    // Check top edge
-    if (menuY < 10) {
-      menuY = 10;
-    }
+    // Ensure menu doesn't go off top or left
+    menuX = Math.max(10, menuX);
+    menuY = Math.max(10, menuY);
 
     setContextMenu({
       x: menuX,
@@ -264,6 +266,13 @@ function MapEditor({ map, onClose }) {
 
   const closeContextMenu = () => {
     setContextMenu(null);
+  };
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
   };
 
   // Close context menu when clicking elsewhere
@@ -1506,86 +1515,132 @@ function MapEditor({ map, onClose }) {
               }}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Basic Shapes */}
               <div className="context-menu-section">
-                <div className="context-menu-header">Basic Shapes</div>
-                <button onClick={() => { quickAddShape('square', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
-                  ⬜ Square
-                </button>
-                <button onClick={() => { quickAddShape('circle', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
-                  ⭕ Circle
-                </button>
-                <button onClick={() => { quickAddShape('hexagon', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
-                  ⬡ Hexagon
-                </button>
-                <button onClick={() => { quickAddShape('triangle', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
-                  ▲ Triangle
-                </button>
-                <button onClick={() => { quickAddShape('line', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 3 }); closeContextMenu(); }}>
-                  ━ Line
-                </button>
+                <div
+                  className="context-menu-header clickable"
+                  onClick={() => toggleSection('basicShapes')}
+                >
+                  {expandedSections.basicShapes ? '▼' : '▶'} Basic Shapes
+                </div>
+                {expandedSections.basicShapes && (
+                  <>
+                    <button onClick={() => { quickAddShape('square', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
+                      ⬜ Square
+                    </button>
+                    <button onClick={() => { quickAddShape('circle', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
+                      ⭕ Circle
+                    </button>
+                    <button onClick={() => { quickAddShape('hexagon', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
+                      ⬡ Hexagon
+                    </button>
+                    <button onClick={() => { quickAddShape('triangle', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
+                      ▲ Triangle
+                    </button>
+                    <button onClick={() => { quickAddShape('line', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 3 }); closeContextMenu(); }}>
+                      ━ Line
+                    </button>
+                  </>
+                )}
               </div>
 
+              {/* Common Objects */}
               <div className="context-menu-section">
-                <div className="context-menu-header">Common Objects</div>
-                <button onClick={() => { quickAddShape('square', '#8B4513', 'Door', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 60, height: 20 }, 14); closeContextMenu(); }}>
-                  🚪 Door
-                </button>
-                <button onClick={() => { quickAddShape('line', '#654321', '', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 200, height: 5 }); closeContextMenu(); }}>
-                  🧱 Wall
-                </button>
-                <button onClick={() => { quickAddShape('circle', '#4169E1', 'Pillar', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 12); closeContextMenu(); }}>
-                  ⚫ Pillar
-                </button>
-                <button onClick={() => { quickAddShape('square', '#228B22', 'Table', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 60 }, 14); closeContextMenu(); }}>
-                  ▭ Table
-                </button>
-                <button onClick={() => { quickAddShape('square', '#8B4513', 'Chest', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 50, height: 40 }, 12); closeContextMenu(); }}>
-                  📦 Chest
-                </button>
-                <button onClick={() => { quickAddShape('circle', '#FFD700', 'Trap', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 50, height: 50 }, 12); closeContextMenu(); }}>
-                  ⚠️ Trap
-                </button>
+                <div
+                  className="context-menu-header clickable"
+                  onClick={() => toggleSection('commonObjects')}
+                >
+                  {expandedSections.commonObjects ? '▼' : '▶'} Common Objects
+                </div>
+                {expandedSections.commonObjects && (
+                  <>
+                    <button onClick={() => { quickAddShape('square', '#8B4513', 'Door', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 60, height: 20 }, 14); closeContextMenu(); }}>
+                      🚪 Door
+                    </button>
+                    <button onClick={() => { quickAddShape('line', '#654321', '', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 200, height: 5 }); closeContextMenu(); }}>
+                      🧱 Wall
+                    </button>
+                    <button onClick={() => { quickAddShape('circle', '#4169E1', 'Pillar', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 12); closeContextMenu(); }}>
+                      ⚫ Pillar
+                    </button>
+                    <button onClick={() => { quickAddShape('square', '#228B22', 'Table', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 60 }, 14); closeContextMenu(); }}>
+                      ▭ Table
+                    </button>
+                    <button onClick={() => { quickAddShape('square', '#8B4513', 'Chest', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 50, height: 40 }, 12); closeContextMenu(); }}>
+                      📦 Chest
+                    </button>
+                    <button onClick={() => { quickAddShape('circle', '#FFD700', 'Trap', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 50, height: 50 }, 12); closeContextMenu(); }}>
+                      ⚠️ Trap
+                    </button>
+                  </>
+                )}
               </div>
 
+              {/* Markers */}
               <div className="context-menu-section">
-                <div className="context-menu-header">Markers</div>
-                <button onClick={() => { quickAddShape('circle', '#FF0000', '1', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 18); closeContextMenu(); }}>
-                  🔴 Marker 1
-                </button>
-                <button onClick={() => { quickAddShape('circle', '#00FF00', '2', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 18); closeContextMenu(); }}>
-                  🟢 Marker 2
-                </button>
-                <button onClick={() => { quickAddShape('circle', '#0000FF', '3', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 18); closeContextMenu(); }}>
-                  🔵 Marker 3
-                </button>
-                <button onClick={() => { quickAddShape('square', '#FFA500', 'Start', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 60, height: 60 }, 14); closeContextMenu(); }}>
-                  🚩 Start
-                </button>
-                <button onClick={() => { quickAddShape('square', '#800080', 'Exit', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 60, height: 60 }, 14); closeContextMenu(); }}>
-                  🏁 Exit
-                </button>
+                <div
+                  className="context-menu-header clickable"
+                  onClick={() => toggleSection('markers')}
+                >
+                  {expandedSections.markers ? '▼' : '▶'} Markers
+                </div>
+                {expandedSections.markers && (
+                  <>
+                    <button onClick={() => { quickAddShape('circle', '#FF0000', '1', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 18); closeContextMenu(); }}>
+                      🔴 Marker 1
+                    </button>
+                    <button onClick={() => { quickAddShape('circle', '#00FF00', '2', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 18); closeContextMenu(); }}>
+                      🟢 Marker 2
+                    </button>
+                    <button onClick={() => { quickAddShape('circle', '#0000FF', '3', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 18); closeContextMenu(); }}>
+                      🔵 Marker 3
+                    </button>
+                    <button onClick={() => { quickAddShape('square', '#FFA500', 'Start', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 60, height: 60 }, 14); closeContextMenu(); }}>
+                      🚩 Start
+                    </button>
+                    <button onClick={() => { quickAddShape('square', '#800080', 'Exit', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 60, height: 60 }, 14); closeContextMenu(); }}>
+                      🏁 Exit
+                    </button>
+                  </>
+                )}
               </div>
 
+              {/* Terrain */}
               <div className="context-menu-section">
-                <div className="context-menu-header">Terrain</div>
-                <button onClick={() => { quickAddShape('circle', '#4682B4', 'Water', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 120, height: 120 }, 16); closeContextMenu(); }}>
-                  💧 Water
-                </button>
-                <button onClick={() => { quickAddShape('square', '#228B22', 'Forest', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 100 }, 14); closeContextMenu(); }}>
-                  🌲 Forest
-                </button>
-                <button onClick={() => { quickAddShape('triangle', '#A0522D', 'Mountain', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 80, height: 100 }, 12); closeContextMenu(); }}>
-                  ⛰️ Mountain
-                </button>
-                <button onClick={() => { quickAddShape('circle', '#FF6347', 'Lava', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 100 }, 14); closeContextMenu(); }}>
-                  🔥 Lava
-                </button>
+                <div
+                  className="context-menu-header clickable"
+                  onClick={() => toggleSection('terrain')}
+                >
+                  {expandedSections.terrain ? '▼' : '▶'} Terrain
+                </div>
+                {expandedSections.terrain && (
+                  <>
+                    <button onClick={() => { quickAddShape('circle', '#4682B4', 'Water', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 120, height: 120 }, 16); closeContextMenu(); }}>
+                      💧 Water
+                    </button>
+                    <button onClick={() => { quickAddShape('square', '#228B22', 'Forest', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 100 }, 14); closeContextMenu(); }}>
+                      🌲 Forest
+                    </button>
+                    <button onClick={() => { quickAddShape('triangle', '#A0522D', 'Mountain', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 80, height: 100 }, 12); closeContextMenu(); }}>
+                      ⛰️ Mountain
+                    </button>
+                    <button onClick={() => { quickAddShape('circle', '#FF6347', 'Lava', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 100 }, 14); closeContextMenu(); }}>
+                      🔥 Lava
+                    </button>
+                  </>
+                )}
               </div>
 
+              {/* Custom Shapes */}
               {customShapes.length > 0 && (
                 <div className="context-menu-section">
-                  <div className="context-menu-header">Custom Shapes</div>
-                  {customShapes.map(customShape => (
+                  <div
+                    className="context-menu-header clickable"
+                    onClick={() => toggleSection('customShapes')}
+                  >
+                    {expandedSections.customShapes ? '▼' : '▶'} Custom Shapes
+                  </div>
+                  {expandedSections.customShapes && customShapes.map(customShape => (
                     <div key={customShape.id} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                       <button
                         onClick={() => {
