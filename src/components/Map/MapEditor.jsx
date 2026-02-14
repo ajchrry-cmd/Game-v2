@@ -227,9 +227,9 @@ function MapEditor({ map, onClose }) {
 
     // Calculate position with viewport bounds checking
     const menuWidth = 200; // Approximate menu width
-    const menuHeight = 600; // Approximate max menu height
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
+    const menuHeight = Math.min(viewportHeight * 0.8, 800); // Max height is 80vh (from CSS)
 
     let menuX = e.clientX;
     let menuY = e.clientY;
