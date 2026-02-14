@@ -272,16 +272,56 @@ function MapEditor({ map, onClose }) {
     if (!shape) return;
 
     const name = prompt('Enter new name:', shape.name);
-    if (!name) return;
+    if (name === null) return; // User cancelled
 
     const icon = prompt('Enter new emoji icon:', shape.icon);
-    if (!icon) return;
+    if (icon === null) return;
+
+    const shapeType = prompt('Enter shape type (square, circle, hexagon, triangle, or line):', shape.shape);
+    if (shapeType === null) return;
+
+    const color = prompt('Enter color (hex code):', shape.color);
+    if (color === null) return;
+
+    const text = prompt('Enter text label (leave empty for none):', shape.text);
+    if (text === null) return;
+
+    let width = shape.size.width;
+    let height = shape.size.height;
+
+    if (shapeType === 'line') {
+      const length = prompt('Enter line length (pixels):', shape.size.width);
+      if (length === null) return;
+      const thickness = prompt('Enter line thickness (1-5 pixels):', Math.min(shape.size.height, 5));
+      if (thickness === null) return;
+      width = parseInt(length) || 100;
+      height = Math.min(Math.max(1, parseInt(thickness) || 3), 5);
+    } else {
+      const widthInput = prompt('Enter width (pixels):', shape.size.width);
+      if (widthInput === null) return;
+      const heightInput = prompt('Enter height (pixels):', shape.size.height);
+      if (heightInput === null) return;
+      width = parseInt(widthInput) || 80;
+      height = parseInt(heightInput) || 80;
+    }
+
+    const textSize = prompt('Enter text size (pixels):', shape.textSize);
+    if (textSize === null) return;
 
     setCategoryShapes(prev => {
       const updated = {
         ...prev,
         [category]: prev[category].map(s =>
-          s.id === shapeId ? { ...s, name, icon } : s
+          s.id === shapeId ? {
+            ...s,
+            name: name || s.name,
+            icon: icon || s.icon,
+            shape: shapeType,
+            color: color || s.color,
+            text: text,
+            size: { width, height },
+            textSize: parseInt(textSize) || 16
+          } : s
         )
       };
       localStorage.setItem('mapEditorCategoryShapes', JSON.stringify(updated));
@@ -1675,11 +1715,17 @@ function MapEditor({ map, onClose }) {
                               editShape(categoryKey, shape.id);
                             }}
                             style={{
-                              padding: '0.6rem 0.5rem',
-                              minWidth: 'auto',
+                              padding: '0.4rem 0.4rem',
+                              minWidth: '32px',
+                              width: '32px',
+                              height: '32px',
                               flex: '0 0 auto',
                               background: '#2a4a2a',
-                              border: '1px solid #4a7a4a'
+                              border: '1px solid #4a7a4a',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '0.9rem'
                             }}
                             title="Edit shape"
                           >
@@ -1694,9 +1740,15 @@ function MapEditor({ map, onClose }) {
                             }}
                             className="danger"
                             style={{
-                              padding: '0.6rem 0.5rem',
-                              minWidth: 'auto',
-                              flex: '0 0 auto'
+                              padding: '0.4rem 0.4rem',
+                              minWidth: '32px',
+                              width: '32px',
+                              height: '32px',
+                              flex: '0 0 auto',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '0.9rem'
                             }}
                             title="Delete shape"
                           >
