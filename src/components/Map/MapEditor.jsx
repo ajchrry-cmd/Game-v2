@@ -237,24 +237,34 @@ function MapEditor({ map, onClose }) {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
+    // Estimate menu height based on expanded sections
+    // Base height (padding + borders) + section headers + expanded items
+    const sectionCount = customShapes.length > 0 ? 5 : 4;
+    const headerHeight = 42; // Height of each header
+    const expandedCount = Object.values(expandedSections).filter(Boolean).length;
+    const avgItemsPerSection = 5;
+    const itemHeight = 40;
+    const estimatedHeight = Math.min(
+      (sectionCount * headerHeight) + (expandedCount * avgItemsPerSection * itemHeight) + 30,
+      viewportHeight * 0.8
+    );
+
     let menuX = e.clientX;
     let menuY = e.clientY;
 
-    // Position menu to the left of cursor if it would go off right edge
+    // Check if menu would go off right edge
     if (menuX + menuWidth > viewportWidth - 10) {
-      menuX = Math.max(10, viewportWidth - menuWidth - 10);
+      menuX = viewportWidth - menuWidth - 10;
     }
 
-    // Position menu above cursor if it would go off bottom edge
-    // Use conservative estimate - max possible menu height
-    const maxMenuHeight = viewportHeight * 0.8;
-    if (menuY + maxMenuHeight > viewportHeight - 10) {
-      menuY = Math.max(10, viewportHeight - maxMenuHeight - 10);
+    // Check if menu would go off bottom edge
+    if (menuY + estimatedHeight > viewportHeight - 10) {
+      menuY = viewportHeight - estimatedHeight - 10;
     }
 
-    // Ensure menu doesn't go off top or left
-    menuX = Math.max(10, menuX);
-    menuY = Math.max(10, menuY);
+    // Ensure menu doesn't go off top or left edges
+    if (menuX < 10) menuX = 10;
+    if (menuY < 10) menuY = 10;
 
     setContextMenu({
       x: menuX,
