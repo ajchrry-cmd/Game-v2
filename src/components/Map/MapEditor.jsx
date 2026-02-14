@@ -29,10 +29,44 @@ function MapEditor({ map, onClose }) {
     lineThickness: 3
   });
 
-  // Custom shape templates
-  const [customShapes, setCustomShapes] = useState(() => {
-    const saved = localStorage.getItem('mapEditorCustomShapes');
-    return saved ? JSON.parse(saved) : [];
+  // Shape templates for all categories
+  const [categoryShapes, setCategoryShapes] = useState(() => {
+    const saved = localStorage.getItem('mapEditorCategoryShapes');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    // Default shapes for each category
+    return {
+      basicShapes: [
+        { id: uuidv4(), icon: '⬜', name: 'Square', shape: 'square', color: '#d4af37', text: '', size: { width: 80, height: 80 }, textSize: 16 },
+        { id: uuidv4(), icon: '⭕', name: 'Circle', shape: 'circle', color: '#d4af37', text: '', size: { width: 80, height: 80 }, textSize: 16 },
+        { id: uuidv4(), icon: '⬡', name: 'Hexagon', shape: 'hexagon', color: '#d4af37', text: '', size: { width: 80, height: 80 }, textSize: 16 },
+        { id: uuidv4(), icon: '▲', name: 'Triangle', shape: 'triangle', color: '#d4af37', text: '', size: { width: 80, height: 80 }, textSize: 16 },
+        { id: uuidv4(), icon: '━', name: 'Line', shape: 'line', color: '#d4af37', text: '', size: { width: 100, height: 3 }, textSize: 16 }
+      ],
+      commonObjects: [
+        { id: uuidv4(), icon: '🚪', name: 'Door', shape: 'square', color: '#8B4513', text: 'Door', size: { width: 60, height: 20 }, textSize: 14 },
+        { id: uuidv4(), icon: '🧱', name: 'Wall', shape: 'line', color: '#654321', text: '', size: { width: 200, height: 5 }, textSize: 14 },
+        { id: uuidv4(), icon: '⚫', name: 'Pillar', shape: 'circle', color: '#4169E1', text: 'Pillar', size: { width: 40, height: 40 }, textSize: 12 },
+        { id: uuidv4(), icon: '▭', name: 'Table', shape: 'square', color: '#228B22', text: 'Table', size: { width: 100, height: 60 }, textSize: 14 },
+        { id: uuidv4(), icon: '📦', name: 'Chest', shape: 'square', color: '#8B4513', text: 'Chest', size: { width: 50, height: 40 }, textSize: 12 },
+        { id: uuidv4(), icon: '⚠️', name: 'Trap', shape: 'circle', color: '#FFD700', text: 'Trap', size: { width: 50, height: 50 }, textSize: 12 }
+      ],
+      markers: [
+        { id: uuidv4(), icon: '🔴', name: 'Marker 1', shape: 'circle', color: '#FF0000', text: '1', size: { width: 40, height: 40 }, textSize: 18 },
+        { id: uuidv4(), icon: '🟢', name: 'Marker 2', shape: 'circle', color: '#00FF00', text: '2', size: { width: 40, height: 40 }, textSize: 18 },
+        { id: uuidv4(), icon: '🔵', name: 'Marker 3', shape: 'circle', color: '#0000FF', text: '3', size: { width: 40, height: 40 }, textSize: 18 },
+        { id: uuidv4(), icon: '🚩', name: 'Start', shape: 'square', color: '#FFA500', text: 'Start', size: { width: 60, height: 60 }, textSize: 14 },
+        { id: uuidv4(), icon: '🏁', name: 'Exit', shape: 'square', color: '#800080', text: 'Exit', size: { width: 60, height: 60 }, textSize: 14 }
+      ],
+      terrain: [
+        { id: uuidv4(), icon: '💧', name: 'Water', shape: 'circle', color: '#4682B4', text: 'Water', size: { width: 120, height: 120 }, textSize: 16 },
+        { id: uuidv4(), icon: '🌲', name: 'Forest', shape: 'square', color: '#228B22', text: 'Forest', size: { width: 100, height: 100 }, textSize: 14 },
+        { id: uuidv4(), icon: '⛰️', name: 'Mountain', shape: 'triangle', color: '#A0522D', text: 'Mountain', size: { width: 80, height: 100 }, textSize: 12 },
+        { id: uuidv4(), icon: '🔥', name: 'Lava', shape: 'circle', color: '#FF6347', text: 'Lava', size: { width: 100, height: 100 }, textSize: 14 }
+      ],
+      customShapes: []
+    };
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -71,7 +105,7 @@ function MapEditor({ map, onClose }) {
     commonObjects: false,
     markers: false,
     terrain: false,
-    customShapes: true // Keep custom shapes expanded by default
+    customShapes: false
   });
 
   // Initialize canvas
@@ -188,16 +222,17 @@ function MapEditor({ map, onClose }) {
     }));
   };
 
-  // Save current selection as custom shape
+  // Save current selection as shape in a category
   const saveAsCustomShape = () => {
     if (!selectedSquare) return;
 
-    const name = prompt('Enter a name for this custom shape:');
+    const category = prompt('Enter category (basicShapes, commonObjects, markers, terrain, or customShapes):') || 'customShapes';
+    const name = prompt('Enter a name for this shape:');
     if (!name) return;
 
-    const icon = prompt('Enter an emoji icon for this shape (optional):') || '⭐';
+    const icon = prompt('Enter an emoji icon for this shape:') || '⭐';
 
-    const customShape = {
+    const newShape = {
       id: uuidv4(),
       name,
       icon,
@@ -208,17 +243,50 @@ function MapEditor({ map, onClose }) {
       size: selectedSquare.size
     };
 
-    const updated = [...customShapes, customShape];
-    setCustomShapes(updated);
-    localStorage.setItem('mapEditorCustomShapes', JSON.stringify(updated));
-    alert('Custom shape saved!');
+    setCategoryShapes(prev => {
+      const updated = {
+        ...prev,
+        [category]: [...(prev[category] || []), newShape]
+      };
+      localStorage.setItem('mapEditorCategoryShapes', JSON.stringify(updated));
+      return updated;
+    });
+    alert(`Shape saved to ${category}!`);
   };
 
-  // Delete custom shape
-  const deleteCustomShape = (shapeId) => {
-    const updated = customShapes.filter(s => s.id !== shapeId);
-    setCustomShapes(updated);
-    localStorage.setItem('mapEditorCustomShapes', JSON.stringify(updated));
+  // Delete shape from a category
+  const deleteShape = (category, shapeId) => {
+    setCategoryShapes(prev => {
+      const updated = {
+        ...prev,
+        [category]: prev[category].filter(s => s.id !== shapeId)
+      };
+      localStorage.setItem('mapEditorCategoryShapes', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Edit shape in a category
+  const editShape = (category, shapeId) => {
+    const shape = categoryShapes[category].find(s => s.id === shapeId);
+    if (!shape) return;
+
+    const name = prompt('Enter new name:', shape.name);
+    if (!name) return;
+
+    const icon = prompt('Enter new emoji icon:', shape.icon);
+    if (!icon) return;
+
+    setCategoryShapes(prev => {
+      const updated = {
+        ...prev,
+        [category]: prev[category].map(s =>
+          s.id === shapeId ? { ...s, name, icon } : s
+        )
+      };
+      localStorage.setItem('mapEditorCategoryShapes', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   // Handle context menu
@@ -238,14 +306,20 @@ function MapEditor({ map, onClose }) {
     const viewportHeight = window.innerHeight;
 
     // Estimate menu height based on expanded sections
-    // Base height (padding + borders) + section headers + expanded items
-    const sectionCount = customShapes.length > 0 ? 5 : 4;
+    const sectionCount = 5; // All 5 categories always shown
     const headerHeight = 42; // Height of each header
-    const expandedCount = Object.values(expandedSections).filter(Boolean).length;
-    const avgItemsPerSection = 5;
     const itemHeight = 40;
+
+    // Calculate actual items in each expanded section
+    let totalItems = 0;
+    if (expandedSections.basicShapes) totalItems += categoryShapes.basicShapes.length;
+    if (expandedSections.commonObjects) totalItems += categoryShapes.commonObjects.length;
+    if (expandedSections.markers) totalItems += categoryShapes.markers.length;
+    if (expandedSections.terrain) totalItems += categoryShapes.terrain.length;
+    if (expandedSections.customShapes) totalItems += categoryShapes.customShapes.length;
+
     const estimatedHeight = Math.min(
-      (sectionCount * headerHeight) + (expandedCount * avgItemsPerSection * itemHeight) + 30,
+      (sectionCount * headerHeight) + (totalItems * itemHeight) + 30,
       viewportHeight * 0.8
     );
 
@@ -285,12 +359,49 @@ function MapEditor({ map, onClose }) {
     }));
   };
 
+  // Add shape to a category
+  const addShapeToCategory = (category) => {
+    const name = prompt('Enter name for the new shape:');
+    if (!name) return;
+
+    const icon = prompt('Enter an emoji icon:') || '⭐';
+    const shapeType = prompt('Enter shape type (square, circle, hexagon, triangle, or line):', 'square');
+    const color = prompt('Enter color (hex code):', '#d4af37');
+
+    const newShape = {
+      id: uuidv4(),
+      name,
+      icon,
+      shape: shapeType,
+      color,
+      text: shapeType === 'line' ? '' : name,
+      textSize: 16,
+      size: shapeType === 'line' ? { width: 100, height: 3 } : { width: 80, height: 80 }
+    };
+
+    setCategoryShapes(prev => {
+      const updated = {
+        ...prev,
+        [category]: [...prev[category], newShape]
+      };
+      localStorage.setItem('mapEditorCategoryShapes', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   // Close context menu when clicking elsewhere
   useEffect(() => {
     if (contextMenu) {
-      const handleClick = () => closeContextMenu();
-      document.addEventListener('click', handleClick);
-      return () => document.removeEventListener('click', handleClick);
+      const handleClick = (e) => {
+        // Close menu unless clicking inside it
+        const menu = document.querySelector('.map-editor-context-menu');
+        if (menu && !menu.contains(e.target)) {
+          closeContextMenu();
+        }
+      };
+      // Use capture phase to catch clicks before they're stopped
+      document.addEventListener('mousedown', handleClick, true);
+      return () => document.removeEventListener('mousedown', handleClick, true);
     }
   }, [contextMenu]);
 
@@ -1523,172 +1634,93 @@ function MapEditor({ map, onClose }) {
                 top: contextMenu.y,
                 zIndex: 10000
               }}
-              onClick={(e) => e.stopPropagation()}
             >
-              {/* Basic Shapes */}
-              <div className="context-menu-section">
-                <div
-                  className="context-menu-header clickable"
-                  onClick={() => toggleSection('basicShapes')}
-                >
-                  {expandedSections.basicShapes ? '▼' : '▶'} Basic Shapes
-                </div>
-                {expandedSections.basicShapes && (
-                  <>
-                    <button onClick={() => { quickAddShape('square', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
-                      ⬜ Square
-                    </button>
-                    <button onClick={() => { quickAddShape('circle', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
-                      ⭕ Circle
-                    </button>
-                    <button onClick={() => { quickAddShape('hexagon', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
-                      ⬡ Hexagon
-                    </button>
-                    <button onClick={() => { quickAddShape('triangle', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }); closeContextMenu(); }}>
-                      ▲ Triangle
-                    </button>
-                    <button onClick={() => { quickAddShape('line', '#d4af37', '', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 3 }); closeContextMenu(); }}>
-                      ━ Line
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Common Objects */}
-              <div className="context-menu-section">
-                <div
-                  className="context-menu-header clickable"
-                  onClick={() => toggleSection('commonObjects')}
-                >
-                  {expandedSections.commonObjects ? '▼' : '▶'} Common Objects
-                </div>
-                {expandedSections.commonObjects && (
-                  <>
-                    <button onClick={() => { quickAddShape('square', '#8B4513', 'Door', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 60, height: 20 }, 14); closeContextMenu(); }}>
-                      🚪 Door
-                    </button>
-                    <button onClick={() => { quickAddShape('line', '#654321', '', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 200, height: 5 }); closeContextMenu(); }}>
-                      🧱 Wall
-                    </button>
-                    <button onClick={() => { quickAddShape('circle', '#4169E1', 'Pillar', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 12); closeContextMenu(); }}>
-                      ⚫ Pillar
-                    </button>
-                    <button onClick={() => { quickAddShape('square', '#228B22', 'Table', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 60 }, 14); closeContextMenu(); }}>
-                      ▭ Table
-                    </button>
-                    <button onClick={() => { quickAddShape('square', '#8B4513', 'Chest', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 50, height: 40 }, 12); closeContextMenu(); }}>
-                      📦 Chest
-                    </button>
-                    <button onClick={() => { quickAddShape('circle', '#FFD700', 'Trap', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 50, height: 50 }, 12); closeContextMenu(); }}>
-                      ⚠️ Trap
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Markers */}
-              <div className="context-menu-section">
-                <div
-                  className="context-menu-header clickable"
-                  onClick={() => toggleSection('markers')}
-                >
-                  {expandedSections.markers ? '▼' : '▶'} Markers
-                </div>
-                {expandedSections.markers && (
-                  <>
-                    <button onClick={() => { quickAddShape('circle', '#FF0000', '1', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 18); closeContextMenu(); }}>
-                      🔴 Marker 1
-                    </button>
-                    <button onClick={() => { quickAddShape('circle', '#00FF00', '2', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 18); closeContextMenu(); }}>
-                      🟢 Marker 2
-                    </button>
-                    <button onClick={() => { quickAddShape('circle', '#0000FF', '3', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 40, height: 40 }, 18); closeContextMenu(); }}>
-                      🔵 Marker 3
-                    </button>
-                    <button onClick={() => { quickAddShape('square', '#FFA500', 'Start', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 60, height: 60 }, 14); closeContextMenu(); }}>
-                      🚩 Start
-                    </button>
-                    <button onClick={() => { quickAddShape('square', '#800080', 'Exit', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 60, height: 60 }, 14); closeContextMenu(); }}>
-                      🏁 Exit
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Terrain */}
-              <div className="context-menu-section">
-                <div
-                  className="context-menu-header clickable"
-                  onClick={() => toggleSection('terrain')}
-                >
-                  {expandedSections.terrain ? '▼' : '▶'} Terrain
-                </div>
-                {expandedSections.terrain && (
-                  <>
-                    <button onClick={() => { quickAddShape('circle', '#4682B4', 'Water', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 120, height: 120 }, 16); closeContextMenu(); }}>
-                      💧 Water
-                    </button>
-                    <button onClick={() => { quickAddShape('square', '#228B22', 'Forest', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 100 }, 14); closeContextMenu(); }}>
-                      🌲 Forest
-                    </button>
-                    <button onClick={() => { quickAddShape('triangle', '#A0522D', 'Mountain', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 80, height: 100 }, 12); closeContextMenu(); }}>
-                      ⛰️ Mountain
-                    </button>
-                    <button onClick={() => { quickAddShape('circle', '#FF6347', 'Lava', { x: contextMenu.mapX, y: contextMenu.mapY }, { width: 100, height: 100 }, 14); closeContextMenu(); }}>
-                      🔥 Lava
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Custom Shapes */}
-              {customShapes.length > 0 && (
-                <div className="context-menu-section">
+              {Object.entries({
+                basicShapes: 'Basic Shapes',
+                commonObjects: 'Common Objects',
+                markers: 'Markers',
+                terrain: 'Terrain',
+                customShapes: 'Custom Shapes'
+              }).map(([categoryKey, categoryLabel]) => (
+                <div key={categoryKey} className="context-menu-section">
                   <div
                     className="context-menu-header clickable"
-                    onClick={() => toggleSection('customShapes')}
+                    onClick={() => toggleSection(categoryKey)}
                   >
-                    {expandedSections.customShapes ? '▼' : '▶'} Custom Shapes
+                    {expandedSections[categoryKey] ? '▼' : '▶'} {categoryLabel}
                   </div>
-                  {expandedSections.customShapes && customShapes.map(customShape => (
-                    <div key={customShape.id} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  {expandedSections[categoryKey] && (
+                    <>
+                      {categoryShapes[categoryKey].map(shape => (
+                        <div key={shape.id} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <button
+                            onClick={() => {
+                              quickAddShape(
+                                shape.shape,
+                                shape.color,
+                                shape.text,
+                                { x: contextMenu.mapX, y: contextMenu.mapY },
+                                shape.size,
+                                shape.textSize
+                              );
+                              closeContextMenu();
+                            }}
+                            style={{ flex: 1 }}
+                          >
+                            {shape.icon} {shape.name}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              editShape(categoryKey, shape.id);
+                            }}
+                            style={{
+                              padding: '0.6rem 0.5rem',
+                              minWidth: 'auto',
+                              flex: '0 0 auto',
+                              background: '#2a4a2a',
+                              border: '1px solid #4a7a4a'
+                            }}
+                            title="Edit shape"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm(`Delete "${shape.name}"?`)) {
+                                deleteShape(categoryKey, shape.id);
+                              }
+                            }}
+                            className="danger"
+                            style={{
+                              padding: '0.6rem 0.5rem',
+                              minWidth: 'auto',
+                              flex: '0 0 auto'
+                            }}
+                            title="Delete shape"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      ))}
                       <button
                         onClick={() => {
-                          quickAddShape(
-                            customShape.shape,
-                            customShape.color,
-                            customShape.text,
-                            { x: contextMenu.mapX, y: contextMenu.mapY },
-                            customShape.size,
-                            customShape.textSize
-                          );
-                          closeContextMenu();
+                          addShapeToCategory(categoryKey);
                         }}
-                        style={{ flex: 1 }}
-                      >
-                        {customShape.icon} {customShape.name}
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (window.confirm(`Delete custom shape "${customShape.name}"?`)) {
-                            deleteCustomShape(customShape.id);
-                          }
-                        }}
-                        className="danger"
                         style={{
-                          padding: '0.6rem 0.5rem',
-                          minWidth: 'auto',
-                          flex: '0 0 auto'
+                          marginTop: '0.5rem',
+                          background: '#1a3a1a',
+                          border: '1px dashed #4a7a4a',
+                          color: '#7af77a'
                         }}
-                        title="Delete custom shape"
                       >
-                        🗑️
+                        ➕ Add New Shape
                       </button>
-                    </div>
-                  ))}
+                    </>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
           )}
         </div>
