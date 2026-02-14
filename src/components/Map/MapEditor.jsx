@@ -107,6 +107,7 @@ function MapEditor({ map, onClose }) {
     terrain: false,
     customShapes: false
   });
+  const [editingShape, setEditingShape] = useState(null); // {category, shape}
 
   // Initialize canvas
   useEffect(() => {
@@ -266,67 +267,40 @@ function MapEditor({ map, onClose }) {
     });
   };
 
-  // Edit shape in a category
+  // Edit shape in a category - open graphical editor
   const editShape = (category, shapeId) => {
     const shape = categoryShapes[category].find(s => s.id === shapeId);
     if (!shape) return;
 
-    const name = prompt('Enter new name:', shape.name);
-    if (name === null) return; // User cancelled
+    setEditingShape({ category, shape: { ...shape } });
+  };
 
-    const icon = prompt('Enter new emoji icon:', shape.icon);
-    if (icon === null) return;
+  // Save edited shape
+  const saveEditedShape = () => {
+    if (!editingShape) return;
 
-    const shapeType = prompt('Enter shape type (square, circle, hexagon, triangle, or line):', shape.shape);
-    if (shapeType === null) return;
-
-    const color = prompt('Enter color (hex code):', shape.color);
-    if (color === null) return;
-
-    const text = prompt('Enter text label (leave empty for none):', shape.text);
-    if (text === null) return;
-
-    let width = shape.size.width;
-    let height = shape.size.height;
-
-    if (shapeType === 'line') {
-      const length = prompt('Enter line length (pixels):', shape.size.width);
-      if (length === null) return;
-      const thickness = prompt('Enter line thickness (1-5 pixels):', Math.min(shape.size.height, 5));
-      if (thickness === null) return;
-      width = parseInt(length) || 100;
-      height = Math.min(Math.max(1, parseInt(thickness) || 3), 5);
-    } else {
-      const widthInput = prompt('Enter width (pixels):', shape.size.width);
-      if (widthInput === null) return;
-      const heightInput = prompt('Enter height (pixels):', shape.size.height);
-      if (heightInput === null) return;
-      width = parseInt(widthInput) || 80;
-      height = parseInt(heightInput) || 80;
-    }
-
-    const textSize = prompt('Enter text size (pixels):', shape.textSize);
-    if (textSize === null) return;
+    const { category, shape } = editingShape;
 
     setCategoryShapes(prev => {
       const updated = {
         ...prev,
         [category]: prev[category].map(s =>
-          s.id === shapeId ? {
-            ...s,
-            name: name || s.name,
-            icon: icon || s.icon,
-            shape: shapeType,
-            color: color || s.color,
-            text: text,
-            size: { width, height },
-            textSize: parseInt(textSize) || 16
-          } : s
+          s.id === shape.id ? shape : s
         )
       };
       localStorage.setItem('mapEditorCategoryShapes', JSON.stringify(updated));
       return updated;
     });
+
+    setEditingShape(null);
+  };
+
+  // Update editing shape property
+  const updateEditingShape = (property, value) => {
+    setEditingShape(prev => ({
+      ...prev,
+      shape: { ...prev.shape, [property]: value }
+    }));
   };
 
   // Handle context menu
@@ -337,8 +311,9 @@ function MapEditor({ map, onClose }) {
     e.stopPropagation();
 
     const rect = editorCanvasRef.current.getBoundingClientRect();
-    const clickX = (e.clientX - rect.left - panOffset.x) / zoom;
-    const clickY = (e.clientY - rect.top - panOffset.y) / zoom;
+    // getBoundingClientRect already includes the transform, so just divide by zoom
+    const clickX = (e.clientX - rect.left) / zoom;
+    const clickY = (e.clientY - rect.top) / zoom;
 
     // Calculate position with viewport bounds checking
     const menuWidth = 220;
@@ -1773,6 +1748,150 @@ function MapEditor({ map, onClose }) {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Shape Editor Modal */}
+          {editingShape && (
+            <div
+              className="modal-overlay"
+              style={{ zIndex: 10001 }}
+              onClick={() => setEditingShape(null)}
+            >
+              <div
+                className="shape-editor-modal"
+                style={{
+                  background: '#2a2a2a',
+                  border: '2px solid #d4af37',
+                  borderRadius: '8px',
+                  padding: '1.5rem',
+                  maxWidth: '500px',
+                  width: '90%',
+                  maxHeight: '80vh',
+                  overflowY: 'auto'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2 style={{ color: '#d4af37', marginTop: 0 }}>Edit Shape</h2>
+
+                <div className="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    value={editingShape.shape.name}
+                    onChange={(e) => updateEditingShape('name', e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Icon (Emoji)</label>
+                  <input
+                    type="text"
+                    value={editingShape.shape.icon}
+                    onChange={(e) => updateEditingShape('icon', e.target.value)}
+                    placeholder="⭐"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Shape Type</label>
+                  <select
+                    value={editingShape.shape.shape}
+                    onChange={(e) => updateEditingShape('shape', e.target.value)}
+                  >
+                    <option value="square">Square</option>
+                    <option value="circle">Circle</option>
+                    <option value="hexagon">Hexagon</option>
+                    <option value="triangle">Triangle</option>
+                    <option value="line">Line</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Color</label>
+                  <input
+                    type="color"
+                    value={editingShape.shape.color}
+                    onChange={(e) => updateEditingShape('color', e.target.value)}
+                  />
+                </div>
+
+                {editingShape.shape.shape !== 'line' && (
+                  <div className="form-group">
+                    <label>Text Label</label>
+                    <input
+                      type="text"
+                      value={editingShape.shape.text}
+                      onChange={(e) => updateEditingShape('text', e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {editingShape.shape.shape === 'line' ? (
+                  <>
+                    <div className="form-group">
+                      <label>Length (px)</label>
+                      <input
+                        type="number"
+                        value={editingShape.shape.size.width}
+                        onChange={(e) => updateEditingShape('size', { ...editingShape.shape.size, width: parseInt(e.target.value) || 100 })}
+                        min="10"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Thickness (px, max 5)</label>
+                      <input
+                        type="number"
+                        value={editingShape.shape.size.height}
+                        onChange={(e) => updateEditingShape('size', { ...editingShape.shape.size, height: Math.min(5, Math.max(1, parseInt(e.target.value) || 3)) })}
+                        min="1"
+                        max="5"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="form-group">
+                      <label>Width (px)</label>
+                      <input
+                        type="number"
+                        value={editingShape.shape.size.width}
+                        onChange={(e) => updateEditingShape('size', { ...editingShape.shape.size, width: parseInt(e.target.value) || 80 })}
+                        min="10"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Height (px)</label>
+                      <input
+                        type="number"
+                        value={editingShape.shape.size.height}
+                        onChange={(e) => updateEditingShape('size', { ...editingShape.shape.size, height: parseInt(e.target.value) || 80 })}
+                        min="10"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="form-group">
+                  <label>Text Size (px)</label>
+                  <input
+                    type="number"
+                    value={editingShape.shape.textSize}
+                    onChange={(e) => updateEditingShape('textSize', parseInt(e.target.value) || 16)}
+                    min="8"
+                    max="72"
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                  <button className="primary" onClick={saveEditedShape} style={{ flex: 1 }}>
+                    Save Changes
+                  </button>
+                  <button onClick={() => setEditingShape(null)} style={{ flex: 1 }}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
