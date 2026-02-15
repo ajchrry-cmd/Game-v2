@@ -45,6 +45,15 @@
 }
 
 /* =========================================
+   MAP BODY - horizontal row for map + panel
+   ========================================= */
+.map-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* =========================================
    MAP CONTAINER - fills remaining space
    ========================================= */
 .map-container {
@@ -871,6 +880,10 @@
   .map-screen {
     flex-direction: column;
     overflow: hidden;
+  }
+
+  .map-body {
+    flex-direction: column;
   }
 
   .scene-bar {
