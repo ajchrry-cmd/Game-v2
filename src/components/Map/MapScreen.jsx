@@ -269,12 +269,6 @@ function MapScreen() {
     setMapTransform({ scale: mapSettings.defaultZoom, x: mapSettings.centerX, y: mapSettings.centerY });
   };
 
-  // Compute max power for bar scaling (per-player max or at least current)
-  const getBarPercent = (current, max) => {
-    if (!max || max <= 0) return 100;
-    return Math.min(100, Math.max(0, (current / max) * 100));
-  };
-
   return (
     <div className="map-screen">
       {/* ===== SCENE TITLE BAR ===== */}
@@ -596,11 +590,10 @@ function MapScreen() {
               const partySlots = player.partySlots || 0;
               const party = player.party || [];
               const statusEffects = player.statusEffects || [];
-              const maxPower = player.maxPower || 100;
 
               return (
                 <div key={player.id} className="player-card">
-                  {/* Card header with icon + name + power bar */}
+                  {/* Card header with icon + name */}
                   <div className="card-header">
                     <div className="card-avatar">
                       {player.iconType === 'custom' && player.iconUrl ? (
@@ -611,13 +604,6 @@ function MapScreen() {
                     </div>
                     <div className="card-identity">
                       <h3>{player.name}</h3>
-                      <div className="power-bar-container">
-                        <div
-                          className="power-bar-fill"
-                          style={{ width: `${getBarPercent(player.power || 0, maxPower)}%` }}
-                        />
-                        <span className="power-bar-text">{player.power || 0} / {maxPower}</span>
-                      </div>
                     </div>
                   </div>
 
