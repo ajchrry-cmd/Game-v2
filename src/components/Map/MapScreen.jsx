@@ -4,6 +4,7 @@ import { useGame } from '../../contexts/GameContext';
 import PlayerContextMenu from './PlayerContextMenu';
 import MapContextMenu from './MapContextMenu';
 import BonusContextMenu from './BonusContextMenu';
+import InitiativeTracker from './InitiativeTracker';
 import { loadUISettings, defaultUISettings } from '../../utils/uiSettings';
 import './MapScreen.css';
 
@@ -25,7 +26,9 @@ function MapScreen() {
     updateBonusSize,
     removeBonus,
     sendPlayerMessage,
-    flashPlayerScreen
+    flashPlayerScreen,
+    initiativeTracker,
+    setInitiativeTracker
   } = useGame();
 
   const [resizing, setResizing] = useState(null);
@@ -275,6 +278,11 @@ function MapScreen() {
       <div className="scene-bar">
         <span className="scene-name">{currentMap.name}</span>
         <div className="scene-bar-right">
+          <InitiativeTracker
+            tracker={initiativeTracker}
+            setTracker={setInitiativeTracker}
+            players={players}
+          />
           <span className="scene-player-count">{players.length} player{players.length !== 1 ? 's' : ''}</span>
         </div>
       </div>

@@ -55,6 +55,14 @@ export const GameProvider = ({ children }) => {
   const [wheelSpinTargetRotation, setWheelSpinTargetRotation] = useState(0);
   const [wheelSpinDuration, setWheelSpinDuration] = useState(0);
 
+  // Initiative tracker state
+  const [initiativeTracker, setInitiativeTracker] = useState({
+    combatActive: false,
+    round: 1,
+    currentTurnIndex: 0,
+    entries: []
+  });
+
   // UI state
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -193,6 +201,12 @@ export const GameProvider = ({ children }) => {
           });
           setPlayerMessages(session.playerMessages || {});
           setPlayerFlashEvents(session.playerFlashEvents || {});
+          setInitiativeTracker(session.initiativeTracker || {
+            combatActive: false,
+            round: 1,
+            currentTurnIndex: 0,
+            entries: []
+          });
 
           // Reset flag after state updates are queued
           setTimeout(() => {
@@ -241,7 +255,8 @@ export const GameProvider = ({ children }) => {
         },
         companionSettings,
         playerMessages,
-        playerFlashEvents
+        playerFlashEvents,
+        initiativeTracker
       };
       await setDoc(doc(db, 'sessions', currentSession.id), sessionData);
       setCurrentSession(sessionData);
@@ -273,7 +288,7 @@ export const GameProvider = ({ children }) => {
       }, 100); // Reduced from 1000ms to 100ms for near-instant sync
       return () => clearTimeout(timer);
     }
-  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses, wheelLastResult, wheelSpinActive, wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration, companionSettings, playerMessages, playerFlashEvents]);
+  }, [players, currentScene, currentSceneId, currentWheelId, currentMapId, playerPositions, mapBackground, placedBonuses, wheelLastResult, wheelSpinActive, wheelSpinStartTime, wheelSpinStartRotation, wheelSpinTargetRotation, wheelSpinDuration, companionSettings, playerMessages, playerFlashEvents, initiativeTracker]);
 
   // Cleanup session listener on unmount
   useEffect(() => {
@@ -757,6 +772,10 @@ export const GameProvider = ({ children }) => {
     playerFlashEvents,
     flashPlayerScreen,
     clearPlayerFlash,
+
+    // Initiative Tracker
+    initiativeTracker,
+    setInitiativeTracker,
 
     // Utilities
     uploadImage,
