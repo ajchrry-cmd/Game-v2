@@ -108,7 +108,7 @@ function MapEditor({ map, onClose }) {
   );
 
   // ── Tool / mode ──
-  const [activeTool, setActiveTool] = useState('select'); // select | draw | pan
+  const [activeTool, setActiveTool] = useState('select'); // select | draw | pan | line
   const [selectedIds, setSelectedIds] = useState([]); // multi-select
   const [selectedMobIds, setSelectedMobIds] = useState([]);
 
@@ -172,6 +172,9 @@ function MapEditor({ map, onClose }) {
 
   // ── Mob placement ──
   const [selectedMobToPlace, setSelectedMobToPlace] = useState(null);
+
+  // ── Line tool ──
+  const [lineDraw, setLineDraw] = useState(null); // { startX, startY, endX, endY }
 
   // ── Helper: single selected shape ──
   const selectedSquare = useMemo(() => {
@@ -493,6 +496,59 @@ function MapEditor({ map, onClose }) {
   };
 
   // ═══════════════════════════════════════════════════════════════════
+  // LINE TOOL (click-drag to place a line)
+  // ═══════════════════════════════════════════════════════════════════
+  const handleLineMouseDown = useCallback((e) => {
+    if (activeTool !== 'line' || e.button !== 0) return;
+    const rect = editorCanvasRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / zoom;
+    const y = (e.clientY - rect.top) / zoom;
+    setLineDraw({ startX: snap(x), startY: snap(y), endX: snap(x), endY: snap(y) });
+  }, [activeTool, zoom, snap]);
+
+  const handleLineMouseMove = useCallback((e) => {
+    if (!lineDraw) return;
+    const rect = editorCanvasRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / zoom;
+    const y = (e.clientY - rect.top) / zoom;
+    setLineDraw(prev => ({ ...prev, endX: snap(x), endY: snap(y) }));
+  }, [lineDraw, zoom, snap]);
+
+  const handleLineMouseUp = useCallback(() => {
+    if (!lineDraw) return;
+    const dx = lineDraw.endX - lineDraw.startX;
+    const dy = lineDraw.endY - lineDraw.startY;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    if (length < 5) { setLineDraw(null); return; } // too short, discard
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    recordHistory();
+    const sq = {
+      id: uuidv4(),
+      shape: 'line',
+      position: { x: lineDraw.startX, y: lineDraw.startY - 2 },
+      size: { width: Math.round(length), height: 5 },
+      color: '#000000',
+      text: '',
+      textSize: 16,
+      textColor: '#ffffff',
+      rotation: Math.round(angle),
+      layerIndex: getMaxLayerIndex(mapData) + 1,
+    };
+    setMapData(prev => ({ ...prev, squares: [...prev.squares, sq] }));
+    setSelectedIds([sq.id]);
+    setSelectedMobIds([]);
+    setLineDraw(null);
+  }, [lineDraw, recordHistory, getMaxLayerIndex, mapData]);
+
+  useEffect(() => {
+    if (lineDraw) {
+      window.addEventListener('mousemove', handleLineMouseMove);
+      window.addEventListener('mouseup', handleLineMouseUp);
+      return () => { window.removeEventListener('mousemove', handleLineMouseMove); window.removeEventListener('mouseup', handleLineMouseUp); };
+    }
+  }, [lineDraw, handleLineMouseMove, handleLineMouseUp]);
+
+  // ═══════════════════════════════════════════════════════════════════
   // RESIZE / ROTATE (shapes)
   // ═══════════════════════════════════════════════════════════════════
   const handleResizeStart = (e, sqId, w, h, shapeType) => {
@@ -600,6 +656,11 @@ function MapEditor({ map, onClose }) {
       setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
       return;
     }
+    // Line tool: start drawing a line
+    if (activeTool === 'line' && e.button === 0) {
+      handleLineMouseDown(e);
+      return;
+    }
     // Box select with left click on empty canvas in select mode
     if (activeTool === 'select' && e.button === 0 && e.target === e.currentTarget) {
       const rect = editorCanvasRef.current.getBoundingClientRect();
@@ -661,7 +722,7 @@ function MapEditor({ map, onClose }) {
   // CONTEXT MENU
   // ═══════════════════════════════════════════════════════════════════
   const handleContextMenu = (e) => {
-    if (activeTool === 'draw') return;
+    if (activeTool === 'draw' || activeTool === 'line') return;
     e.preventDefault();
     e.stopPropagation();
     const rect = editorCanvasRef.current.getBoundingClientRect();
@@ -705,6 +766,7 @@ function MapEditor({ map, onClose }) {
       else if (e.key === 'v' || e.key === '1') setActiveTool('select');
       else if (e.key === 'b' || e.key === '2') setActiveTool('draw');
       else if (e.key === 'h' || e.key === '3') setActiveTool('pan');
+      else if (e.key === 'l' || e.key === '4') setActiveTool('line');
       else if (e.key === 'g') { e.preventDefault(); setShowGrid(g => !g); }
     };
     window.addEventListener('keydown', handler);
@@ -767,7 +829,7 @@ function MapEditor({ map, onClose }) {
     ].sort((a, b) => (a.layerIndex || 0) - (b.layerIndex || 0));
   }, [mapData.squares, mapData.placedMobs]);
 
-  const cursorStyle = activeTool === 'pan' || isPanning ? 'grab' : activeTool === 'draw' ? 'crosshair' : 'default';
+  const cursorStyle = activeTool === 'pan' || isPanning ? 'grab' : (activeTool === 'draw' || activeTool === 'line') ? 'crosshair' : 'default';
 
   return (
     <div className="modal-overlay">
@@ -797,6 +859,10 @@ function MapEditor({ map, onClose }) {
               <button className={`me2-tool-btn ${activeTool === 'pan' ? 'active' : ''}`} onClick={() => setActiveTool('pan')} title="Pan (H)">
                 <span className="me2-tool-icon">&#9995;</span>
                 <span className="me2-tool-label">Pan</span>
+              </button>
+              <button className={`me2-tool-btn ${activeTool === 'line' ? 'active' : ''}`} onClick={() => setActiveTool('line')} title="Line Tool (L) — Click and drag to place lines">
+                <span className="me2-tool-icon">&#9585;</span>
+                <span className="me2-tool-label">Line</span>
               </button>
             </div>
 
@@ -1068,7 +1134,7 @@ function MapEditor({ map, onClose }) {
                 transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`,
                 transformOrigin: '0 0',
                 transition: isPanning ? 'none' : 'transform 0.1s ease-out',
-                pointerEvents: activeTool === 'draw' ? 'none' : 'auto',
+                pointerEvents: (activeTool === 'draw' || activeTool === 'line') ? 'none' : 'auto',
               }}
               onClick={(e) => {
                 if (e.target === editorCanvasRef.current && activeTool === 'select') {
@@ -1114,6 +1180,7 @@ function MapEditor({ map, onClose }) {
                     <Draggable
                       key={sq.id}
                       position={sq.position}
+                      scale={zoom}
                       onStart={() => { if (!isSel) { setSelectedIds([sq.id]); setSelectedMobIds([]); } }}
                       onDrag={(e, data) => {
                         const x = snap(data.x);
@@ -1135,7 +1202,7 @@ function MapEditor({ map, onClose }) {
                         }
                       }}
                       onStop={() => recordHistory()}
-                      disabled={activeTool === 'draw' || resizing !== null || rotating !== null}
+                      disabled={activeTool === 'draw' || activeTool === 'line' || resizing !== null || rotating !== null}
                     >
                       <div
                         className={`me2-shape ${isSel ? 'selected' : ''} ${sq.shape === 'line' ? 'me2-line' : ''}`}
@@ -1152,7 +1219,7 @@ function MapEditor({ map, onClose }) {
                         style={{
                           width: sq.size.width,
                           height: sq.size.height,
-                          pointerEvents: activeTool === 'draw' ? 'none' : 'auto',
+                          pointerEvents: (activeTool === 'draw' || activeTool === 'line') ? 'none' : 'auto',
                           zIndex: sq.layerIndex || 0,
                         }}
                       >
@@ -1190,6 +1257,7 @@ function MapEditor({ map, onClose }) {
                     <Draggable
                       key={mob.id}
                       position={mob.position}
+                      scale={zoom}
                       onStart={() => { if (!isSel) { setSelectedMobIds([mob.id]); setSelectedIds([]); } }}
                       onDrag={(e, data) => {
                         setMapData(prev => ({
@@ -1200,7 +1268,7 @@ function MapEditor({ map, onClose }) {
                         }));
                       }}
                       onStop={() => recordHistory()}
-                      disabled={activeTool === 'draw' || resizingMob !== null || rotating !== null}
+                      disabled={activeTool === 'draw' || activeTool === 'line' || resizingMob !== null || rotating !== null}
                     >
                       <div
                         className={`me2-mob ${isSel ? 'selected' : ''}`}
@@ -1216,8 +1284,8 @@ function MapEditor({ map, onClose }) {
                         style={{
                           width: mob.size, height: mob.size,
                           position: 'absolute',
-                          cursor: activeTool === 'draw' ? 'default' : 'move',
-                          pointerEvents: activeTool === 'draw' ? 'none' : 'auto',
+                          cursor: (activeTool === 'draw' || activeTool === 'line') ? 'default' : 'move',
+                          pointerEvents: (activeTool === 'draw' || activeTool === 'line') ? 'none' : 'auto',
                           zIndex: mob.layerIndex || 0,
                         }}
                       >
@@ -1242,6 +1310,20 @@ function MapEditor({ map, onClose }) {
                   );
                 }
               })}
+
+              {/* Line tool preview */}
+              {lineDraw && (
+                <svg style={{ position: 'absolute', top: 0, left: 0, width: '2000px', height: '2000px', pointerEvents: 'none', zIndex: 9999 }}>
+                  <line
+                    x1={lineDraw.startX} y1={lineDraw.startY}
+                    x2={lineDraw.endX} y2={lineDraw.endY}
+                    stroke="#000000" strokeWidth="5" strokeLinecap="round"
+                    strokeDasharray="8 4" opacity="0.7"
+                  />
+                  <circle cx={lineDraw.startX} cy={lineDraw.startY} r="4" fill="#d4af37" />
+                  <circle cx={lineDraw.endX} cy={lineDraw.endY} r="4" fill="#d4af37" />
+                </svg>
+              )}
 
               {/* Box select overlay */}
               {boxSelect && (
@@ -1394,7 +1476,7 @@ function MapEditor({ map, onClose }) {
           <span>{(mapData.placedMobs || []).length} mobs</span>
           <span>{selectedIds.length + selectedMobIds.length} selected</span>
           <span className="me2-status-sep" />
-          <span className="me2-shortcuts">V: Select &nbsp; B: Draw &nbsp; H: Pan &nbsp; G: Grid &nbsp; Del: Delete &nbsp; Ctrl+Z/Y: Undo/Redo &nbsp; Ctrl+D: Duplicate &nbsp; Ctrl+C/V: Copy/Paste &nbsp; Ctrl+A: Select All</span>
+          <span className="me2-shortcuts">V: Select &nbsp; B: Draw &nbsp; H: Pan &nbsp; L: Line &nbsp; G: Grid &nbsp; Del: Delete &nbsp; Ctrl+Z/Y: Undo/Redo &nbsp; Ctrl+D: Duplicate &nbsp; Ctrl+C/V: Copy/Paste &nbsp; Ctrl+A: Select All</span>
         </div>
 
         {/* ═══ CONTEXT MENU ═══ */}
