@@ -110,7 +110,7 @@
 .panel-toggle {
   position: absolute;
   top: 50%;
-  right: var(--player-panel-width, 340px);
+  right: 0;
   transform: translateY(-50%);
   z-index: 200;
   width: 24px;
