@@ -30,6 +30,7 @@ function MapScreen() {
 
   const [resizing, setResizing] = useState(null);
   const [selectedBonusId, setSelectedBonusId] = useState(null);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
 
   // Load map settings from UI customization once on mount
   const [mapSettings] = useState(() => {
@@ -65,14 +66,12 @@ function MapScreen() {
   };
 
   const handlePlaceBonus = (bonusId) => {
-    // Place bonus at center of map
     placeBonus(bonusId, { x: 400, y: 300 });
   };
 
   const handleRemoveItem = (playerId, itemIndex) => {
     const player = players.find(p => p.id === playerId);
     if (!player) return;
-
     const newInventory = player.inventory.filter((_, i) => i !== itemIndex);
     updatePlayer(playerId, { inventory: newInventory });
   };
@@ -89,12 +88,10 @@ function MapScreen() {
 
   const handleResizeMove = (e) => {
     if (!resizing) return;
-
     const deltaX = e.clientX - resizing.startX;
     const deltaY = e.clientY - resizing.startY;
-    const delta = Math.max(deltaX, deltaY); // Use larger delta for proportional resize
-
-    const newSize = Math.max(30, resizing.startSize + delta); // Min size 30px
+    const delta = Math.max(deltaX, deltaY);
+    const newSize = Math.max(30, resizing.startSize + delta);
     updateBonusSize(resizing.id, newSize);
   };
 
@@ -109,10 +106,7 @@ function MapScreen() {
     setBonusContextMenu(null);
     setContextMenu({
       player,
-      position: {
-        x: e.clientX,
-        y: e.clientY
-      }
+      position: { x: e.clientX, y: e.clientY }
     });
   };
 
@@ -123,30 +117,17 @@ function MapScreen() {
   const handleMapContextMenu = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
-    // Calculate the position on the map (accounting for transform)
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
-
-    // Convert screen coordinates to map coordinates (inverse transform)
-    // Map content has: transform: translate(tx, ty) scale(s)
-    // Screen position = mapPos * scale + translate
-    // Therefore: mapPos = (screenPos - translate) / scale
     const mapX = Math.round((clickX - mapTransform.x) / mapTransform.scale);
     const mapY = Math.round((clickY - mapTransform.y) / mapTransform.scale);
 
     setContextMenu(null);
     setBonusContextMenu(null);
     setMapContextMenu({
-      position: {
-        x: e.clientX,
-        y: e.clientY
-      },
-      mapPosition: {
-        x: mapX,
-        y: mapY
-      }
+      position: { x: e.clientX, y: e.clientY },
+      mapPosition: { x: mapX, y: mapY }
     });
   };
 
@@ -159,7 +140,6 @@ function MapScreen() {
   };
 
   const handlePlaceItemOnMap = (itemId, position) => {
-    // Items are placed as bonuses on the map
     placeBonus(itemId, position);
   };
 
@@ -171,10 +151,7 @@ function MapScreen() {
     setBonusContextMenu({
       placedBonus,
       bonus,
-      position: {
-        x: e.clientX,
-        y: e.clientY
-      }
+      position: { x: e.clientX, y: e.clientY }
     });
   };
 
@@ -198,11 +175,9 @@ function MapScreen() {
 
   const handleTouchStart = (e) => {
     if (e.touches.length === 2) {
-      // Pinch zoom
       const distance = getTouchDistance(e.touches);
       setLastTouchDistance(distance);
     } else if (e.touches.length === 1) {
-      // Pan
       setIsPanning(true);
       setPanStart({
         x: e.touches[0].clientX - mapTransform.x,
@@ -213,28 +188,17 @@ function MapScreen() {
 
   const handleTouchMove = (e) => {
     if (e.touches.length === 2 && lastTouchDistance) {
-      // Pinch zoom
       e.preventDefault();
       const distance = getTouchDistance(e.touches);
       const scaleDelta = distance / lastTouchDistance;
       const newScale = Math.max(0.5, Math.min(3, mapTransform.scale * scaleDelta));
-
-      setMapTransform(prev => ({
-        ...prev,
-        scale: newScale
-      }));
+      setMapTransform(prev => ({ ...prev, scale: newScale }));
       setLastTouchDistance(distance);
     } else if (e.touches.length === 1 && isPanning) {
-      // Pan
       e.preventDefault();
       const newX = e.touches[0].clientX - panStart.x;
       const newY = e.touches[0].clientY - panStart.y;
-
-      setMapTransform(prev => ({
-        ...prev,
-        x: newX,
-        y: newY
-      }));
+      setMapTransform(prev => ({ ...prev, x: newX, y: newY }));
     }
   };
 
@@ -243,9 +207,7 @@ function MapScreen() {
     setLastTouchDistance(null);
   };
 
-  // Mouse-based pan handlers
   const handleMouseDown = (e) => {
-    // Middle mouse button or space + left click for panning
     if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
       e.preventDefault();
       setIsPanning(true);
@@ -258,34 +220,22 @@ function MapScreen() {
 
   const handleMouseMove = (e) => {
     if (!isPanning) return;
-
     const newX = e.clientX - panStart.x;
     const newY = e.clientY - panStart.y;
-
-    setMapTransform(prev => ({
-      ...prev,
-      x: newX,
-      y: newY
-    }));
+    setMapTransform(prev => ({ ...prev, x: newX, y: newY }));
   };
 
   const handleMouseUp = () => {
     setIsPanning(false);
   };
 
-  // Mouse wheel zoom
   const handleWheel = (e) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     const newScale = Math.max(0.5, Math.min(3, mapTransform.scale * delta));
-
-    setMapTransform(prev => ({
-      ...prev,
-      scale: newScale
-    }));
+    setMapTransform(prev => ({ ...prev, scale: newScale }));
   };
 
-  // Add global mouse event listeners for panning
   React.useEffect(() => {
     if (isPanning) {
       window.addEventListener('mousemove', handleMouseMove);
@@ -308,37 +258,50 @@ function MapScreen() {
   }
 
   const handleZoomIn = () => {
-    setMapTransform(prev => ({
-      ...prev,
-      scale: Math.min(3, prev.scale * 1.2)
-    }));
+    setMapTransform(prev => ({ ...prev, scale: Math.min(3, prev.scale * 1.2) }));
   };
 
   const handleZoomOut = () => {
-    setMapTransform(prev => ({
-      ...prev,
-      scale: Math.max(0.5, prev.scale / 1.2)
-    }));
+    setMapTransform(prev => ({ ...prev, scale: Math.max(0.5, prev.scale / 1.2) }));
   };
 
   const handleResetZoom = () => {
     setMapTransform({ scale: mapSettings.defaultZoom, x: mapSettings.centerX, y: mapSettings.centerY });
   };
 
+  // Compute max power for bar scaling (per-player max or at least current)
+  const getBarPercent = (current, max) => {
+    if (!max || max <= 0) return 100;
+    return Math.min(100, Math.max(0, (current / max) * 100));
+  };
+
   return (
     <div className="map-screen">
+      {/* ===== SCENE TITLE BAR ===== */}
+      <div className="scene-bar">
+        <span className="scene-name">{currentMap.name}</span>
+        <div className="scene-bar-right">
+          <span className="scene-player-count">{players.length} player{players.length !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+
+      {/* ===== MAP AREA (full screen) ===== */}
       <div className="map-container">
         {/* Zoom controls */}
         <div className="zoom-controls">
           <button onClick={handleZoomIn} title="Zoom In">+</button>
-          <button onClick={handleZoomOut} title="Zoom Out">−</button>
-          <button onClick={handleResetZoom} title="Reset">⟲</button>
+          <button onClick={handleZoomOut} title="Zoom Out">-</button>
+          <button onClick={handleResetZoom} title="Reset View">&#x27F2;</button>
         </div>
 
-        {/* Quick help indicator */}
-        <div className="map-hint" title="Right-click for context menus">
-          <span>Right-Click for Actions</span>
-        </div>
+        {/* Panel toggle */}
+        <button
+          className={`panel-toggle ${panelCollapsed ? 'collapsed' : ''}`}
+          onClick={() => setPanelCollapsed(!panelCollapsed)}
+          title={panelCollapsed ? 'Show Players' : 'Hide Players'}
+        >
+          {panelCollapsed ? '\u25C0' : '\u25B6'}
+        </button>
 
         <div
           className="map-canvas"
@@ -373,7 +336,6 @@ function MapScreen() {
           >
           {/* Render map squares and mobs - combined and sorted by layerIndex */}
           {(() => {
-            // Combine squares and mobs with type markers
             const combinedItems = [
               ...(currentMap.squares || []).map(square => ({ ...square, itemType: 'square' })),
               ...(currentMap.placedMobs || []).map(mob => ({ ...mob, itemType: 'mob' }))
@@ -421,7 +383,6 @@ function MapScreen() {
                   </div>
                 );
               } else {
-                // Render mob
                 const mob = item;
                 return (
                   <div
@@ -446,11 +407,7 @@ function MapScreen() {
                         <img
                           src={mob.imageUrl}
                           alt={mob.name}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain'
-                          }}
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                         />
                       )}
                     </div>
@@ -467,10 +424,8 @@ function MapScreen() {
               alt="Map drawing"
               style={{
                 position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
+                top: 0, left: 0,
+                width: '100%', height: '100%',
                 pointerEvents: 'none',
                 objectFit: 'fill'
               }}
@@ -491,19 +446,14 @@ function MapScreen() {
                   className="player-token"
                   onContextMenu={(e) => handlePlayerContextMenu(e, player)}
                 >
-                  {/* Main player icon */}
                   {player.iconType === 'custom' && player.iconUrl ? (
                     <img
                       src={player.iconUrl}
                       alt={player.name}
+                      className="token-img"
                       style={{
                         width: `${mapSettings.tokenSize}px`,
                         height: `${mapSettings.tokenSize}px`,
-                        borderRadius: '50%',
-                        border: '3px solid #fff',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
-                        position: 'relative',
-                        zIndex: 10
                       }}
                     />
                   ) : (
@@ -513,44 +463,28 @@ function MapScreen() {
                         backgroundColor: player.iconColor,
                         width: `${mapSettings.tokenSize}px`,
                         height: `${mapSettings.tokenSize}px`,
-                        borderRadius: '50%',
-                        border: '3px solid #fff',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
-                        position: 'relative',
-                        zIndex: 10
                       }}
                     />
                   )}
 
                   {/* Attached mobs */}
                   {(player.attachedMobs || []).map((attachedMob, index) => {
-                    // Handle both old format (string) and new format (object)
                     const mobId = typeof attachedMob === 'string' ? attachedMob : attachedMob.mobId;
                     const offsetRatio = typeof attachedMob === 'string'
-                      ? { x: 1, y: -1 } // Default ratio
+                      ? { x: 1, y: -1 }
                       : (attachedMob.offset || { x: 1, y: -1 });
-
-                    // Convert ratio to pixels for current token size
                     const offsetPixels = {
                       x: offsetRatio.x * mapSettings.tokenSize,
                       y: offsetRatio.y * mapSettings.tokenSize
                     };
-
-                    const size = attachedMob.size || 0.6; // Default to 60% of token size
-                    const layer = attachedMob.layer || 'above'; // Default to above player
+                    const size = attachedMob.size || 0.6;
+                    const layer = attachedMob.layer || 'above';
                     const mob = bonuses.find(b => b.id === mobId);
                     if (!mob) return null;
 
                     const mobSize = mapSettings.tokenSize * size;
-                    // Map layer to zIndex: back=3, below=7, same=10, above=13, front=17
-                    const layerToZIndex = {
-                      'back': 3,
-                      'below': 7,
-                      'same': 10,
-                      'above': 13,
-                      'front': 17
-                    };
-                    const zIndex = layerToZIndex[layer] || 13; // Default to 13 (above player)
+                    const layerToZIndex = { 'back': 3, 'below': 7, 'same': 10, 'above': 13, 'front': 17 };
+                    const zIndex = layerToZIndex[layer] || 13;
 
                     return (
                       <div
@@ -562,14 +496,9 @@ function MapScreen() {
                           width: `${mobSize}px`,
                           height: `${mobSize}px`,
                           zIndex: zIndex,
-                          border: 'none',
-                          outline: 'none',
-                          boxShadow: 'none',
-                          background: 'transparent',
-                          overflow: 'hidden',
-                          padding: 0,
-                          margin: 0,
-                          pointerEvents: 'none'
+                          border: 'none', outline: 'none', boxShadow: 'none',
+                          background: 'transparent', overflow: 'hidden',
+                          padding: 0, margin: 0, pointerEvents: 'none'
                         }}
                       >
                         {mob.imageUrl && (
@@ -577,12 +506,8 @@ function MapScreen() {
                             src={mob.imageUrl}
                             alt={mob.name}
                             style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'contain',
-                              border: 'none',
-                              borderRadius: '0',
-                              outline: 'none'
+                              width: '100%', height: '100%', objectFit: 'contain',
+                              border: 'none', borderRadius: '0', outline: 'none'
                             }}
                           />
                         )}
@@ -654,160 +579,164 @@ function MapScreen() {
         </div>
       </div>
 
-      <div className="player-panel">
-        <h2>Players</h2>
-        {players.length === 0 ? (
-          <p className="empty-state">No players in game</p>
-        ) : (
-          players.map(player => {
-            const inventorySlots = player.inventorySlots || 4;
-            const customStats = player.customStats || [];
-            const partySlots = player.partySlots || 0;
-            const party = player.party || [];
-            const statusEffects = player.statusEffects || [];
+      {/* ===== PLAYER PANEL ===== */}
+      <div className={`player-panel ${panelCollapsed ? 'collapsed' : ''}`}>
+        <div className="panel-header">
+          <h2>Players</h2>
+        </div>
+        <div className="panel-scroll">
+          {players.length === 0 ? (
+            <p className="empty-state">No players in game</p>
+          ) : (
+            players.map(player => {
+              const inventorySlots = player.inventorySlots || 4;
+              const customStats = player.customStats || [];
+              const partySlots = player.partySlots || 0;
+              const party = player.party || [];
+              const statusEffects = player.statusEffects || [];
+              const maxPower = player.maxPower || 100;
 
-            return (
-              <div key={player.id} className="player-info">
-                <h3>{player.name}</h3>
-
-                {/* Base Stats */}
-                <div className="player-stats">
-                  <div className="stat">
-                    <span className="stat-label">Power</span>
-                    <input
-                      type="number"
-                      className="stat-input"
-                      value={player.power}
-                      onChange={(e) => updatePlayer(player.id, { power: parseInt(e.target.value) || 0 })}
-                    />
-                  </div>
-                  <div className="stat">
-                    <span className="stat-label">Money</span>
-                    <input
-                      type="number"
-                      className="stat-input"
-                      value={player.money}
-                      onChange={(e) => updatePlayer(player.id, { money: parseInt(e.target.value) || 0 })}
-                    />
-                  </div>
-                </div>
-
-                {/* Custom Stats */}
-                {customStats.length > 0 && (
-                  <div className="player-stats" style={{ marginTop: '0.5rem' }}>
-                    {customStats.map((stat, index) => (
-                      <div key={index} className="stat">
-                        <span className="stat-label">{stat.name}</span>
-                        <input
-                          type="number"
-                          className="stat-input"
-                          value={stat.value}
-                          onChange={(e) => {
-                            const newCustomStats = [...customStats];
-                            newCustomStats[index] = { ...stat, value: parseInt(e.target.value) || 0 };
-                            updatePlayer(player.id, { customStats: newCustomStats });
-                          }}
+              return (
+                <div key={player.id} className="player-card">
+                  {/* Card header with icon + name + power bar */}
+                  <div className="card-header">
+                    <div className="card-avatar">
+                      {player.iconType === 'custom' && player.iconUrl ? (
+                        <img src={player.iconUrl} alt={player.name} />
+                      ) : (
+                        <div className="avatar-circle" style={{ backgroundColor: player.iconColor || '#d4af37' }} />
+                      )}
+                    </div>
+                    <div className="card-identity">
+                      <h3>{player.name}</h3>
+                      <div className="power-bar-container">
+                        <div
+                          className="power-bar-fill"
+                          style={{ width: `${getBarPercent(player.power || 0, maxPower)}%` }}
                         />
+                        <span className="power-bar-text">{player.power || 0} / {maxPower}</span>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                )}
 
-                {/* Dynamic Inventory */}
-                <div className="player-inventory">
-                  <span className="inventory-label">Inventory</span>
-                  <div className="inventory-grid" style={{
-                    gridTemplateColumns: `repeat(${Math.min(inventorySlots, 4)}, 1fr)`
-                  }}>
-                    {Array.from({ length: inventorySlots }).map((_, index) => {
-                      const itemId = player.inventory[index];
-                      const item = itemId ? items.find(i => i.id === itemId) : null;
-                      return (
-                        <div key={index} className="inventory-slot">
-                          {item ? (
-                            <>
-                              {item.imageUrl && <img src={item.imageUrl} alt={item.name} />}
-                              <span className="item-tooltip">{item.name}</span>
-                              <button
-                                className="remove-item-btn"
-                                onClick={() => handleRemoveItem(player.id, index)}
-                                title="Remove item"
-                              >
-                                ×
-                              </button>
-                            </>
-                          ) : (
-                            <span className="empty-slot">—</span>
-                          )}
+                  {/* Stats row */}
+                  <div className="card-stats">
+                    <div className="stat-block">
+                      <span className="stat-label">Power</span>
+                      <input
+                        type="number"
+                        className="stat-input"
+                        value={player.power}
+                        onChange={(e) => updatePlayer(player.id, { power: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="stat-block">
+                      <span className="stat-label">Money</span>
+                      <input
+                        type="number"
+                        className="stat-input"
+                        value={player.money}
+                        onChange={(e) => updatePlayer(player.id, { money: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Custom Stats */}
+                  {customStats.length > 0 && (
+                    <div className="card-stats">
+                      {customStats.map((stat, index) => (
+                        <div key={index} className="stat-block">
+                          <span className="stat-label">{stat.name}</span>
+                          <input
+                            type="number"
+                            className="stat-input"
+                            value={stat.value}
+                            onChange={(e) => {
+                              const newCustomStats = [...customStats];
+                              newCustomStats[index] = { ...stat, value: parseInt(e.target.value) || 0 };
+                              updatePlayer(player.id, { customStats: newCustomStats });
+                            }}
+                          />
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                      ))}
+                    </div>
+                  )}
 
-                {/* Party */}
-                {partySlots > 0 && (
-                  <div className="player-inventory">
-                    <span className="inventory-label">Party</span>
+                  {/* Status Effects */}
+                  {statusEffects.length > 0 && (
+                    <div className="card-effects">
+                      {statusEffects.map((effect, index) => (
+                        <span key={index} className="effect-badge">{effect}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Inventory */}
+                  <div className="card-section">
+                    <span className="section-label">Inventory</span>
                     <div className="inventory-grid" style={{
-                      gridTemplateColumns: `repeat(${Math.min(partySlots, 4)}, 1fr)`
+                      gridTemplateColumns: `repeat(${Math.min(inventorySlots, 4)}, 1fr)`
                     }}>
-                      {Array.from({ length: partySlots }).map((_, index) => {
-                        const mobId = party[index];
-                        const mob = mobId ? bonuses.find(b => b.id === mobId) : null;
+                      {Array.from({ length: inventorySlots }).map((_, index) => {
+                        const itemId = player.inventory[index];
+                        const item = itemId ? items.find(i => i.id === itemId) : null;
                         return (
-                          <div key={index} className="party-slot">
-                            {mob ? (
+                          <div key={index} className="inventory-slot">
+                            {item ? (
                               <>
-                                {mob.imageUrl && <img src={mob.imageUrl} alt={mob.name} />}
-                                <span className="item-tooltip">{mob.name}</span>
+                                {item.imageUrl && <img src={item.imageUrl} alt={item.name} />}
+                                <span className="item-tooltip">{item.name}</span>
+                                <button
+                                  className="remove-item-btn"
+                                  onClick={() => handleRemoveItem(player.id, index)}
+                                  title="Remove item"
+                                >
+                                  ×
+                                </button>
                               </>
                             ) : (
-                              <span className="empty-slot">—</span>
+                              <span className="empty-slot"></span>
                             )}
                           </div>
                         );
                       })}
                     </div>
                   </div>
-                )}
 
-                {/* Status Effects */}
-                {statusEffects.length > 0 && (
-                  <div className="player-inventory">
-                    <span className="inventory-label">Status Effects</span>
-                    <div className="status-effects-list" style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '0.25rem',
-                      marginTop: '0.5rem'
-                    }}>
-                      {statusEffects.map((effect, index) => (
-                        <span
-                          key={index}
-                          className="status-effect-badge"
-                          style={{
-                            background: '#d4af37',
-                            color: '#000',
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '12px',
-                            fontSize: '0.75rem',
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          {effect}
-                        </span>
-                      ))}
+                  {/* Party */}
+                  {partySlots > 0 && (
+                    <div className="card-section">
+                      <span className="section-label">Party</span>
+                      <div className="inventory-grid" style={{
+                        gridTemplateColumns: `repeat(${Math.min(partySlots, 4)}, 1fr)`
+                      }}>
+                        {Array.from({ length: partySlots }).map((_, index) => {
+                          const mobId = party[index];
+                          const mob = mobId ? bonuses.find(b => b.id === mobId) : null;
+                          return (
+                            <div key={index} className="party-slot">
+                              {mob ? (
+                                <>
+                                  {mob.imageUrl && <img src={mob.imageUrl} alt={mob.name} />}
+                                  <span className="item-tooltip">{mob.name}</span>
+                                </>
+                              ) : (
+                                <span className="empty-slot"></span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
-      {/* Player context menu */}
+      {/* Context menus */}
       {contextMenu && (
         <PlayerContextMenu
           player={contextMenu.player}
@@ -821,7 +750,6 @@ function MapScreen() {
         />
       )}
 
-      {/* Map context menu */}
       {mapContextMenu && (
         <MapContextMenu
           position={mapContextMenu.position}
@@ -839,7 +767,6 @@ function MapScreen() {
         />
       )}
 
-      {/* Bonus/mob context menu */}
       {bonusContextMenu && (
         <BonusContextMenu
           position={bonusContextMenu.position}
