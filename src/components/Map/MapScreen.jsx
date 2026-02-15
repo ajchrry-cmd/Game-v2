@@ -3,7 +3,7 @@ import Draggable from 'react-draggable';
 import { useGame } from '../../contexts/GameContext';
 import PlayerContextMenu from './PlayerContextMenu';
 import MapContextMenu from './MapContextMenu';
-import RadialMenu from '../UI/RadialMenu';
+import BonusContextMenu from './BonusContextMenu';
 import { loadUISettings, defaultUISettings } from '../../utils/uiSettings';
 import './MapScreen.css';
 
@@ -52,7 +52,7 @@ function MapScreen() {
   const [lastTouchDistance, setLastTouchDistance] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [mapContextMenu, setMapContextMenu] = useState(null);
-  const [radialMenu, setRadialMenu] = useState(null);
+  const [bonusContextMenu, setBonusContextMenu] = useState(null);
 
   const currentMap = maps.find(m => m.id === currentMapId);
 
@@ -105,27 +105,15 @@ function MapScreen() {
   const handlePlayerContextMenu = (e, player) => {
     e.preventDefault();
     e.stopPropagation();
-    setMapContextMenu(null); // Close map context menu
-    setRadialMenu(null); // Close radial menu
-
-    // Show radial menu by default, full context menu if Shift key is pressed
-    if (e.shiftKey) {
-      setContextMenu({
-        player,
-        position: {
-          x: e.clientX,
-          y: e.clientY
-        }
-      });
-    } else {
-      setRadialMenu({
-        player,
-        position: {
-          x: e.clientX,
-          y: e.clientY
-        }
-      });
-    }
+    setMapContextMenu(null);
+    setBonusContextMenu(null);
+    setContextMenu({
+      player,
+      position: {
+        x: e.clientX,
+        y: e.clientY
+      }
+    });
   };
 
   const handleCloseContextMenu = () => {
@@ -148,7 +136,8 @@ function MapScreen() {
     const mapX = Math.round((clickX - mapTransform.x) / mapTransform.scale);
     const mapY = Math.round((clickY - mapTransform.y) / mapTransform.scale);
 
-    setContextMenu(null); // Close player context menu
+    setContextMenu(null);
+    setBonusContextMenu(null);
     setMapContextMenu({
       position: {
         x: e.clientX,
@@ -174,164 +163,19 @@ function MapScreen() {
     placeBonus(itemId, position);
   };
 
-  // Quick action handlers for radial menu
-  const handleQuickDamage = (player, amount) => {
-    const currentPower = player.power || 0;
-    updatePlayer(player.id, { power: Math.max(0, currentPower - amount) });
-  };
-
-  const handleQuickHeal = (player, amount) => {
-    const currentPower = player.power || 0;
-    updatePlayer(player.id, { power: currentPower + amount });
-  };
-
-  const handleQuickAdjustMoney = (player, amount) => {
-    const currentMoney = player.money || 0;
-    updatePlayer(player.id, { money: currentMoney + amount });
-  };
-
   const handleBonusContextMenu = (e, placedBonus, bonus) => {
     e.preventDefault();
     e.stopPropagation();
-
-    // Show radial menu by default on bonus right-click
-    setRadialMenu({
-      bonus: placedBonus,
-      bonusData: bonus,
+    setMapContextMenu(null);
+    setContextMenu(null);
+    setBonusContextMenu({
+      placedBonus,
+      bonus,
       position: {
         x: e.clientX,
         y: e.clientY
       }
     });
-  };
-
-  // Get radial menu actions for a placed bonus/mob
-  const getBonusRadialActions = (placedBonus, bonus) => {
-    return [
-      {
-        icon: '🗑️',
-        label: 'Remove',
-        onClick: () => {
-          removeBonus(placedBonus.id);
-          setSelectedBonusId(null);
-        },
-        variant: 'danger'
-      },
-      {
-        icon: '📋',
-        label: 'Duplicate',
-        onClick: () => {
-          placeBonus(placedBonus.bonusId, {
-            x: placedBonus.position.x + 50,
-            y: placedBonus.position.y + 50
-          });
-        },
-        variant: 'success'
-      },
-      {
-        icon: '🔍',
-        label: 'Zoom +',
-        onClick: () => {
-          const newSize = Math.min(200, (placedBonus.size || 60) + 20);
-          updateBonusSize(placedBonus.id, newSize);
-        }
-      },
-      {
-        icon: '🔎',
-        label: 'Zoom -',
-        onClick: () => {
-          const newSize = Math.max(30, (placedBonus.size || 60) - 20);
-          updateBonusSize(placedBonus.id, newSize);
-        }
-      },
-      {
-        icon: '👑',
-        label: 'Boss Size',
-        onClick: () => {
-          updateBonusSize(placedBonus.id, 120);
-        },
-        variant: 'primary'
-      },
-      {
-        icon: '↩️',
-        label: 'Normal Size',
-        onClick: () => {
-          updateBonusSize(placedBonus.id, 60);
-        }
-      }
-    ];
-  };
-
-  // Get radial menu actions for a player
-  const getPlayerRadialActions = (player) => {
-    return [
-      {
-        icon: '❤️',
-        label: 'Heal +5',
-        onClick: () => handleQuickHeal(player, 5),
-        variant: 'success'
-      },
-      {
-        icon: '⚔️',
-        label: 'Damage -5',
-        onClick: () => handleQuickDamage(player, 5),
-        variant: 'danger'
-      },
-      {
-        icon: '💰',
-        label: 'Money +10',
-        onClick: () => handleQuickAdjustMoney(player, 10),
-        variant: 'success'
-      },
-      {
-        icon: '💸',
-        label: 'Money -10',
-        onClick: () => handleQuickAdjustMoney(player, -10),
-        variant: 'danger'
-      },
-      {
-        icon: '✉️',
-        label: 'Message',
-        onClick: () => {
-          setRadialMenu(null);
-          setContextMenu({
-            player,
-            position: radialMenu.position
-          });
-          // Will open full menu for message
-        },
-        variant: 'primary'
-      },
-      {
-        icon: '⚡',
-        label: 'Flash',
-        onClick: () => flashPlayerScreen(player.id, '#ff0000', 500),
-        variant: 'primary'
-      },
-      {
-        icon: '🎒',
-        label: 'Inventory',
-        onClick: () => {
-          setRadialMenu(null);
-          setContextMenu({
-            player,
-            position: radialMenu.position
-          });
-          // Will open full menu for inventory
-        }
-      },
-      {
-        icon: '⚙️',
-        label: 'More',
-        onClick: () => {
-          setRadialMenu(null);
-          setContextMenu({
-            player,
-            position: radialMenu.position
-          });
-        }
-      }
-    ];
   };
 
   React.useEffect(() => {
@@ -492,8 +336,8 @@ function MapScreen() {
         </div>
 
         {/* Quick help indicator */}
-        <div className="radial-menu-hint" title="Right-Click tokens for radial quick actions menu">
-          <span>⚡ Right-Click for Quick Actions | Shift + Right-Click for Full Menu</span>
+        <div className="map-hint" title="Right-click for context menus">
+          <span>Right-Click for Actions</span>
         </div>
 
         <div
@@ -995,16 +839,19 @@ function MapScreen() {
         />
       )}
 
-      {/* Radial menu for quick actions */}
-      {radialMenu && (
-        <RadialMenu
-          position={radialMenu.position}
-          actions={radialMenu.player
-            ? getPlayerRadialActions(radialMenu.player)
-            : getBonusRadialActions(radialMenu.bonus, radialMenu.bonusData)
-          }
-          onClose={() => setRadialMenu(null)}
-          centerLabel={radialMenu.player?.name || radialMenu.bonusData?.name || ''}
+      {/* Bonus/mob context menu */}
+      {bonusContextMenu && (
+        <BonusContextMenu
+          position={bonusContextMenu.position}
+          placedBonus={bonusContextMenu.placedBonus}
+          bonus={bonusContextMenu.bonus}
+          onClose={() => setBonusContextMenu(null)}
+          onRemove={(id) => {
+            removeBonus(id);
+            setSelectedBonusId(null);
+          }}
+          onDuplicate={(bonusId, pos) => placeBonus(bonusId, pos)}
+          onResize={(id, size) => updateBonusSize(id, size)}
         />
       )}
     </div>
