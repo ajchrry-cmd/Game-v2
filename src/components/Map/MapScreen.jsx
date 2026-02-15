@@ -285,6 +285,8 @@ function MapScreen() {
         </div>
       </div>
 
+      {/* ===== MAP + PANEL ROW ===== */}
+      <div className="map-body">
       {/* ===== MAP AREA (full screen) ===== */}
       <div className="map-container">
         {/* Zoom controls */}
@@ -734,6 +736,7 @@ function MapScreen() {
             })
           )}
         </div>
+      </div>
       </div>
 
       {/* Context menus */}
